@@ -4,14 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".FriendListActivity"
+    tools:context=".FriendListActivity.FriendListActivity"
     android:id="@+id/friend_list_layout">
 
     <TextView
         android:id="@+id/friend_list_textview"
         app:layout_constraintTop_toTopOf="parent"
-        android:paddingLeft="15dp"
-        android:paddingTop="15dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Friend list"/>
@@ -20,18 +21,19 @@
         android:id="@+id/friend_list_listview"
         app:layout_constraintTop_toBottomOf="@id/friend_list_textview"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-    </ListView>
-
-    <ImageButton
-        android:id="@+id/friend_list_imagebutton"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"/>
+
+    <ImageView
+        android:id="@+id/add_friend_imageview"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_marginRight="40dp"
+        android:layout_marginBottom="40dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/tag_friend_btn"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginBottom="20dp"
-        android:layout_marginRight="20dp"
-        android:src="@drawable/ic_launcher_background"/>
+        app:layout_constraintRight_toRightOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

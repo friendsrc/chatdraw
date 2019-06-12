@@ -14,7 +14,7 @@
         android:layout_width="0dp"
         android:layout_weight="1"
         android:layout_height="match_parent"
-        android:layout_margin="7dp"
+        android:layout_margin="8dp"
         android:orientation="vertical">
         <TextView
             android:id="@+id/friend_list_name"

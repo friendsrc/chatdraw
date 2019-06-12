@@ -1,13 +1,14 @@
-package com.example.chatdraw;
+package com.example.chatdraw.FriendListActivity;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.example.chatdraw.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,7 @@ public class FriendListAdapter extends BaseAdapter {
     public FriendListAdapter(Context context) {
         super();
         this.context = context;
-        items = new ArrayList<FriendListItem>();
+        items = new ArrayList<>();
     }
 
     public void addAdapterItem(FriendListItem item) {
@@ -41,13 +42,20 @@ public class FriendListAdapter extends BaseAdapter {
     }
 
     public View getView(int position, View convertView, ViewGroup parent) {
+        // inflate the friend_list_item layout
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.friend_list_item, parent, false);
+
+        // set the name
         TextView nameTextView = view.findViewById(R.id.friend_list_name);
         nameTextView.setText(items.get(position).getName());
+
+        // set the chatpreview
         TextView chatTextView = view.findViewById(R.id.friend_list_chat_preview);
         chatTextView.setText(items.get(position).getChatPreview());
+
+        // set the profile picture
         ImageView imageView = view.findViewById(R.id.friend_list_profilepicture);
         imageView.setImageResource(items.get(position).getImageID());
         return view;

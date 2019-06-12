@@ -1,4 +1,4 @@
-package com.example.chatdraw;
+package com.example.chatdraw.FriendListActivity;
 
 public class FriendListItem {
     private String name;

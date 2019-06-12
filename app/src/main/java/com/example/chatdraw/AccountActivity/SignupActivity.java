@@ -50,6 +50,7 @@ public class SignupActivity extends AppCompatActivity {
             }
         });
 
+
         // redirect back to sign in page
         btnSignIn.setOnClickListener(new View.OnClickListener() {
             @Override
