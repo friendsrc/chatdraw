@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "437200162274",
+    "firebase_url": "https://chatdraw-ff7eb.firebaseio.com",
+    "project_id": "chatdraw-ff7eb",
+    "storage_bucket": "chatdraw-ff7eb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:437200162274:android:780ebe38c5fbb217",
+        "android_client_info": {
+          "package_name": "com.example.chatdraw"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "437200162274-mt3gknavmdav895tok67o9benmn5jku7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDwZhUG-jzYWThsL4XeL7Z_W5NK5_mNf8U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "437200162274-mt3gknavmdav895tok67o9benmn5jku7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
