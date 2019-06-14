@@ -15,7 +15,7 @@
     <string name="hint_password">Password</string>
     <string name="hint_name">Fullname</string>
     <string name="btn_login">LOGIN</string>
-    <string name="prompt_password">Please enter your password</string>
+    <string name="prompt_password">Please re-enter your new password</string>
     <string name="btn_link_to_register">New to Chatdraw? Register now!</string>
     <string name="btn_link_to_login">Already registered? Login Me!</string>
     <string name="title_activity_reset_password">ResetPasswordActivity</string>
@@ -23,7 +23,7 @@
     <string name="btn_reset_password">Reset Password</string>
     <string name="btn_back">Back</string>
     <string name="hint_new_email">New Email</string>
-    <string name="btn_change">Change</string>
+    <string name="btn_change">Change Password</string>
     <string name="btn_send">Send</string>
     <string name="btn_sign_out">Sign Out</string>
     <string name="lbl_forgot_password">Forgot password?</string>

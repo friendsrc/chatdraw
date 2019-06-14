@@ -21,7 +21,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 public class MainActivity extends AppCompatActivity {
-    private Button btnRemoveUser, signOut;
+    private Button btnChangePassword, btnRemoveUser,
+            changePassword, signOut;
+    private TextView email;
+
+    private EditText password, newPassword;
     private ProgressBar progressBar;
     private FirebaseAuth auth;
 
@@ -36,11 +40,14 @@ public class MainActivity extends AppCompatActivity {
            to the default FirebaseApp instance.
         */
         auth = FirebaseAuth.getInstance();
+        email = (TextView) findViewById(R.id.useremail);
 
-        // get current user
+        //get current user
         final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-        // check the changing state
+        // show the user email
+        setDataToView(user);
+
         authListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -54,20 +61,77 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        // delete account button
+        btnChangePassword = (Button) findViewById(R.id.change_password_button);
         btnRemoveUser = (Button) findViewById(R.id.remove_user_button);
 
-        // signed out button
+        changePassword = (Button) findViewById(R.id.changePass);
         signOut = (Button) findViewById(R.id.sign_out);
 
-        // the left corner progress bar
+        newPassword = (EditText) findViewById(R.id.newPassword);
+        password = (EditText) findViewById(R.id.password);
+
+        newPassword.setVisibility(View.GONE);
+        password.setVisibility(View.GONE);
+        changePassword.setVisibility(View.GONE);
+
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
         if (progressBar != null) {
             progressBar.setVisibility(View.GONE);
         }
 
-        // Remove user from firebase
+        btnChangePassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                password.setVisibility(View.VISIBLE);
+                newPassword.setVisibility(View.VISIBLE);
+                changePassword.setVisibility(View.VISIBLE);
+                btnChangePassword.setVisibility(View.GONE);
+            }
+        });
+
+        // change password button clicked do comparison check of password
+        changePassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String newpass = newPassword.getText().toString().trim();
+                String confirmpass = password.getText().toString().trim();
+
+                progressBar.setVisibility(View.VISIBLE);
+                if (newpass.equals("")) {
+                    newPassword.setError("Enter password");
+                    progressBar.setVisibility(View.GONE);
+                } else if (confirmpass.equals("")) {
+                    password.setError("Re-enter password");
+                    progressBar.setVisibility(View.GONE);
+                } else if (user != null) {
+                    if (!newpass.equals(confirmpass)) {
+                        password.setError("Password not match");
+                        progressBar.setVisibility(View.GONE);
+                    } else if (newPassword.getText().toString().trim().length() < 6) {
+                        newPassword.setError("Password too short, enter minimum 6 characters");
+                        progressBar.setVisibility(View.GONE);
+                    } else {
+                        user.updatePassword(newPassword.getText().toString().trim())
+                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if (task.isSuccessful()) {
+                                            Toast.makeText(MainActivity.this, "Password is updated, sign in with new password!", Toast.LENGTH_SHORT).show();
+                                            signOut();
+                                            progressBar.setVisibility(View.GONE);
+                                        } else {
+                                            Toast.makeText(MainActivity.this, "Failed to update password!", Toast.LENGTH_SHORT).show();
+                                            progressBar.setVisibility(View.GONE);
+                                        }
+                                    }
+                                });
+                    }
+                }
+            }
+        });
+
+        // when button remove user clicked, delete account
         btnRemoveUser.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -78,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if (task.isSuccessful()) {
-                                        Toast.makeText(MainActivity.this, "Your profile is deleted! Create a new account now", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(MainActivity.this, "Your profile is deleted:( Create a account now!", Toast.LENGTH_SHORT).show();
                                         startActivity(new Intent(MainActivity.this, SignupActivity.class));
                                         finish();
                                         progressBar.setVisibility(View.GONE);
@@ -92,14 +156,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // signout from current user
+        // delete and signout
         signOut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 signOut();
             }
         });
+    }
 
+    // Internationalization, can actually remove this
+    @SuppressLint("SetTextI18n")
+    private void setDataToView(FirebaseUser user) {
+        email.setText(user.getEmail());
     }
 
     // this listener will be called when there is change in firebase user session
@@ -113,28 +182,27 @@ public class MainActivity extends AppCompatActivity {
                 // launch login activity
                 startActivity(new Intent(MainActivity.this, LoginActivity.class));
                 finish();
+            } else {
+                setDataToView(user);
             }
         }
-
-
     };
 
     //sign out method
     public void signOut() {
         auth.signOut();
 
-
-    // this listener will be called when there is change in firebase user session
+        // this listener will be called when there is change in firebase user session
         FirebaseAuth.AuthStateListener authListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user == null) {
-                    // user auth state is changed - user is null
-                    // launch login activity
-                    startActivity(new Intent(MainActivity.this, LoginActivity.class));
-                    finish();
-                }
+        @Override
+        public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+            FirebaseUser user = firebaseAuth.getCurrentUser();
+            if (user == null) {
+                // user auth state is changed - user is null
+                // launch login activity
+                startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                finish();
+            }
             }
         };
     }
