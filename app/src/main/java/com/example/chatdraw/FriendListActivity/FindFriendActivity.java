@@ -50,6 +50,19 @@ public class FindFriendActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+        // set the action bar title
+        getSupportActionBar().setTitle("Find Contacts");
+
+        // add a back button to the action bar
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        // if the back button is pressed, go back to previous activity
+        finish();
+        return true;
     }
 
     public void updateListView(NewFriendAdapter newFriendAdapter, String name, int imageID) {

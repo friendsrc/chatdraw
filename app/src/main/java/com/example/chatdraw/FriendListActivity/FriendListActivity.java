@@ -106,14 +106,24 @@ public class FriendListActivity extends AppCompatActivity {
 
     // set the contents of the Drawer
     private void addDrawerItems() {
-        String[] osArray = { "Contacts", "Calls", "Invite Friends", "Settings" };
-        mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, osArray);
+        final String[] itemsArray = { "Contacts", "Calls", "Invite Friends", "Settings" };
+        mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, itemsArray);
         mDrawerList.setAdapter(mAdapter);
 
         mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(FriendListActivity.this, "Blm bikin intent wkw", Toast.LENGTH_SHORT).show();
+                if (position == 0) {
+                    // if "Contacts" is chosen, close the Drawers
+                    mDrawerLayout.closeDrawers();
+                } else if (position == 3) {
+                    // if "Settings" is chosen, go to MainActivity
+                    Intent intent = new Intent(FriendListActivity.this, MainActivity.class);
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(FriendListActivity.this,
+                            "" + itemsArray[position] + " not yet configured", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
