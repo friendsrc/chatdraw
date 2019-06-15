@@ -29,4 +29,6 @@
     <string name="lbl_forgot_password">Forgot password?</string>
     <string name="forgot_password_msg">We need your registered Email Address to sent you password reset instructions.</string>
     <string name="email_id">Email ID</string>
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
 </resources>
