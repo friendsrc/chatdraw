@@ -1,4 +1,4 @@
-package com.example.chatdraw.FriendListActivity;
+package com.example.chatdraw.Contacts;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -13,18 +13,18 @@ import com.example.chatdraw.R;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FriendListAdapter extends BaseAdapter {
-    private List<FriendListItem> items;
+public class NewFriendAdapter extends BaseAdapter {
+    private List<NewFriendItem> items;
     private Context context;
 
 
-    public FriendListAdapter(Context context) {
+    public NewFriendAdapter(Context context) {
         super();
         this.context = context;
         items = new ArrayList<>();
     }
 
-    public void addAdapterItem(FriendListItem item) {
+    public void addAdapterItem(NewFriendItem item) {
         items.add(item);
     }
 
@@ -45,18 +45,14 @@ public class FriendListAdapter extends BaseAdapter {
         // inflate the friend_list_item layout
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View view = inflater.inflate(R.layout.friend_list_item, parent, false);
+        View view = inflater.inflate(R.layout.find_friend_item, parent, false);
 
         // set the name
-        TextView nameTextView = view.findViewById(R.id.friend_list_name);
+        TextView nameTextView = view.findViewById(R.id.find_friend_textview);
         nameTextView.setText(items.get(position).getName());
 
-        // set the chatpreview
-        TextView chatTextView = view.findViewById(R.id.friend_list_chat_preview);
-        chatTextView.setText(items.get(position).getChatPreview());
-
         // set the profile picture
-        ImageView imageView = view.findViewById(R.id.friend_list_profilepicture);
+        ImageView imageView = view.findViewById(R.id.find_friend_imageview);
         imageView.setImageResource(items.get(position).getImageID());
         return view;
     }

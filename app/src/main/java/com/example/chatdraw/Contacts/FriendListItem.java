@@ -1,4 +1,4 @@
-package com.example.chatdraw.FriendListActivity;
+package com.example.chatdraw.Contacts;
 
 public class FriendListItem {
     private String name;

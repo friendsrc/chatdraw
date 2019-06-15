@@ -1,19 +1,14 @@
-package com.example.chatdraw.FriendListActivity;
+package com.example.chatdraw.Contacts;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.example.chatdraw.R;
-
-import org.w3c.dom.Text;
 
 public class FindFriendActivity extends AppCompatActivity {
 
@@ -52,7 +47,7 @@ public class FindFriendActivity extends AppCompatActivity {
         });
 
         // set the action bar title
-        getSupportActionBar().setTitle("Find Contacts");
+        getSupportActionBar().setTitle("Find Friends");
 
         // add a back button to the action bar
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);

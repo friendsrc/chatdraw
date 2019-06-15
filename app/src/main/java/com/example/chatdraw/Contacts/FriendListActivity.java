@@ -1,4 +1,4 @@
-package com.example.chatdraw.FriendListActivity;
+package com.example.chatdraw.Contacts;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -8,7 +8,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -59,7 +58,7 @@ public class FriendListActivity extends AppCompatActivity {
         // Testing the custom adapter
         for (int i = 1; i < 3; i++) {
             updateListView(friendListAdapter, "Person " + i,
-                    "This is my chat preview. Have a good day!", R.drawable.friends_icon);
+                    "[status]", R.drawable.friends_icon);
         }
 
         // set the Action Bar title
@@ -116,6 +115,9 @@ public class FriendListActivity extends AppCompatActivity {
                 if (position == 0) {
                     // if "Contacts" is chosen, close the Drawers
                     mDrawerLayout.closeDrawers();
+                } else if (position == 2) {
+                    Intent intent  = new Intent(FriendListActivity.this, FindFriendActivity.class);
+                    startActivityForResult(intent, FIND_FRIEND_REQUEST_CODE);
                 } else if (position == 3) {
                     // if "Settings" is chosen, go to MainActivity
                     Intent intent = new Intent(FriendListActivity.this, MainActivity.class);
@@ -162,7 +164,7 @@ public class FriendListActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FIND_FRIEND_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             String name = data.getStringExtra("name");
-            updateListView(mFriendListAdapter, name, "No message sent yet...", R.drawable.common_google_signin_btn_icon_dark);
+            updateListView(mFriendListAdapter, name, "[status]", R.drawable.common_google_signin_btn_icon_dark);
 //                try {
 //                    OutputStream outputStream = this.openFileOutput("messages.txt", MODE_APPEND);
 //                    PrintStream output = new PrintStream(outputStream);
@@ -173,12 +175,12 @@ public class FriendListActivity extends AppCompatActivity {
         }
     }
 
-    public void updateListView(FriendListAdapter friendListAdapter, String name, String chatPreview, int imageID) {
+    public void updateListView(FriendListAdapter friendListAdapter, String name, String status, int imageID) {
         // find the friend list ListView
         ListView listView = findViewById(R.id.friend_list_listview);
 
         // Instantiate a new FriendListItem and add it to the custom adapter
-        FriendListItem newFriend = new FriendListItem(name, chatPreview, imageID);
+        FriendListItem newFriend = new FriendListItem(name, status, imageID);
         friendListAdapter.addAdapterItem(newFriend);
 
         // set the adapter to the ListView
