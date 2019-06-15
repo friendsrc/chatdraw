@@ -1,5 +1,6 @@
 package com.example.chatdraw.FriendListActivity;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -37,10 +38,15 @@ public class FindFriendActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(FindFriendActivity.this, FriendListActivity.class);
+                // create Intent to send selected friend's name back to FriendListActivity
+                Intent intent = new Intent();
                 NewFriendItem newFriendItem = (NewFriendItem) newFriendAdapter.getItem(position);
                 intent.putExtra("name", newFriendItem.getName());
-                startActivity(intent);
+
+                // set the result as successful
+                setResult(Activity.RESULT_OK, intent);
+
+                // destroy this activity
                 finish();
             }
         });
@@ -49,7 +55,6 @@ public class FindFriendActivity extends AppCompatActivity {
     public void updateListView(NewFriendAdapter newFriendAdapter, String name, int imageID) {
         // find the friend list ListView
         ListView listView = findViewById(R.id.find_friend_listview);
-        TextView textView = findViewById(R.id.find_friend_textview);
 
         // Instantiate a new NewFriendItem and add it to the custom adapter
         NewFriendItem newFriendItem = new NewFriendItem(name, imageID);

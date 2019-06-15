@@ -2,6 +2,7 @@ package com.example.chatdraw.FriendListActivity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,6 +18,9 @@ import java.util.Scanner;
 
 public class FriendListActivity extends AppCompatActivity {
 
+    private FriendListAdapter mFriendListAdapter;
+    private static final int FIND_FRIEND_REQUEST_CODE = 101;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,6 +28,7 @@ public class FriendListActivity extends AppCompatActivity {
 
         // Create a custom adapter for the friend list ListView
         final FriendListAdapter friendListAdapter = new FriendListAdapter(this);
+        mFriendListAdapter = friendListAdapter;
 
         // Set the "add" button to go to the FindFriendActivity
         ImageView imageView = findViewById(R.id.add_friend_imageview);
@@ -31,17 +36,25 @@ public class FriendListActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent  = new Intent(FriendListActivity.this, FindFriendActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, FIND_FRIEND_REQUEST_CODE);
             }
         });
 
-        // get the Intent and add the newly added friend
-        Intent intent = getIntent();
-        if (intent != null) {
-            String name = intent.getStringExtra("name");
-            // Save name into the phone memory
-            if (name != null && !name.equals("")) {
-                updateListView(friendListAdapter, name, "No message sent yet...", R.drawable.common_google_signin_btn_icon_dark);
+
+        // Testing the custom adapter
+        for (int i = 1; i < 3; i++) {
+            updateListView(friendListAdapter, "Person " + i,
+                    "This is my chat preview. Have a good day!", R.drawable.friends_icon);
+        }
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == FIND_FRIEND_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            String name = data.getStringExtra("name");
+            updateListView(mFriendListAdapter, name, "No message sent yet...", R.drawable.common_google_signin_btn_icon_dark);
 //                try {
 //                    OutputStream outputStream = this.openFileOutput("messages.txt", MODE_APPEND);
 //                    PrintStream output = new PrintStream(outputStream);
@@ -49,17 +62,7 @@ public class FriendListActivity extends AppCompatActivity {
 //                } catch (FileNotFoundException e) {
 //                    e.printStackTrace();
 //                }
-            }
         }
-
-//        checkSavedMessages(friendListAdapter);
-
-        // Testing the custom adapter
-        for (int i = 1; i < 21; i++) {
-            updateListView(friendListAdapter, "Person " + i,
-                    "This is my chat preview. Have a good day!", R.drawable.friends_icon);
-        }
-
     }
 
     public void updateListView(FriendListAdapter friendListAdapter, String name, String chatPreview, int imageID) {
