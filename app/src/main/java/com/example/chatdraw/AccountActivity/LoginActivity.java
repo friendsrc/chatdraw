@@ -12,6 +12,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.chatdraw.Contacts.FriendListActivity;
+import com.example.chatdraw.AccountActivity.SettingsActivity;
 import com.example.chatdraw.MainActivity;
 import com.example.chatdraw.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -39,6 +40,7 @@ public class LoginActivity extends AppCompatActivity {
         // If there is user login already, start the MainActivity
         if (auth.getCurrentUser() != null) {
             startActivity(new Intent(LoginActivity.this, MainActivity.class));
+
             finish();
         }
 
@@ -110,7 +112,7 @@ public class LoginActivity extends AppCompatActivity {
                                         Toast.makeText(LoginActivity.this, getString(R.string.auth_failed), Toast.LENGTH_LONG).show();
                                     }
                                 } else {
-                                    Intent intent = new Intent(LoginActivity.this, FriendListActivity.class);
+                                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                     startActivity(intent);
                                     finish();
                                 }
