@@ -18,6 +18,7 @@
         android:paddingLeft="16dp"
         android:paddingRight="16dp" />
 
+    <!--TODO: change image src-->
     <ImageView
         android:id="@+id/add_friend_imageview"
         android:layout_width="56dp"

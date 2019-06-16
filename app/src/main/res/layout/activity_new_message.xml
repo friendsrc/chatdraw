@@ -18,14 +18,14 @@
             android:id="@+id/new_message_group_imageview"
             android:layout_width="40dp"
             android:layout_height="match_parent"
-            android:src="@android:drawable/ic_menu_gallery"/>
+            android:src="@drawable/add_group"/>
 
         <TextView
             android:id="@+id/new_message_group_textview"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:paddingLeft="8dp"
+            android:paddingLeft="16dp"
             android:text="@string/new_group"
             android:textSize="16sp"/>
 

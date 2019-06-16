@@ -13,12 +13,14 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.chatdraw.AccountActivity.SettingsActivity;
+import com.example.chatdraw.Chat.ChatActivity;
 import com.example.chatdraw.Contacts.FindFriendActivity;
 import com.example.chatdraw.Contacts.FriendListActivity;
 import com.example.chatdraw.Contacts.FriendListAdapter;
@@ -65,12 +67,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        ImageView newChatImageView = findViewById(R.id.new_chat_imageview);
+        ImageView newChatImageView = findViewById(R.id.main_chat_add_message_imageview);
         newChatImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, NewMessageActivity.class);
                 startActivityForResult(intent, NEW_MESSAGE_REQUEST_CODE);
+            }
+        });
+
+        ListView listView = findViewById(R.id.main_chat_listview);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(MainActivity.this, ChatActivity.class);
+                FriendListItem friendListItem = (FriendListItem) mFriendListAdapter.getItem(position);
+                intent.putExtra("name", friendListItem.getName());
+                startActivity(intent);
             }
         });
     }
@@ -123,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public void updateListView(FriendListAdapter friendListAdapter, String name, String messagePreview, int imageID) {
         // find the friend list ListView
-        ListView listView = findViewById(R.id.friend_list_listview);
+        ListView listView = findViewById(R.id.main_chat_listview);
 
         // Instantiate a new FriendListItem and add it to the custom adapter
         FriendListItem newFriend = new FriendListItem(name, messagePreview, imageID);

@@ -13,7 +13,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainChat.NewGroupActivity"></activity>
+        <activity android:name=".Chat.ChatActivity"></activity>
+        <activity android:name=".MainChat.NewGroupActivity" />
         <activity android:name=".MainChat.NewMessageActivity" />
         <activity android:name=".AccountActivity.SettingsActivity" />
         <activity android:name=".Contacts.FindFriendActivity" />

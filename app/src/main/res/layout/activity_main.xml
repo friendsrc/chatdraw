@@ -32,7 +32,7 @@
             android:id="@+id/friend_list_layout">
 
             <ListView
-                android:id="@+id/friend_list_listview"
+                android:id="@+id/main_chat_listview"
                 app:layout_constraintTop_toTopOf="parent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -40,14 +40,15 @@
                 android:paddingLeft="16dp"
                 android:paddingRight="16dp" />
 
+            <!--TODO: change image src-->
             <ImageView
-                android:id="@+id/new_chat_imageview"
+                android:id="@+id/main_chat_add_message_imageview"
                 android:layout_width="56dp"
                 android:layout_height="56dp"
                 android:layout_marginRight="40dp"
                 android:layout_marginBottom="40dp"
                 android:scaleType="fitXY"
-                android:src="@android:drawable/ic_input_add"
+                android:src="@drawable/chat"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintRight_toRightOf="parent" />
 
