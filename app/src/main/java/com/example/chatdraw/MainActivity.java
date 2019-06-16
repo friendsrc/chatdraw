@@ -1,12 +1,144 @@
 package com.example.chatdraw;
 
-import android.os.Bundle;
+import android.app.Activity;
+import android.content.Intent;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
+import android.widget.ListView;
+import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+import com.example.chatdraw.AccountActivity.SettingsActivity;
+import com.example.chatdraw.Contacts.FindFriendActivity;
+import com.example.chatdraw.Contacts.FriendListActivity;
+import com.example.chatdraw.Contacts.FriendListAdapter;
+import com.example.chatdraw.Contacts.FriendListItem;
+
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.Scanner;
+
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+    private FriendListAdapter mFriendListAdapter;
+    private static final int FIND_FRIEND_REQUEST_CODE = 101;
+    private static final int FIND_SETTINGS_REQUEST_CODE = 909;
+    private DrawerLayout drawer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        final FriendListAdapter friendListAdapter = new FriendListAdapter(this);
+        mFriendListAdapter = friendListAdapter;
+
+        // Testing the custom adapter
+        for (int i = 1; i < 3; i++) {
+            updateListView(friendListAdapter, "Person " + i,
+                    "[status]", R.drawable.friends_icon);
+        }
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        drawer = findViewById(R.id.drawer_layout);
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+        navigationView.setCheckedItem(R.id.nav_contacts);
+
+        getSupportActionBar().setTitle("Contacts");
+
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar,
+                R.string.drawer_open, R.string.drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+    }
+
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.nav_calls:
+                Toast.makeText(this,"Not yet configured", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.nav_contacts:
+                break;
+            case R.id.nav_invites:
+                Intent intent_invite  = new Intent(this, FindFriendActivity.class);
+                startActivityForResult(intent_invite, FIND_FRIEND_REQUEST_CODE);
+                break;
+            case R.id.nav_settings:
+                Intent intent_settings = new Intent(this, SettingsActivity.class);
+                startActivityForResult(intent_settings, FIND_SETTINGS_REQUEST_CODE);
+                break;
+            default:
+                Toast.makeText(this,"Not yet configured", Toast.LENGTH_SHORT).show();
+        }
+
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == FIND_FRIEND_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            String name = data.getStringExtra("name");
+            updateListView(mFriendListAdapter, name, "[status]", R.drawable.common_google_signin_btn_icon_dark);
+//                try {
+//                    OutputStream outputStream = this.openFileOutput("messages.txt", MODE_APPEND);
+//                    PrintStream output = new PrintStream(outputStream);
+//                    output.println(name + "\t" + "No message sent yet");
+//                } catch (FileNotFoundException e) {
+//                    e.printStackTrace();
+//                }
+        } else if (requestCode == FIND_SETTINGS_REQUEST_CODE) {
+
+        }
+    }
+
+    public void updateListView(FriendListAdapter friendListAdapter, String name, String status, int imageID) {
+        // find the friend list ListView
+        ListView listView = findViewById(R.id.friend_list_listview);
+
+        // Instantiate a new FriendListItem and add it to the custom adapter
+        FriendListItem newFriend = new FriendListItem(name, status, imageID);
+        friendListAdapter.addAdapterItem(newFriend);
+
+        // set the adapter to the ListView
+        listView.setAdapter(friendListAdapter);
+    }
+
+    // Check if there exist saved information of the friends list in the phone (not yet working)
+    public void checkSavedMessages(FriendListAdapter friendListAdapter) {
+        try {
+            // get saved file and create its Scanner
+            InputStream inputStream = this.openFileInput("messages.txt");
+            Scanner scan = new Scanner(inputStream);
+
+            // update the listView
+            String[] savedChat = scan.nextLine().split("\t");
+            while (scan.hasNext()) {
+                updateListView(friendListAdapter, savedChat[0],
+                        savedChat[1], R.drawable.friends_icon);            }
+            scan.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        //To Do check firebase data
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
     }
 }

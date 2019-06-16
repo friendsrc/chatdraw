@@ -33,6 +33,8 @@ public class SettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
+        super.onStart();
+
         /* Get Firebase auth instance
            Returns an instance of this class corresponding
            to the default FirebaseApp instance.
@@ -154,6 +156,13 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
 
+
+        // set the action bar title
+        getSupportActionBar().setTitle("Settings");
+
+        // add a back button to the action bar
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         // delete and signout
         signOut.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -223,5 +232,12 @@ public class SettingsActivity extends AppCompatActivity {
         if (authListener != null) {
             auth.removeAuthStateListener(authListener);
         }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        // if the back button is pressed, go back to previous activity
+        finish();
+        return true;
     }
 }

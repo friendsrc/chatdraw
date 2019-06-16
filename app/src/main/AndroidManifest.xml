@@ -18,7 +18,8 @@
         <activity android:name=".Contacts.FriendListActivity" />
         <activity android:name=".AccountActivity.ResetPasswordActivity" />
         <activity android:name=".AccountActivity.SignupActivity" />
-        <activity android:name=".MainActivity" />
+        <activity android:name=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
         <activity android:name=".AccountActivity.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
