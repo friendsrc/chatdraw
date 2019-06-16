@@ -8,6 +8,7 @@
     tools:context=".Chat.ChatActivity">
 
     <ListView
+        android:id="@+id/chat_listview"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
@@ -22,11 +23,13 @@
         android:paddingBottom="8dp">
 
         <EditText
+            android:id="@+id/chat_edittext"
             android:hint="@string/chat_hint"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="match_parent" />
         <ImageView
+            android:id="@+id/chat_send_imageview"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:src="@android:drawable/ic_menu_send"/>
