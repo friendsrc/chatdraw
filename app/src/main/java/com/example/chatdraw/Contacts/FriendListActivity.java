@@ -16,7 +16,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.example.chatdraw.MainActivity;
+import com.example.chatdraw.MainChat.MainActivity;
 import com.example.chatdraw.R;
 
 import java.io.FileNotFoundException;

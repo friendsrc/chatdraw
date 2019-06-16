@@ -13,13 +13,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".AccountActivity.SettingsActivity"></activity>
+        <activity android:name=".MainChat.NewMessageActivity"></activity>
+        <activity android:name=".AccountActivity.SettingsActivity" />
         <activity android:name=".Contacts.FindFriendActivity" />
         <activity android:name=".Contacts.FriendListActivity" />
         <activity android:name=".AccountActivity.ResetPasswordActivity" />
         <activity android:name=".AccountActivity.SignupActivity" />
-        <activity android:name=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".MainChat.MainActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".AccountActivity.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

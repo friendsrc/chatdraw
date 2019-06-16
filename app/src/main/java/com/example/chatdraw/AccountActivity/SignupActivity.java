@@ -1,6 +1,6 @@
 package com.example.chatdraw.AccountActivity;
 
-import com.example.chatdraw.MainActivity;
+import com.example.chatdraw.MainChat.MainActivity;
 import com.example.chatdraw.R;
 import android.content.Intent;
 import android.support.annotation.NonNull;

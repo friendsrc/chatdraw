@@ -10,7 +10,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity"
+    tools:context=".MainChat.MainActivity"
     tools:openDrawer="start">
 
     <LinearLayout
@@ -41,13 +41,13 @@
                 android:paddingRight="16dp" />
 
             <ImageView
-                android:id="@+id/add_friend_imageview"
+                android:id="@+id/new_chat_imageview"
                 android:layout_width="56dp"
                 android:layout_height="56dp"
                 android:layout_marginRight="40dp"
                 android:layout_marginBottom="40dp"
-                android:scaleType="centerInside"
-                android:src="@drawable/tag_friend_btn"
+                android:scaleType="fitXY"
+                android:src="@android:drawable/ic_input_add"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintRight_toRightOf="parent" />
 

@@ -11,9 +11,7 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.example.chatdraw.Contacts.FriendListActivity;
-import com.example.chatdraw.AccountActivity.SettingsActivity;
-import com.example.chatdraw.MainActivity;
+import com.example.chatdraw.MainChat.MainActivity;
 import com.example.chatdraw.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
