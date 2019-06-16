@@ -6,6 +6,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.example.chatdraw.Contacts.FriendListAdapter;
@@ -49,6 +51,15 @@ public class NewMessageActivity extends AppCompatActivity {
 
                 // destroy this activity
                 finish();
+            }
+        });
+
+        LinearLayout linearLayout = findViewById(R.id.new_group_chat_linearlayout);
+        linearLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(NewMessageActivity.this, NewGroupActivity.class);
+                startActivity(intent);
             }
         });
 
