@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        navigationView.setCheckedItem(R.id.nav_contacts);
+//        navigationView.setCheckedItem(R.id.nav_contacts);
 
         getSupportActionBar().setTitle("ChatDraw");
 

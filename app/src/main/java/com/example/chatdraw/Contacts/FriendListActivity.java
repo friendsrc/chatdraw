@@ -28,11 +28,6 @@ public class FriendListActivity extends AppCompatActivity {
     private FriendListAdapter mFriendListAdapter;
     private static final int FIND_FRIEND_REQUEST_CODE = 101;
 
-    // to set up the Navigation Drawer
-    private ListView mDrawerList;
-    private ArrayAdapter<String> mAdapter;
-    private ActionBarDrawerToggle mDrawerToggle;
-    private DrawerLayout mDrawerLayout;
 
 
     @Override
@@ -63,100 +58,14 @@ public class FriendListActivity extends AppCompatActivity {
 
         // set the Action Bar title
         getSupportActionBar().setTitle("Contacts");
-
-        // find the Navigation Drawer in this activity's layout file
-        mDrawerList = findViewById(R.id.navList);
-
-        // find the layout for Navigation Drawer
-        mDrawerLayout = findViewById(R.id.drawer_layout);
-
-        // adding items to the Drawer
-        addDrawerItems();
-        setupDrawer();
-
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
-
-
-    }
-
-    private void setupDrawer() {
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
-
-            // When drawer is opened, change Action Bar's title
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-                getSupportActionBar().setTitle("Navigation");
-                invalidateOptionsMenu(); // tell Android that this menu is no longer valid and needs to be redrawn
-            }
-
-            /** Called when a drawer has settled in a completely closed state. */
-            public void onDrawerClosed(View view) {
-                super.onDrawerClosed(view);
-                getSupportActionBar().setTitle("Contacts");
-                invalidateOptionsMenu();
-            }
-        };
-
-        // create the three lines logo on the top left of the screen
-        mDrawerToggle.setDrawerIndicatorEnabled(true);
-        mDrawerLayout.addDrawerListener(mDrawerToggle);
-    }
-
-    // set the contents of the Drawer
-    private void addDrawerItems() {
-        final String[] itemsArray = { "Contacts", "Calls", "Invite Friends", "Settings" };
-        mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, itemsArray);
-        mDrawerList.setAdapter(mAdapter);
-
-        mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (position == 0) {
-                    // if "Contacts" is chosen, close the Drawers
-                    mDrawerLayout.closeDrawers();
-                } else if (position == 2) {
-                    Intent intent  = new Intent(FriendListActivity.this, FindFriendActivity.class);
-                    startActivityForResult(intent, FIND_FRIEND_REQUEST_CODE);
-                } else if (position == 3) {
-                    // if "Settings" is chosen, go to MainActivity
-                    Intent intent = new Intent(FriendListActivity.this, MainActivity.class);
-                    startActivity(intent);
-                } else {
-                    Toast.makeText(FriendListActivity.this,
-                            "" + itemsArray[position] + " not yet configured", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-//        int id = item.getItemId();
-//
-//        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-
-        // Activate the navigation drawer toggle
-        if (mDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        mDrawerToggle.syncState(); // to make sure that the Drawer is in sync
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        mDrawerToggle.onConfigurationChanged(newConfig);
+    public boolean onSupportNavigateUp() {
+        // if the back button is pressed, go back to previous activity
+        finish();
+        return true;
     }
 
     @Override
