@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Testing the custom adapter
         for (int i = 1; i < 3; i++) {
             updateListView(friendListAdapter, "Person " + i,
-                    "Hi, I write this text.", R.drawable.friends_icon);
+                    "Hi, I write this text.", R.drawable.blank_account);
         }
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         } else if (requestCode == NEW_MESSAGE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             String name = data.getStringExtra("name");
-            updateListView(mFriendListAdapter, name, "No messages yet.", R.drawable.common_google_signin_btn_icon_dark);
+            updateListView(mFriendListAdapter, name, "No messages yet.", R.drawable.blank_account);
         }
     }
 
@@ -157,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             String[] savedChat = scan.nextLine().split("\t");
             while (scan.hasNext()) {
                 updateListView(friendListAdapter, savedChat[0],
-                        savedChat[1], R.drawable.friends_icon);            }
+                        savedChat[1], R.drawable.blank_account);            }
             scan.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();

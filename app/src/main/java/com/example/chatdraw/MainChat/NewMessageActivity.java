@@ -31,7 +31,7 @@ public class NewMessageActivity extends AppCompatActivity {
 
         // Testing the custom adapter
         for (int i = 1; i < 10; i++) {
-            updateListView(friendListAdapter, "Person " + i + " the second", "[status]" ,R.drawable.common_google_signin_btn_icon_light);
+            updateListView(friendListAdapter, "Person " + i + " the second", "[status]" ,R.drawable.blank_account);
         }
 
         // set onClickListener on the listView

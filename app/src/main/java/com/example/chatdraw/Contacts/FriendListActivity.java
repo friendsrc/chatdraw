@@ -53,7 +53,7 @@ public class FriendListActivity extends AppCompatActivity {
         // Testing the custom adapter
         for (int i = 1; i < 3; i++) {
             updateListView(friendListAdapter, "Person " + i,
-                    "[status]", R.drawable.friends_icon);
+                    "[status]", R.drawable.blank_account);
         }
 
         // set the Action Bar title
@@ -73,7 +73,7 @@ public class FriendListActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FIND_FRIEND_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             String name = data.getStringExtra("name");
-            updateListView(mFriendListAdapter, name, "[status]", R.drawable.common_google_signin_btn_icon_dark);
+            updateListView(mFriendListAdapter, name, "[status]", R.drawable.blank_account);
 //                try {
 //                    OutputStream outputStream = this.openFileOutput("messages.txt", MODE_APPEND);
 //                    PrintStream output = new PrintStream(outputStream);

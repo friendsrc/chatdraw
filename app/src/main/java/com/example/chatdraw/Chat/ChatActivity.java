@@ -36,7 +36,7 @@ public class ChatActivity extends AppCompatActivity {
         final ChatAdapter chatAdapter = new ChatAdapter(this);
         mChatAdapter = chatAdapter;
         updateListView(mChatAdapter, "John Doe",
-                "Try typing a message!", R.drawable.friends_icon);
+                "Try typing a message!", R.drawable.blank_account);
 
         final EditText editText = findViewById(R.id.chat_edittext);
         ImageView sendImageView = findViewById(R.id.chat_send_imageview);
@@ -44,7 +44,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String message = editText.getText().toString();
-                updateListView(chatAdapter, "thisUser", message, R.drawable.friends_icon);
+                updateListView(chatAdapter, "thisUser", message, R.drawable.blank_account);
                 editText.setText("");
             }
         });

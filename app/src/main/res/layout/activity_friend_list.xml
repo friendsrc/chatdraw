@@ -18,15 +18,14 @@
         android:paddingLeft="16dp"
         android:paddingRight="16dp" />
 
-    <!--TODO: change image src-->
     <ImageView
         android:id="@+id/add_friend_imageview"
         android:layout_width="56dp"
         android:layout_height="56dp"
         android:layout_marginRight="40dp"
         android:layout_marginBottom="40dp"
-        android:scaleType="centerInside"
-        android:src="@drawable/tag_friend_btn"
+        android:scaleType="fitXY"
+        android:src="@drawable/add_person"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
 

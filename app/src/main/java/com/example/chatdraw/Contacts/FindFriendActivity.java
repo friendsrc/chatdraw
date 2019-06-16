@@ -23,7 +23,7 @@ public class FindFriendActivity extends AppCompatActivity {
 
         // Testing the custom adapter
         for (int i = 1; i < 10; i++) {
-            updateListView(newFriendAdapter, "Person " + i + " the second", R.drawable.common_google_signin_btn_icon_dark_focused);
+            updateListView(newFriendAdapter, "Person " + i + " the second", R.drawable.blank_account);
         }
 
         // set onClickListener on the listView
