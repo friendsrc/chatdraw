@@ -17,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.chatdraw.AccountActivity.SettingsActivity;
@@ -26,6 +27,8 @@ import com.example.chatdraw.Contacts.FriendListActivity;
 import com.example.chatdraw.Contacts.FriendListAdapter;
 import com.example.chatdraw.Contacts.FriendListItem;
 import com.example.chatdraw.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -59,6 +62,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 //        navigationView.setCheckedItem(R.id.nav_contacts);
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (user != null) {
+            String userEmail = user.getEmail();
+            View hView = navigationView.getHeaderView(0);
+            TextView tv = (TextView) hView.findViewById(R.id.email_field);
+            tv.setText(userEmail);
+        }
 
         getSupportActionBar().setTitle("ChatDraw");
 
