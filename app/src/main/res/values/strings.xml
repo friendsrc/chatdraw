@@ -34,6 +34,13 @@
     <string name="new_group">New Group</string>
     <string name="add_friend">Add friend</string>
     <string name="group_name">Group name</string>
+    <string name="profile_name">Profile name:</string>
+    <string name="username">Username:</string>
+    <string name="finish">Finish</string>
+    <string name="later">Later</string>
+    <string name="invalid_password">Password too short</string>
+    <string name="invalid_email">Email Invalid</string>
+    <string name="congrats_text">You are one more step to go!</string>
     <string name="chat_hint">Start typing...</string>
 
     <!-- TODO: Remove or change this placeholder text -->

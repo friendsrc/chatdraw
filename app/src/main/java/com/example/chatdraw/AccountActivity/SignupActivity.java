@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -17,6 +18,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class SignupActivity extends AppCompatActivity {
     private EditText inputEmail, inputPassword;
@@ -64,12 +66,18 @@ public class SignupActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // deleting whitespace at both ends
-                String email = inputEmail.getText().toString().trim();
+                final String email = inputEmail.getText().toString().trim();
                 String password = inputPassword.getText().toString().trim();
 
                 // text utility to check whether the email is empty -> if (email.equals(""))
                 if (TextUtils.isEmpty(email)) {
                     Toast.makeText(getApplicationContext(), "Enter email address!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    inputEmail.setError(getString(R.string.invalid_email));
+                    inputEmail.requestFocus();
                     return;
                 }
 
@@ -80,7 +88,8 @@ public class SignupActivity extends AppCompatActivity {
                 }
 
                 if (password.length() < 6) {
-                    Toast.makeText(getApplicationContext(), "Password too short, enter minimum 6 characters!", Toast.LENGTH_SHORT).show();
+                    inputPassword.setError(getString(R.string.invalid_password));
+                    inputPassword.requestFocus();
                     return;
                 }
 
@@ -88,11 +97,12 @@ public class SignupActivity extends AppCompatActivity {
 
                 //create user to firebase
                 auth.createUserWithEmailAndPassword(email, password)
-                        .addOnCompleteListener(SignupActivity.this, new OnCompleteListener<AuthResult>() {
+                        .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 Toast.makeText(SignupActivity.this, "createUserWithEmail:onComplete:" + task.isSuccessful(), Toast.LENGTH_SHORT).show();
                                 progressBar.setVisibility(View.GONE);
+
                                 /* If sign in fails, display a message to the user. If sign in succeeds
                                    the auth state listener will be notified and logic to handle the
                                    signed in user can be handled in the listener.
@@ -101,14 +111,37 @@ public class SignupActivity extends AppCompatActivity {
                                     Toast.makeText(SignupActivity.this, "Authentication failed." + task.getException(),
                                             Toast.LENGTH_SHORT).show();
                                 } else {
-                                    // startActivity(new Intent(SignupActivity.this, FriendListActivity.class));
-                                    startActivity(new Intent(SignupActivity.this, MainActivity.class));
-                                    finish();
+                                    String name = "";
+                                    String username = "";
+                                    User user = new User(email, name, username);
+
+                                    FirebaseDatabase.getInstance().getReference("Users")
+                                            .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                            .setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful()) {
+                                                // startActivity(new Intent(SignupActivity.this, FriendListActivity.class));
+                                                startActivity(new Intent(SignupActivity.this, PersonalActivity.class));
+                                                finish();
+                                            } else {
+                                                Toast.makeText(SignupActivity.this, "error at signup activity", Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    });
                                 }
                             }
                         });
             }
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (auth.getCurrentUser() != null) {
+
+        }
     }
 
     @Override
