@@ -74,7 +74,7 @@ public class SignupActivity extends AppCompatActivity {
                     return;
                 }
 
-                if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                if (!Patterns.EMAIL_ADDRESS.matcher(email).matches() || email.length() < 8) {
                     inputEmail.setError(getString(R.string.invalid_email));
                     inputEmail.requestFocus();
                     return;

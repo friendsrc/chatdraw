@@ -45,27 +45,42 @@ public class PersonalActivity extends AppCompatActivity {
         finishButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
-                String profile = inputName.getText().toString().trim();
-                String username = inputUsername.getText().toString().trim();
+                String temp = inputName.getText().toString().trim();
 
-                if (username.length() < 3) {
+                if (temp.length() > 20) {
+                    inputName.setError(getString(R.string.long_name));
+                    inputName.requestFocus();
+                    return;
+                }
+
+                String profile = temp.substring(0, 1).toUpperCase() + temp.substring(1).toLowerCase();
+                String username = "@" + inputUsername.getText().toString().trim();
+
+                if (username.length() < 4 && username.length() != 1) {
                     inputUsername.setError(getString(R.string.short_username));
+                    inputUsername.requestFocus();
+                    return;
+                }
+
+                if (username.length() > 21) {
+                    inputUsername.setError(getString(R.string.long_username));
                     inputUsername.requestFocus();
                     return;
                 }
 
                 progressBar.setVisibility(View.VISIBLE);
                 FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                String userEmail = currentFirebaseUser.getEmail();
 
                 if (TextUtils.isEmpty(profile)) {
                     if (!TextUtils.isEmpty(username)) {
-                        updateUser(currentFirebaseUser.getUid(), null, username);
+                        updateUser(currentFirebaseUser.getUid(), userEmail, null, username);
                     }
                 } else {
                     if (!TextUtils.isEmpty(username)) {
-                        updateUser(currentFirebaseUser.getUid(), profile, username);
+                        updateUser(currentFirebaseUser.getUid(), userEmail, profile, username);
                     } else {
-                        updateUser(currentFirebaseUser.getUid(), profile, null);
+                        updateUser(currentFirebaseUser.getUid(), userEmail, profile, null);
                     }
                 }
 
@@ -74,10 +89,10 @@ public class PersonalActivity extends AppCompatActivity {
         });
     }
 
-    private boolean updateUser(String Uid, String name, String username) {
+    private boolean updateUser(String Uid, String email, String name, String username) {
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(Uid);
 
-        User usering = new User(name, username);
+        User usering = new User(email, name, username);
         databaseReference.setValue(usering);
 
         Toast.makeText(this, "Update Successfully", Toast.LENGTH_SHORT).show();

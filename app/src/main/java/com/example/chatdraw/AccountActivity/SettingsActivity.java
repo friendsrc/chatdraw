@@ -50,13 +50,13 @@ public class SettingsActivity extends AppCompatActivity {
         authListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user == null) {
-                    // user auth state is changed - user is null
-                    // launch login activity
-                    startActivity(new Intent(SettingsActivity.this, LoginActivity.class));
-                    finish();
-                }
+            FirebaseUser user = firebaseAuth.getCurrentUser();
+            if (user == null) {
+                // user auth state is changed - user is null
+                // launch login activity
+                startActivity(new Intent(SettingsActivity.this, LoginActivity.class));
+                finish();
+            }
             }
         };
 
@@ -82,10 +82,10 @@ public class SettingsActivity extends AppCompatActivity {
         btnChangePassword.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                password.setVisibility(View.VISIBLE);
-                newPassword.setVisibility(View.VISIBLE);
-                changePassword.setVisibility(View.VISIBLE);
-                btnChangePassword.setVisibility(View.GONE);
+            password.setVisibility(View.VISIBLE);
+            newPassword.setVisibility(View.VISIBLE);
+            changePassword.setVisibility(View.VISIBLE);
+            btnChangePassword.setVisibility(View.GONE);
             }
         });
 
@@ -93,40 +93,40 @@ public class SettingsActivity extends AppCompatActivity {
         changePassword.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String newpass = newPassword.getText().toString().trim();
-                String confirmpass = password.getText().toString().trim();
+            String newpass = newPassword.getText().toString().trim();
+            String confirmpass = password.getText().toString().trim();
 
-                progressBar.setVisibility(View.VISIBLE);
-                if (newpass.equals("")) {
-                    newPassword.setError("Enter password");
+            progressBar.setVisibility(View.VISIBLE);
+            if (newpass.equals("")) {
+                newPassword.setError("Enter password");
+                progressBar.setVisibility(View.GONE);
+            } else if (confirmpass.equals("")) {
+                password.setError("Re-enter password");
+                progressBar.setVisibility(View.GONE);
+            } else if (user != null) {
+                if (!newpass.equals(confirmpass)) {
+                    password.setError("Password not match");
                     progressBar.setVisibility(View.GONE);
-                } else if (confirmpass.equals("")) {
-                    password.setError("Re-enter password");
+                } else if (newPassword.getText().toString().trim().length() < 6) {
+                    newPassword.setError("Password too short, enter minimum 6 characters");
                     progressBar.setVisibility(View.GONE);
-                } else if (user != null) {
-                    if (!newpass.equals(confirmpass)) {
-                        password.setError("Password not match");
-                        progressBar.setVisibility(View.GONE);
-                    } else if (newPassword.getText().toString().trim().length() < 6) {
-                        newPassword.setError("Password too short, enter minimum 6 characters");
-                        progressBar.setVisibility(View.GONE);
-                    } else {
-                        user.updatePassword(newPassword.getText().toString().trim())
-                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        if (task.isSuccessful()) {
-                                            Toast.makeText(SettingsActivity.this, "Password is updated, sign in with new password!", Toast.LENGTH_SHORT).show();
-                                            signOut();
-                                            progressBar.setVisibility(View.GONE);
-                                        } else {
-                                            Toast.makeText(SettingsActivity.this, "Failed to update password!", Toast.LENGTH_SHORT).show();
-                                            progressBar.setVisibility(View.GONE);
-                                        }
-                                    }
-                                });
-                    }
+                } else {
+                    user.updatePassword(newPassword.getText().toString().trim())
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                Toast.makeText(SettingsActivity.this, "Password is updated, sign in with new password!", Toast.LENGTH_SHORT).show();
+                                signOut();
+                                progressBar.setVisibility(View.GONE);
+                            } else {
+                                Toast.makeText(SettingsActivity.this, "Failed to update password!", Toast.LENGTH_SHORT).show();
+                                progressBar.setVisibility(View.GONE);
+                            }
+                            }
+                        });
                 }
+            }
             }
         });
 
@@ -134,24 +134,24 @@ public class SettingsActivity extends AppCompatActivity {
         btnRemoveUser.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                progressBar.setVisibility(View.VISIBLE);
-                if (user != null) {
-                    user.delete()
-                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if (task.isSuccessful()) {
-                                        Toast.makeText(SettingsActivity.this, "Your profile is deleted:( Create a account now!", Toast.LENGTH_SHORT).show();
-                                        startActivity(new Intent(SettingsActivity.this, SignupActivity.class));
-                                        finish();
-                                        progressBar.setVisibility(View.GONE);
-                                    } else {
-                                        Toast.makeText(SettingsActivity.this, "Failed to delete your account!", Toast.LENGTH_SHORT).show();
-                                        progressBar.setVisibility(View.GONE);
-                                    }
-                                }
-                            });
-                }
+            progressBar.setVisibility(View.VISIBLE);
+            if (user != null) {
+                user.delete()
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(SettingsActivity.this, "Your profile is deleted:( Create a account now!", Toast.LENGTH_SHORT).show();
+                            startActivity(new Intent(SettingsActivity.this, SignupActivity.class));
+                            finish();
+                            progressBar.setVisibility(View.GONE);
+                        } else {
+                            Toast.makeText(SettingsActivity.this, "Failed to delete your account!", Toast.LENGTH_SHORT).show();
+                            progressBar.setVisibility(View.GONE);
+                        }
+                        }
+                    });
+            }
             }
         });
 

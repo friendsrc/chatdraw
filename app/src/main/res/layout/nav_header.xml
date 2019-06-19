@@ -9,22 +9,27 @@
     android:padding="16dp"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
-    <ImageView
+    <ImageButton
+        android:id="@+id/profile_edit_button"
         android:layout_width="75sp"
         android:layout_height="75sp"
-        android:src="@drawable/people" />
-    
+        android:background="#20B2AA"
+        android:src="@drawable/account_circle_black_75dp" />
+
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" 
-        android:paddingTop="8sp"
-        android:text="Example Name"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
-    
-    <TextView
-        android:id="@+id/email_field"
+        android:id="@+id/profile_field"
+        android:paddingTop="4sp"
+        android:textSize="18sp"
+        android:textStyle="bold"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="test@example.com" />
+        android:text="Example Name" />
+
+    <TextView
+        android:id="@+id/username_field"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Username"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
 </LinearLayout>

@@ -43,6 +43,8 @@
     <string name="congrats_text">You are one more step to go!</string>
     <string name="chat_hint">Start typing...</string>
     <string name="short_username">Username too short</string>
+    <string name="long_username">Username too long</string>
+    <string name="long_name">Name too long</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

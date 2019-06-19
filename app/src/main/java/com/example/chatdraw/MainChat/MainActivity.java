@@ -4,16 +4,22 @@ import android.app.Activity;
 import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.example.chatdraw.AccountActivity.ProfileEditActivity;
+import com.example.chatdraw.AccountActivity.User;
 import com.google.android.material.navigation.NavigationView;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.media.Image;
 import android.os.Bundle;
 import androidx.appcompat.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -28,6 +34,11 @@ import com.example.chatdraw.Contacts.FriendListItem;
 import com.example.chatdraw.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -62,13 +73,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView.setNavigationItemSelectedListener(this);
 //        navigationView.setCheckedItem(R.id.nav_contacts);
 
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
+        final View hView = navigationView.getHeaderView(0);
 
         if (user != null) {
-            String userEmail = user.getEmail();
-            View hView = navigationView.getHeaderView(0);
-            TextView tv = (TextView) hView.findViewById(R.id.email_field);
-            tv.setText(userEmail);
+            reference.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    String profilename = (String) dataSnapshot.child(user.getUid()).child("name").getValue();
+                    String username = (String) dataSnapshot.child(user.getUid()).child("username").getValue();
+
+                    TextView tv = (TextView) hView.findViewById(R.id.profile_field);
+                    tv.setText(profilename);
+
+                    TextView tv1 = (TextView) hView.findViewById(R.id.username_field);
+                    tv1.setText(username);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
         }
 
         getSupportActionBar().setTitle("ChatDraw");
@@ -82,8 +109,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         newChatImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, NewMessageActivity.class);
-                startActivityForResult(intent, NEW_MESSAGE_REQUEST_CODE);
+            Intent intent = new Intent(MainActivity.this, NewMessageActivity.class);
+            startActivityForResult(intent, NEW_MESSAGE_REQUEST_CODE);
             }
         });
 
@@ -97,6 +124,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 startActivity(intent);
             }
         });
+
+        ImageButton imgbutt = (ImageButton) hView.findViewById(R.id.profile_edit_button);
+        imgbutt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, ProfileEditActivity.class);
+                startActivity(intent);
+            }
+        });
+
     }
 
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
