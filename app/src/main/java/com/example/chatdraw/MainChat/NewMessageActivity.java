@@ -2,18 +2,15 @@ package com.example.chatdraw.MainChat;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.example.chatdraw.Contacts.FriendListAdapter;
 import com.example.chatdraw.Contacts.FriendListItem;
-import com.example.chatdraw.Contacts.NewFriendAdapter;
-import com.example.chatdraw.Contacts.NewFriendItem;
 import com.example.chatdraw.R;
 
 public class NewMessageActivity extends AppCompatActivity {

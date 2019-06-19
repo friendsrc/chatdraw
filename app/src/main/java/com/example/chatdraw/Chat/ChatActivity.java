@@ -1,15 +1,13 @@
 package com.example.chatdraw.Chat;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 
-import com.example.chatdraw.Contacts.FriendListAdapter;
-import com.example.chatdraw.Contacts.FriendListItem;
 import com.example.chatdraw.R;
 
 import java.text.DateFormat;
