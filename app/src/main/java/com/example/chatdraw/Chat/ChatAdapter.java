@@ -29,11 +29,39 @@ import java.util.List;
 public class ChatAdapter extends BaseAdapter {
     private List<ChatItem> items;
     private Context context;
+    private DatabaseReference databaseReference;
 
     public ChatAdapter(Context context) {
         super();
         this.context = context;
         this.items = new ArrayList<>();
+        databaseReference = FirebaseDatabase.getInstance().getReference();
+        databaseReference.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     public void addAdapterItem(ChatItem item) {
@@ -62,15 +90,13 @@ public class ChatAdapter extends BaseAdapter {
         ChatItem chatItem = items.get(position);
         FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
-
-        // TODO: check sender
-//        if (chatItem.getName().equals("thisUser")) {
-        if (chatItem.getName().equals(currentFirebaseUser.getDisplayName())) {
+        if (chatItem.getUserID().equals(currentFirebaseUser.getUid())) {
             view = inflater.inflate(R.layout.right_chat_bubble, parent, false);
         } else {
             view = inflater.inflate(R.layout.left_chat_bubble, parent, false);
             TextView senderName = view.findViewById(R.id.text_message_name);
-            senderName.setText(chatItem.getName());
+            //TODO get name from userID
+            senderName.setText(chatItem.getUserID());
         }
 
         TextView messageBody  = view.findViewById(R.id.text_message_body);

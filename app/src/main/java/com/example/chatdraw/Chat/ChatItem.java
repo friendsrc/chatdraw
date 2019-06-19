@@ -1,20 +1,20 @@
 package com.example.chatdraw.Chat;
 
 public class ChatItem {
-    private String name;
+    private String userID;
     private String messageBody;
     private int imageID;
     private String timeSent;
 
-    public ChatItem(String name, String messageBody, int imageID, String timeSent) {
-        this.name = name;
+    public ChatItem(String userID, String messageBody, int imageID, String timeSent) {
+        this.userID = userID;
         this.messageBody = messageBody;
         this.imageID = imageID;
         this.timeSent = timeSent;
     }
 
-    public String getName() {
-        return this.name;
+    public String getUserID() {
+        return this.userID;
     }
 
     public String getMessageBody() {
