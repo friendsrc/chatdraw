@@ -10,7 +10,7 @@ import com.google.firebase.messaging.RemoteMessage;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
-    public static String TAG = "MyFirebaseMessagingService";
+    public static String TAG = "FCMService";
 
     public MyFirebaseMessagingService() {
     }
@@ -71,4 +71,17 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private void sendRegistrationToServer(String token) {
         // TODO: sendRegistrationToServer(token)
     }
+
+    @Override
+    public void onMessageSent(String msgID) {
+        super.onMessageSent(msgID);
+        Log.e(TAG, "onMessageSent: " + msgID );
+    }
+
+    @Override
+    public void onSendError(String msgID, Exception exception) {
+        Log.e(TAG, "onSendError ", exception );
+        super.onSendError(msgID, exception);
+    }
+
 }

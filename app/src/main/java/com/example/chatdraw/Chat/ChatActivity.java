@@ -1,21 +1,39 @@
 package com.example.chatdraw.Chat;
 
 import android.content.Intent;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Toast;
 
+import com.example.chatdraw.MainChat.MainActivity;
 import com.example.chatdraw.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.RemoteMessage;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ChatActivity extends AppCompatActivity {
+
+    private static String TAG = "Chat";
 
     ChatAdapter mChatAdapter;
 
@@ -33,8 +51,9 @@ public class ChatActivity extends AppCompatActivity {
 
         final ChatAdapter chatAdapter = new ChatAdapter(this);
         mChatAdapter = chatAdapter;
-        updateListView(mChatAdapter, "John Doe",
+        final ChatItem chatItem = createChatItem(chatAdapter, "John Doe",
                 "Try typing a message!", R.drawable.blank_account);
+        updateListView(chatAdapter, chatItem);
 
         final EditText editText = findViewById(R.id.chat_edittext);
         ImageView sendImageView = findViewById(R.id.chat_send_imageview);
@@ -42,11 +61,64 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String message = editText.getText().toString();
-                updateListView(chatAdapter, "thisUser", message, R.drawable.blank_account);
+                FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                String name = currentFirebaseUser.getDisplayName();
+                ChatItem newChatItem = createChatItem(chatAdapter, name, message, R.drawable.blank_account);
+                updateListView(chatAdapter, newChatItem);
                 editText.setText("");
+                sendUpstreamMessage();
+                sendMessage(newChatItem);
             }
         });
 
+        // Retrieve the current Registration Token
+        getFirebaseToken();
+    }
+
+    private void sendMessage(ChatItem chatItem) {
+
+        Log.d("FlashChat", "I sent something");
+        // TODO: Grab the text the user typed in and push the message to Firebase
+        if (!chatItem.getMessageBody().equals("")) {
+//            InstantMessage chat = new InstantMessage(input, mDisplayName);
+//            mDatabaseReference.child("messages").push().setValue(chat);
+            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("messages");
+            databaseReference.push().setValue(chatItem);
+        }
+
+    }
+
+    public void sendUpstreamMessage() {
+        Log.d(TAG, "sending  upstream message");
+        FirebaseMessaging fm = FirebaseMessaging.getInstance();
+        Long SENDER_ID = 437200162274L;
+        AtomicInteger msgId = new AtomicInteger();
+        fm.send(new RemoteMessage.Builder(SENDER_ID + "@fcm.googleapis.com")
+                .setMessageId(Integer.toString(msgId.incrementAndGet()))
+                .addData("my_message", "Hello World")
+                .addData("my_action","SAY_HELLO")
+                .build());
+    }
+
+    public void getFirebaseToken() {
+        FirebaseInstanceId.getInstance().getInstanceId()
+                .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                        if (!task.isSuccessful()) {
+                            Log.w(TAG, "getInstanceId failed", task.getException());
+                            return;
+                        }
+
+                        // Get new Instance ID token
+                        String token = task.getResult().getToken();
+
+                        // Log and toast
+                        String msg = "Instance ID token = " + token;
+                        Log.d(TAG, msg);
+                        Toast.makeText(ChatActivity.this, msg, Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     @Override
@@ -56,19 +128,19 @@ public class ChatActivity extends AppCompatActivity {
         return true;
     }
 
-    public void updateListView(ChatAdapter chatAdapter, String name, String messageBody, int imageID) {
+    public void updateListView(ChatAdapter chatAdapter, ChatItem chatItem) {
         // find the friend list ListView
         ListView listView = findViewById(R.id.chat_listview);
+        chatAdapter.addAdapterItem(chatItem);
+        // set the adapter to the ListView
+        listView.setAdapter(chatAdapter);
+    }
 
+    public ChatItem createChatItem(ChatAdapter chatAdapter, String name, String messageBody, int imageID) {
         Calendar cal = Calendar.getInstance();
         Date date=cal.getTime();
         DateFormat dateFormat = new SimpleDateFormat("HH:mm");
         String formattedDate=dateFormat.format(date);
-
-        ChatItem newChatItem = new ChatItem(name, messageBody, imageID, formattedDate);
-        mChatAdapter.addAdapterItem(newChatItem);
-
-        // set the adapter to the ListView
-        listView.setAdapter(mChatAdapter);
+        return new ChatItem(name, messageBody, imageID, formattedDate);
     }
 }

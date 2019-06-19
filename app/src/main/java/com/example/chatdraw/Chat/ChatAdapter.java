@@ -1,6 +1,8 @@
 package com.example.chatdraw.Chat;
 
 import android.content.Context;
+import android.provider.ContactsContract;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,8 +10,18 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.example.chatdraw.Contacts.FriendListItem;
 import com.example.chatdraw.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,11 +30,10 @@ public class ChatAdapter extends BaseAdapter {
     private List<ChatItem> items;
     private Context context;
 
-
     public ChatAdapter(Context context) {
         super();
         this.context = context;
-        items = new ArrayList<>();
+        this.items = new ArrayList<>();
     }
 
     public void addAdapterItem(ChatItem item) {
@@ -49,8 +60,12 @@ public class ChatAdapter extends BaseAdapter {
         View view;
 
         ChatItem chatItem = items.get(position);
+        FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        if (chatItem.getName().equals("thisUser")) {
+
+        // TODO: check sender
+//        if (chatItem.getName().equals("thisUser")) {
+        if (chatItem.getName().equals(currentFirebaseUser.getDisplayName())) {
             view = inflater.inflate(R.layout.right_chat_bubble, parent, false);
         } else {
             view = inflater.inflate(R.layout.left_chat_bubble, parent, false);
