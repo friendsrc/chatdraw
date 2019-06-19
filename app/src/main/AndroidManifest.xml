@@ -13,7 +13,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".AccountActivity.PersonalActivity"></activity>
+
+        <service
+            android:name=".MyFirebaseMessagingService"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <activity android:name=".AccountActivity.PersonalActivity" />
         <activity android:name=".Chat.ChatActivity" />
         <activity android:name=".MainChat.NewGroupActivity" />
         <activity android:name=".MainChat.NewMessageActivity" />
