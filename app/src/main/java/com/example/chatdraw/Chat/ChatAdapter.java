@@ -64,13 +64,13 @@ public class ChatAdapter extends BaseAdapter {
 
 
         // TODO: check sender
-//        if (chatItem.getName().equals("thisUser")) {
-        if (chatItem.getName().equals(currentFirebaseUser.getDisplayName())) {
+        if (chatItem.getUserID().equals(currentFirebaseUser.getUid())) {
             view = inflater.inflate(R.layout.right_chat_bubble, parent, false);
         } else {
             view = inflater.inflate(R.layout.left_chat_bubble, parent, false);
             TextView senderName = view.findViewById(R.id.text_message_name);
-            senderName.setText(chatItem.getName());
+            //TODO get name from userID
+            senderName.setText(chatItem.getUserID());
         }
 
         TextView messageBody  = view.findViewById(R.id.text_message_body);

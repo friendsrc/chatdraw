@@ -35,8 +35,6 @@ public class ChatActivity extends AppCompatActivity {
 
     private static String TAG = "Chat";
 
-    ChatAdapter mChatAdapter;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,12 +46,13 @@ public class ChatActivity extends AppCompatActivity {
         getSupportActionBar().setTitle(intent.getStringExtra("name"));
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-
+        //set adapter to listview
         final ChatAdapter chatAdapter = new ChatAdapter(this);
-        mChatAdapter = chatAdapter;
-        final ChatItem chatItem = createChatItem(chatAdapter, "John Doe",
+        ListView listView = findViewById(R.id.chat_listview);
+        listView.setAdapter(chatAdapter);
+
+        final ChatItem chatItem = updateListView(chatAdapter, "John Doe",
                 "Try typing a message!", R.drawable.blank_account);
-        updateListView(chatAdapter, chatItem);
 
         final EditText editText = findViewById(R.id.chat_edittext);
         ImageView sendImageView = findViewById(R.id.chat_send_imageview);
@@ -62,9 +61,8 @@ public class ChatActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String message = editText.getText().toString();
                 FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-                String name = currentFirebaseUser.getDisplayName();
-                ChatItem newChatItem = createChatItem(chatAdapter, name, message, R.drawable.blank_account);
-                updateListView(chatAdapter, newChatItem);
+                String name = currentFirebaseUser.getUid();
+                ChatItem newChatItem = updateListView(chatAdapter, name, message, R.drawable.blank_account);
                 editText.setText("");
                 sendUpstreamMessage();
                 sendMessage(newChatItem);
@@ -76,13 +74,9 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void sendMessage(ChatItem chatItem) {
-
-        Log.d("FlashChat", "I sent something");
-        // TODO: Grab the text the user typed in and push the message to Firebase
+        Log.d(TAG, "sending Message");
         if (!chatItem.getMessageBody().equals("")) {
-//            InstantMessage chat = new InstantMessage(input, mDisplayName);
-//            mDatabaseReference.child("messages").push().setValue(chat);
-            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("messages");
+            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Messages");
             databaseReference.push().setValue(chatItem);
         }
 
@@ -128,19 +122,14 @@ public class ChatActivity extends AppCompatActivity {
         return true;
     }
 
-    public void updateListView(ChatAdapter chatAdapter, ChatItem chatItem) {
-        // find the friend list ListView
-        ListView listView = findViewById(R.id.chat_listview);
-        chatAdapter.addAdapterItem(chatItem);
-        // set the adapter to the ListView
-        listView.setAdapter(chatAdapter);
-    }
-
-    public ChatItem createChatItem(ChatAdapter chatAdapter, String name, String messageBody, int imageID) {
+    public ChatItem updateListView(ChatAdapter chatAdapter, String name, String messageBody, int imageID) {
         Calendar cal = Calendar.getInstance();
         Date date=cal.getTime();
         DateFormat dateFormat = new SimpleDateFormat("HH:mm");
         String formattedDate=dateFormat.format(date);
-        return new ChatItem(name, messageBody, imageID, formattedDate);
+        ChatItem chatItem = new ChatItem(name, messageBody, imageID, formattedDate);
+        chatAdapter.addAdapterItem(chatItem);
+        chatAdapter.notifyDataSetChanged();
+        return chatItem;
     }
 }
