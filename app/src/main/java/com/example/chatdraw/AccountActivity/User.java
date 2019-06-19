@@ -7,6 +7,11 @@ public class User {
 
     }
 
+    public User(String name, String username) {
+        this.name = name;
+        this.username = username;
+    }
+
     public User(String email, String name, String username) {
         this.email = email;
         this.name = name;
