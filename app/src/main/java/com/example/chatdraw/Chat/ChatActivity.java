@@ -123,11 +123,16 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     public ChatItem updateListView(ChatAdapter chatAdapter, String name, String messageBody, int imageID) {
+        // get time in hour:minutes
         Calendar cal = Calendar.getInstance();
         Date date=cal.getTime();
         DateFormat dateFormat = new SimpleDateFormat("HH:mm");
-        String formattedDate=dateFormat.format(date);
+        String formattedDate = dateFormat.format(date);
+
+        // create a new ChatItem
         ChatItem chatItem = new ChatItem(name, messageBody, imageID, formattedDate);
+
+        // add the new ChatItem to the ChatAdapter
         chatAdapter.addAdapterItem(chatItem);
         chatAdapter.notifyDataSetChanged();
         return chatItem;

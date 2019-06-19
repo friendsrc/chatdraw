@@ -29,11 +29,39 @@ import java.util.List;
 public class ChatAdapter extends BaseAdapter {
     private List<ChatItem> items;
     private Context context;
+    private DatabaseReference databaseReference;
 
     public ChatAdapter(Context context) {
         super();
         this.context = context;
         this.items = new ArrayList<>();
+        databaseReference = FirebaseDatabase.getInstance().getReference();
+        databaseReference.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     public void addAdapterItem(ChatItem item) {
@@ -62,8 +90,6 @@ public class ChatAdapter extends BaseAdapter {
         ChatItem chatItem = items.get(position);
         FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
-
-        // TODO: check sender
         if (chatItem.getUserID().equals(currentFirebaseUser.getUid())) {
             view = inflater.inflate(R.layout.right_chat_bubble, parent, false);
         } else {
