@@ -44,11 +44,11 @@ public class FriendListActivity extends AppCompatActivity {
         });
 
 
-        // Testing the custom adapter
-        for (int i = 1; i < 3; i++) {
-            updateListView(friendListAdapter, "Person " + i,
-                    "[status]", R.drawable.blank_account);
-        }
+//        // Testing the custom adapter
+//        for (int i = 1; i < 3; i++) {
+//            updateListView(friendListAdapter, "Person " + i,
+//                    "[status]", R.drawable.blank_account);
+//        }
 
         // set the Action Bar title
         getSupportActionBar().setTitle("Contacts");

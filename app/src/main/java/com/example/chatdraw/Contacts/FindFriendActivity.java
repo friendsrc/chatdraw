@@ -36,10 +36,6 @@ public class FindFriendActivity extends AppCompatActivity {
         // Create a custom adapter for the friend list ListView
         final NewFriendAdapter newFriendAdapter = new NewFriendAdapter(this);
 
-        // Testing the custom adapter
-        for (int i = 1; i < 10; i++) {
-            updateListView(newFriendAdapter, "Person " + i + " the second", R.drawable.blank_account);
-        }
 
         // set onClickListener on the listView
         // if clicked, go back to FriendListActivity
@@ -83,38 +79,46 @@ public class FindFriendActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 String str = s.toString();
-                findUserInDatabase(str);
+                if (!str.trim().equals("")) {
+                    findUserInDatabase(newFriendAdapter, str);  // find user and update listview
+                }
             }
         });
     }
 
-    // find the user whose username is equal to the input text
-    // then find the users whose username contains the text
-    public void findUserInDatabase(final String text) {
-        DatabaseReference usersDatabase = FirebaseDatabase.getInstance().getReference().child("Users");
-//        Query query = usersDatabase.orderByChild("username").equalTo(text).limitToFirst(1);
-//        Log.d("Fine", query.getRef().child("username").toString());
-        usersDatabase.addValueEventListener(new ValueEventListener() {
+    public void findUserInDatabase(final NewFriendAdapter newFriendAdapter, final String text) {
+        // create a listener to get the data from firebase
+        // the listener checks if the User's username contains the inputted text
+        ValueEventListener valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                NewFriendAdapter newFriendAdapter = new NewFriendAdapter(FindFriendActivity.this);
-                ListView listView = findViewById(R.id.find_friend_listview);
+                int count = 0;
                 for (DataSnapshot ds: dataSnapshot.getChildren()) {
+                    if (count >= 20) break;
                     User user = ds.getValue(User.class);
                     String username = user.getUsername();
                     if (username.contains(text)) {
-                        NewFriendItem newFriendItem = new NewFriendItem(user.getName(), R.drawable.blank_account);
-                        newFriendAdapter.addAdapterItem(newFriendItem);
+                        count++;
+                        updateListView(newFriendAdapter, user.getName(),  R.drawable.blank_account);
                     }
                 }
-                listView.setAdapter(newFriendAdapter);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
             }
-        });
+        };
+
+        // clean the listview previous data
+        newFriendAdapter.clearData();
+
+        // get the User whose username is equal to the inputted text
+        DatabaseReference usersDatabase = FirebaseDatabase.getInstance().getReference().child("Users");
+        usersDatabase.orderByChild("username").equalTo("text").addValueEventListener(valueEventListener);
+
+        // get Users whose username contains the inputted text
+        usersDatabase.orderByChild("username").addValueEventListener(valueEventListener);
     }
 
     @Override

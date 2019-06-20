@@ -56,4 +56,9 @@ public class NewFriendAdapter extends BaseAdapter {
         imageView.setImageResource(items.get(position).getImageID());
         return view;
     }
+
+    public void clearData() {
+        items = new ArrayList<>();
+        notifyDataSetChanged();
+    }
 }
