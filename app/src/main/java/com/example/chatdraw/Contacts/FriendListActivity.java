@@ -6,23 +6,38 @@ import android.content.Intent;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ListView;
 
+import com.example.chatdraw.AccountActivity.User;
 import com.example.chatdraw.R;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class FriendListActivity extends AppCompatActivity {
 
-    private FriendListAdapter mFriendListAdapter;
     private static final int FIND_FRIEND_REQUEST_CODE = 101;
+    public static final String FRIEND_LIST_KEY = "contacts_list";
 
-
+    private FriendListAdapter mFriendListAdapter;
+    private List<FriendListItem> mFriendList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,42 +58,50 @@ public class FriendListActivity extends AppCompatActivity {
             }
         });
 
-
-//        // Testing the custom adapter
-//        for (int i = 1; i < 3; i++) {
-//            updateListView(friendListAdapter, "Person " + i,
-//                    "[status]", R.drawable.blank_account);
-//        }
-
         // set the Action Bar title
         getSupportActionBar().setTitle("Contacts");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        // instantiating the friendList
+        mFriendList = new ArrayList<>();
+
+        // checked SharedPreferences for existing friendlist
+        checkSavedMessages(mFriendListAdapter);
     }
 
+
     @Override
+    // if the back button is pressed, save friendlist before destroying the activity
     public boolean onSupportNavigateUp() {
-        // if the back button is pressed, go back to previous activity
+        // get SharedPreferences
+        SharedPreferences.Editor editor = getPreferences(MODE_PRIVATE).edit();
+
+        // parse the FriendList into JSON string
+        String friendlistJSONString = new Gson().toJson(mFriendList);
+
+        // save the JSON string into SharedPreferences
+        editor.putString(FRIEND_LIST_KEY, friendlistJSONString);
+        editor.commit();
+
+        // destroy the activity
         finish();
+
         return true;
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FIND_FRIEND_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             String name = data.getStringExtra("name");
-            updateListView(mFriendListAdapter, name, "[status]", R.drawable.blank_account);
-//                try {
-//                    OutputStream outputStream = this.openFileOutput("messages.txt", MODE_APPEND);
-//                    PrintStream output = new PrintStream(outputStream);
-//                    output.println(name + "\t" + "No message sent yet");
-//                } catch (FileNotFoundException e) {
-//                    e.printStackTrace();
-//                }
+            FriendListItem friendListItem = updateListView(mFriendListAdapter,
+                    name, "[status]", R.drawable.blank_account);
+            mFriendList.add(friendListItem);
         }
     }
 
-    public void updateListView(FriendListAdapter friendListAdapter, String name, String status, int imageID) {
+    public FriendListItem updateListView(FriendListAdapter friendListAdapter, String name, String status, int imageID) {
         // find the friend list ListView
         ListView listView = findViewById(R.id.friend_list_listview);
 
@@ -88,24 +111,40 @@ public class FriendListActivity extends AppCompatActivity {
 
         // set the adapter to the ListView
         listView.setAdapter(friendListAdapter);
+        return newFriend;
     }
 
-    // Check if there exist saved information of the friends list in the phone (not yet working)
     public void checkSavedMessages(FriendListAdapter friendListAdapter) {
-        try {
-            // get saved file and create its Scanner
-            InputStream inputStream = this.openFileInput("messages.txt");
-            Scanner scan = new Scanner(inputStream);
+        // get the Contacts listview and set the adapter
+        ListView listView = findViewById(R.id.friend_list_listview);
+        listView.setAdapter(friendListAdapter);
 
-            // update the listView
-            String[] savedChat = scan.nextLine().split("\t");
-            while (scan.hasNext()) {
-                updateListView(friendListAdapter, savedChat[0],
-                        savedChat[1], R.drawable.friends_icon);            }
-            scan.close();
-        } catch (FileNotFoundException e) {
+        // get friendList JSON String from SharedPreferences
+        String friendlistJSONString
+                = getPreferences(MODE_PRIVATE).getString(FRIEND_LIST_KEY, null);
+
+        // if nothing is saved yet, return;
+        if (friendlistJSONString == null) return;
+
+        try {
+            // Parse the JsonArray into ArrayList and update the Contacts listview
+            ArrayList<FriendListItem> arrayList = new ArrayList<>();
+            JSONArray jsonArray = new JSONArray(friendlistJSONString);
+            if (jsonArray != null) {
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    String status = jsonObject.getString("chatPreview");
+                    int imageID = jsonObject.getInt("imageID");
+                    String name = jsonObject.getString("name");
+                    FriendListItem friendListItem = new FriendListItem(name, status, imageID);
+                    friendListAdapter.addAdapterItem(friendListItem);
+                    friendListAdapter.notifyDataSetChanged();
+                    arrayList.add(friendListItem);
+                }
+                mFriendList = arrayList;
+            }
+        } catch (JSONException e) {
             e.printStackTrace();
         }
-        //To Do check firebase data
     }
 }
