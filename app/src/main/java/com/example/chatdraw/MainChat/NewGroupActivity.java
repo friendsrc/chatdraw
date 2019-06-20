@@ -17,8 +17,8 @@ public class NewGroupActivity extends AppCompatActivity {
     }
 
     @Override
+    // if the back button is pressed, destroy the activity
     public boolean onSupportNavigateUp() {
-        // if the back button is pressed, go back to previous activity
         finish();
         return true;
     }

@@ -15,8 +15,6 @@ import com.example.chatdraw.R;
 
 public class NewMessageActivity extends AppCompatActivity {
 
-    private FriendListAdapter mFriendListAdapter;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,7 +22,6 @@ public class NewMessageActivity extends AppCompatActivity {
 
         // Reuse the FriendListAdapter from FriendListActivity
         final FriendListAdapter friendListAdapter = new FriendListAdapter(this);
-        mFriendListAdapter = friendListAdapter;
 
         // Testing the custom adapter
         for (int i = 1; i < 10; i++) {

@@ -146,8 +146,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 startActivity(intent);
                 break;
             case R.id.nav_invites:
-                Intent intent_invite  = new Intent(this, FindFriendActivity.class);
-                startActivityForResult(intent_invite, FIND_FRIEND_REQUEST_CODE);
+                Toast.makeText(this,"Not yet configured", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.nav_settings:
                 Intent intent_settings = new Intent(this, SettingsActivity.class);
@@ -165,15 +164,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FIND_FRIEND_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-//            String name = data.getStringExtra("name");
-//            updateListView(mFriendListAdapter, name, "[status]", R.drawable.common_google_signin_btn_icon_dark);
-//                try {
-//                    OutputStream outputStream = this.openFileOutput("messages.txt", MODE_APPEND);
-//                    PrintStream output = new PrintStream(outputStream);
-//                    output.println(name + "\t" + "No message sent yet");
-//                } catch (FileNotFoundException e) {
-//                    e.printStackTrace();
-//                }
+
         } else if (requestCode == FIND_SETTINGS_REQUEST_CODE) {
 
         } else if (requestCode == NEW_MESSAGE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
@@ -210,7 +201,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        //To Do check firebase data
     }
 
     @Override
