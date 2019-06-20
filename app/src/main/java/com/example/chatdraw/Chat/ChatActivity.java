@@ -51,35 +51,44 @@ public class ChatActivity extends AppCompatActivity {
         ListView listView = findViewById(R.id.chat_listview);
         listView.setAdapter(chatAdapter);
 
-        final ChatItem chatItem = updateListView(chatAdapter, "John Doe",
+        // testing the listview
+        updateListView(chatAdapter, "John Doe",
                 "Try typing a message!", R.drawable.blank_account);
 
-        final EditText editText = findViewById(R.id.chat_edittext);
+        //  set onClickListener on the 'Send Message' button
         ImageView sendImageView = findViewById(R.id.chat_send_imageview);
         sendImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // find the EditText for message input
+                EditText editText = findViewById(R.id.chat_edittext);
+
+                // get  the inputted  message
                 String message = editText.getText().toString();
+
+                // get the current user's Uid
                 FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
                 String name = currentFirebaseUser.getUid();
+
+                // create a new ChatItem
                 ChatItem newChatItem = updateListView(chatAdapter, name, message, R.drawable.blank_account);
-                editText.setText("");
-                sendUpstreamMessage();
-                sendMessage(newChatItem);
+
+                sendMessage(newChatItem); // send the ChatItem to Firebase
+                editText.setText(""); // erase the content of the EditText
             }
         });
 
         // Retrieve the current Registration Token
-        getFirebaseToken();
+//        getFirebaseToken();
     }
 
+    // send the ChatItem to Firebase
     private void sendMessage(ChatItem chatItem) {
         Log.d(TAG, "sending Message");
         if (!chatItem.getMessageBody().equals("")) {
             DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Messages");
             databaseReference.push().setValue(chatItem);
         }
-
     }
 
     public void sendUpstreamMessage() {
@@ -94,30 +103,30 @@ public class ChatActivity extends AppCompatActivity {
                 .build());
     }
 
-    public void getFirebaseToken() {
-        FirebaseInstanceId.getInstance().getInstanceId()
-                .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<InstanceIdResult> task) {
-                        if (!task.isSuccessful()) {
-                            Log.w(TAG, "getInstanceId failed", task.getException());
-                            return;
-                        }
-
-                        // Get new Instance ID token
-                        String token = task.getResult().getToken();
-
-                        // Log and toast
-                        String msg = "Instance ID token = " + token;
-                        Log.d(TAG, msg);
-                        Toast.makeText(ChatActivity.this, msg, Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
+//    public void getFirebaseToken() {
+//        FirebaseInstanceId.getInstance().getInstanceId()
+//                .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<InstanceIdResult> task) {
+//                        if (!task.isSuccessful()) {
+//                            Log.w(TAG, "getInstanceId failed", task.getException());
+//                            return;
+//                        }
+//
+//                        // Get new Instance ID token
+//                        String token = task.getResult().getToken();
+//
+//                        // Log and toast
+//                        String msg = "Instance ID token = " + token;
+//                        Log.d(TAG, msg);
+//                        Toast.makeText(ChatActivity.this, msg, Toast.LENGTH_SHORT).show();
+//                    }
+//                });
+//    }
 
     @Override
     public boolean onSupportNavigateUp() {
-        // if the back button is pressed, go back to previous activity
+        // if the back button is pressed, destroy this activity
         finish();
         return true;
     }

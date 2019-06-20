@@ -29,39 +29,11 @@ import java.util.List;
 public class ChatAdapter extends BaseAdapter {
     private List<ChatItem> items;
     private Context context;
-    private DatabaseReference databaseReference;
 
     public ChatAdapter(Context context) {
         super();
         this.context = context;
         this.items = new ArrayList<>();
-        databaseReference = FirebaseDatabase.getInstance().getReference();
-        databaseReference.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
     }
 
     public void addAdapterItem(ChatItem item) {
@@ -87,9 +59,14 @@ public class ChatAdapter extends BaseAdapter {
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view;
 
+        // get the ChatItem at the specified position
         ChatItem chatItem = items.get(position);
+
+        // get the current user
         FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
+        // if the message is send by the current user, create a right chat bubble
+        // else, create a left chat bubble
         if (chatItem.getUserID().equals(currentFirebaseUser.getUid())) {
             view = inflater.inflate(R.layout.right_chat_bubble, parent, false);
         } else {
@@ -99,8 +76,11 @@ public class ChatAdapter extends BaseAdapter {
             senderName.setText(chatItem.getUserID());
         }
 
+        // set the text of the chat bubble
         TextView messageBody  = view.findViewById(R.id.text_message_body);
         messageBody.setText(chatItem.getMessageBody());
+
+        // set time 'time sent'
         TextView time = view.findViewById(R.id.text_message_time);
         time.setText(chatItem.getTimeSent());
 
