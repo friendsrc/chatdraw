@@ -8,7 +8,7 @@
     tools:context=".Contacts.FindFriendActivity">
 
     <EditText
-        android:id="@+id/find_friend_textview"
+        android:id="@+id/find_friend_edittext"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Search friend"
@@ -18,7 +18,7 @@
 
     <ListView
         android:id="@+id/find_friend_listview"
-        app:layout_constraintTop_toBottomOf="@id/find_friend_textview"
+        app:layout_constraintTop_toBottomOf="@id/find_friend_edittext"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"

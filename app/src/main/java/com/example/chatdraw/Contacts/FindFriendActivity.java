@@ -2,13 +2,28 @@ package com.example.chatdraw.Contacts;
 
 import android.app.Activity;
 import android.content.Intent;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
 
+import com.example.chatdraw.AccountActivity.User;
 import com.example.chatdraw.R;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 public class FindFriendActivity extends AppCompatActivity {
 
@@ -51,6 +66,55 @@ public class FindFriendActivity extends AppCompatActivity {
 
         // add a back button to the action bar
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        // add listener on the edit text
+        final EditText editText = findViewById(R.id.find_friend_edittext);
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String str = s.toString();
+                findUserInDatabase(str);
+            }
+        });
+    }
+
+    // find the user whose username is equal to the input text
+    // then find the users whose username contains the text
+    public void findUserInDatabase(final String text) {
+        DatabaseReference usersDatabase = FirebaseDatabase.getInstance().getReference().child("Users");
+//        Query query = usersDatabase.orderByChild("username").equalTo(text).limitToFirst(1);
+//        Log.d("Fine", query.getRef().child("username").toString());
+        usersDatabase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                NewFriendAdapter newFriendAdapter = new NewFriendAdapter(FindFriendActivity.this);
+                ListView listView = findViewById(R.id.find_friend_listview);
+                for (DataSnapshot ds: dataSnapshot.getChildren()) {
+                    User user = ds.getValue(User.class);
+                    String username = user.getUsername();
+                    if (username.contains(text)) {
+                        NewFriendItem newFriendItem = new NewFriendItem(user.getName(), R.drawable.blank_account);
+                        newFriendAdapter.addAdapterItem(newFriendItem);
+                    }
+                }
+                listView.setAdapter(newFriendAdapter);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override

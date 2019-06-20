@@ -48,7 +48,7 @@ public class NewFriendAdapter extends BaseAdapter {
         View view = inflater.inflate(R.layout.find_friend_item, parent, false);
 
         // set the name
-        TextView nameTextView = view.findViewById(R.id.find_friend_textview);
+        TextView nameTextView = view.findViewById(R.id.find_friend_edittext);
         nameTextView.setText(items.get(position).getName());
 
         // set the profile picture
