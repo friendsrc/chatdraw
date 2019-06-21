@@ -3,6 +3,7 @@ package com.example.chatdraw.Contacts;
 import android.app.Activity;
 import android.content.Intent;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,7 +16,15 @@ import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.example.chatdraw.AccountActivity.User;
+import com.example.chatdraw.Chat.ChatItem;
 import com.example.chatdraw.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -33,8 +42,11 @@ import java.util.Scanner;
 
 public class FriendListActivity extends AppCompatActivity {
 
+    private static String TAG = "FriendListActivity";
+
     private static final int FIND_FRIEND_REQUEST_CODE = 101;
     public static final String FRIEND_LIST_KEY = "contacts_list";
+    public static final String USER_ID_KEY = "user_id";
 
     private FriendListAdapter mFriendListAdapter;
     private List<FriendListItem> mFriendList;
@@ -79,8 +91,14 @@ public class FriendListActivity extends AppCompatActivity {
         // parse the FriendList into JSON string
         String friendlistJSONString = new Gson().toJson(mFriendList);
 
-        // save the JSON string into SharedPreferences
+        // get user ID
+        FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        String id = currentFirebaseUser.getUid();
+
+
+        // save the JSON string and user ID into SharedPreferences
         editor.putString(FRIEND_LIST_KEY, friendlistJSONString);
+        editor.putString(USER_ID_KEY, id);
         editor.commit();
 
         // destroy the activity
@@ -95,9 +113,13 @@ public class FriendListActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FIND_FRIEND_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             String name = data.getStringExtra("name");
+            String username = data.getStringExtra("username");
+            // TODO get image from intent and status from firestore
             FriendListItem friendListItem = updateListView(mFriendListAdapter,
                     name, "[status]", R.drawable.blank_account);
             mFriendList.add(friendListItem);
+            // TODO add contacts' userID to firestore
+
         }
     }
 
@@ -114,37 +136,86 @@ public class FriendListActivity extends AppCompatActivity {
         return newFriend;
     }
 
-    public void checkSavedMessages(FriendListAdapter friendListAdapter) {
+    public void checkSavedMessages(final FriendListAdapter friendListAdapter) {
         // get the Contacts listview and set the adapter
         ListView listView = findViewById(R.id.friend_list_listview);
         listView.setAdapter(friendListAdapter);
 
-        // get friendList JSON String from SharedPreferences
-        String friendlistJSONString
-                = getPreferences(MODE_PRIVATE).getString(FRIEND_LIST_KEY, null);
+        // check if the contact in the SharedPreferences belong to the currently signed-in user
+        String savedID = getPreferences(MODE_PRIVATE).getString(USER_ID_KEY, null);
+        String currentUserID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        final ArrayList<FriendListItem> arrayList = new ArrayList<>();
 
-        // if nothing is saved yet, return;
-        if (friendlistJSONString == null) return;
+        if ( !(savedID == null) && savedID.equals(currentUserID) ) {
+            // if it does belong to this user, use the SharedPreferences contact list data to update
+            // the listview
 
-        try {
-            // Parse the JsonArray into ArrayList and update the Contacts listview
-            ArrayList<FriendListItem> arrayList = new ArrayList<>();
-            JSONArray jsonArray = new JSONArray(friendlistJSONString);
-            if (jsonArray != null) {
-                for (int i = 0; i < jsonArray.length(); i++) {
-                    JSONObject jsonObject = jsonArray.getJSONObject(i);
-                    String status = jsonObject.getString("chatPreview");
-                    int imageID = jsonObject.getInt("imageID");
-                    String name = jsonObject.getString("name");
-                    FriendListItem friendListItem = new FriendListItem(name, status, imageID);
-                    friendListAdapter.addAdapterItem(friendListItem);
-                    friendListAdapter.notifyDataSetChanged();
-                    arrayList.add(friendListItem);
+            // get friendList JSON String from SharedPreferences
+            String friendlistJSONString
+                    = getPreferences(MODE_PRIVATE).getString(FRIEND_LIST_KEY, null);
+
+            // if nothing is saved yet, return;
+            if (friendlistJSONString == null) return;
+
+            try {
+                // Parse the JsonArray into ArrayList and update the Contacts listview
+                JSONArray jsonArray = new JSONArray(friendlistJSONString);
+                if (jsonArray != null) {
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                        String status = jsonObject.getString("chatPreview");
+                        int imageID = jsonObject.getInt("imageID");
+                        String name = jsonObject.getString("name");
+                        FriendListItem friendListItem = new FriendListItem(name, status, imageID);
+                        friendListAdapter.addAdapterItem(friendListItem);
+                        friendListAdapter.notifyDataSetChanged();
+                        arrayList.add(friendListItem);
+                    }
                 }
-                mFriendList = arrayList;
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
+        } else if (false){
+            // TODO: get user's contacts ID list from Firestore
+            final FirebaseFirestore db = FirebaseFirestore.getInstance();
+            final String[][] contacts = new String[1][1];
+            db.collection("Users").document(currentUserID).get()
+                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            if (task.isSuccessful()) {
+                                 contacts[0] = (String[]) task.getResult().get("Contacts");
+                            } else {
+                                Log.w(TAG, "Error getting documents.", task.getException());
+                            }
+                        }
+                    });
+
+            for (String s: contacts[0]) {
+                try {
+                    Log.d(TAG, "finding user: " + s);
+                    Task<DocumentSnapshot> snapshot = db.collection("Users").document(s).get();
+                    snapshot.addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            if (task.isSuccessful()) {
+                                String name = (String) task.getResult().get("name");
+                                // TODO: get profile picture and status
+                                FriendListItem friendListItem = new FriendListItem(name, "[Status]", R.drawable.blank_account);
+                                friendListAdapter.addAdapterItem(friendListItem);
+                                friendListAdapter.notifyDataSetChanged();
+                                arrayList.add(friendListItem);
+                            } else {
+                                Log.w(TAG, "Error getting documents.", task.getException());
+                            }
+                        }
+                    });
+                } catch (NullPointerException e) {
+                    Log.w("TAG", "User's profile with id " + s + " not found");
+                }
+            }
         }
+        mFriendList = arrayList;
+
     }
 }

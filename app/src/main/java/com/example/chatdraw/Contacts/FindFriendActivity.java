@@ -27,6 +27,8 @@ import com.google.firebase.database.ValueEventListener;
 
 public class FindFriendActivity extends AppCompatActivity {
 
+    private static String TAG = "FindFriendActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,6 +50,8 @@ public class FindFriendActivity extends AppCompatActivity {
                 Intent intent = new Intent();
                 NewFriendItem newFriendItem = (NewFriendItem) newFriendAdapter.getItem(position);
                 intent.putExtra("name", newFriendItem.getName());
+                intent.putExtra("username", newFriendItem.getUsername());
+                // TODO send friend's imageID
 
                 // set the result as successful
                 setResult(Activity.RESULT_OK, intent);
@@ -99,7 +103,7 @@ public class FindFriendActivity extends AppCompatActivity {
                     String username = user.getUsername();
                     if (username.contains(text)) {
                         count++;
-                        updateListView(newFriendAdapter, user.getName(),  R.drawable.blank_account);
+                        updateListView(newFriendAdapter, user.getName(), user.getUsername(), R.drawable.blank_account);
                     }
                 }
             }
@@ -128,12 +132,12 @@ public class FindFriendActivity extends AppCompatActivity {
         return true;
     }
 
-    public void updateListView(NewFriendAdapter newFriendAdapter, String name, int imageID) {
+    public void updateListView(NewFriendAdapter newFriendAdapter, String name, String username, int imageID) {
         // find the friend list ListView
         ListView listView = findViewById(R.id.find_friend_listview);
 
         // Instantiate a new NewFriendItem and add it to the custom adapter
-        NewFriendItem newFriendItem = new NewFriendItem(name, imageID);
+        NewFriendItem newFriendItem = new NewFriendItem(name, username, imageID);
         newFriendAdapter.addAdapterItem(newFriendItem);
 
         // set the adapter to the ListView
