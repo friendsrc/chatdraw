@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ChatActivity extends AppCompatActivity {
 
-    private static String TAG = "Chat";
+    private static String TAG = "ChatActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,10 +55,6 @@ public class ChatActivity extends AppCompatActivity {
         ListView listView = findViewById(R.id.chat_listview);
         listView.setAdapter(chatAdapter);
 
-        // testing the listview
-        updateListView(chatAdapter, "John Doe",
-                "Try typing a message!", R.drawable.blank_account);
-
         //  set onClickListener on the 'Send Message' button
         ImageView sendImageView = findViewById(R.id.chat_send_imageview);
         sendImageView.setOnClickListener(new View.OnClickListener() {
@@ -70,12 +66,8 @@ public class ChatActivity extends AppCompatActivity {
                 // get  the inputted  message
                 String message = editText.getText().toString();
 
-                // get the current user's Uid
-                FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-                String name = currentFirebaseUser.getUid();
-
                 // create a new ChatItem
-                ChatItem newChatItem = updateListView(chatAdapter, name, message, R.drawable.blank_account);
+                ChatItem newChatItem = updateListView(chatAdapter, message);
 
                 sendMessage(newChatItem); // send the ChatItem to Firebase
                 editText.setText(""); // erase the content of the EditText
@@ -87,8 +79,11 @@ public class ChatActivity extends AppCompatActivity {
     private void sendMessage(ChatItem chatItem) {
         Log.d(TAG, "sending Message");
         if (!chatItem.getMessageBody().equals("")) {
+//            // Send to Realtime Database
 //            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Messages");
 //            databaseReference.push().setValue(chatItem);
+
+            // Send to Firestore
             FirebaseFirestore db = FirebaseFirestore.getInstance();
             db.collection("Messages")
                     .add(chatItem)
@@ -116,15 +111,9 @@ public class ChatActivity extends AppCompatActivity {
         return true;
     }
 
-    public ChatItem updateListView(ChatAdapter chatAdapter, String name, String messageBody, int imageID) {
-        // get time in hour:minutes
-        Calendar cal = Calendar.getInstance();
-        Date date=cal.getTime();
-        DateFormat dateFormat = new SimpleDateFormat("HH:mm");
-        String formattedDate = dateFormat.format(date);
-
+    public ChatItem updateListView(ChatAdapter chatAdapter, String messageBody) {
         // create a new ChatItem
-        ChatItem chatItem = new ChatItem(name, messageBody, imageID, formattedDate);
+        ChatItem chatItem = new ChatItem(messageBody);
 
         // add the new ChatItem to the ChatAdapter
         chatAdapter.addAdapterItem(chatItem);
