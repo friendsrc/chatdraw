@@ -15,11 +15,15 @@ import android.widget.Toast;
 import com.example.chatdraw.MainChat.MainActivity;
 import com.example.chatdraw.R;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -77,52 +81,33 @@ public class ChatActivity extends AppCompatActivity {
                 editText.setText(""); // erase the content of the EditText
             }
         });
-
-        // Retrieve the current Registration Token
-//        getFirebaseToken();
     }
 
     // send the ChatItem to Firebase
     private void sendMessage(ChatItem chatItem) {
         Log.d(TAG, "sending Message");
         if (!chatItem.getMessageBody().equals("")) {
-            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Messages");
-            databaseReference.push().setValue(chatItem);
+//            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Messages");
+//            databaseReference.push().setValue(chatItem);
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            db.collection("Messages")
+                    .add(chatItem)
+                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                        @Override
+                        public void onSuccess(DocumentReference documentReference) {
+                            Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.w(TAG, "Error adding document", e);
+                        }
+                    });
         }
     }
 
-    public void sendUpstreamMessage() {
-        Log.d(TAG, "sending  upstream message");
-        FirebaseMessaging fm = FirebaseMessaging.getInstance();
-        Long SENDER_ID = 437200162274L;
-        AtomicInteger msgId = new AtomicInteger();
-        fm.send(new RemoteMessage.Builder(SENDER_ID + "@fcm.googleapis.com")
-                .setMessageId(Integer.toString(msgId.incrementAndGet()))
-                .addData("my_message", "Hello World")
-                .addData("my_action","SAY_HELLO")
-                .build());
-    }
 
-//    public void getFirebaseToken() {
-//        FirebaseInstanceId.getInstance().getInstanceId()
-//                .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<InstanceIdResult> task) {
-//                        if (!task.isSuccessful()) {
-//                            Log.w(TAG, "getInstanceId failed", task.getException());
-//                            return;
-//                        }
-//
-//                        // Get new Instance ID token
-//                        String token = task.getResult().getToken();
-//
-//                        // Log and toast
-//                        String msg = "Instance ID token = " + token;
-//                        Log.d(TAG, msg);
-//                        Toast.makeText(ChatActivity.this, msg, Toast.LENGTH_SHORT).show();
-//                    }
-//                });
-//    }
 
     @Override
     public boolean onSupportNavigateUp() {
