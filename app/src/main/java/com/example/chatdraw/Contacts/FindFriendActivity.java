@@ -6,6 +6,8 @@ import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -17,6 +19,8 @@ import android.widget.ListView;
 
 import com.example.chatdraw.AccountActivity.User;
 import com.example.chatdraw.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -24,6 +28,15 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class FindFriendActivity extends AppCompatActivity {
 
@@ -49,9 +62,7 @@ public class FindFriendActivity extends AppCompatActivity {
                 // create Intent to send selected friend's name back to FriendListActivity
                 Intent intent = new Intent();
                 NewFriendItem newFriendItem = (NewFriendItem) newFriendAdapter.getItem(position);
-                intent.putExtra("name", newFriendItem.getName());
                 intent.putExtra("username", newFriendItem.getUsername());
-                // TODO send friend's imageID
 
                 // set the result as successful
                 setResult(Activity.RESULT_OK, intent);
@@ -82,47 +93,103 @@ public class FindFriendActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
+                newFriendAdapter.clearData();
                 String str = s.toString();
                 if (!str.trim().equals("")) {
-                    findUserInDatabase(newFriendAdapter, str);  // find user and update listview
+                    findUserInDatabase(newFriendAdapter, str.trim());  // find user and update listview
                 }
             }
         });
     }
 
     public void findUserInDatabase(final NewFriendAdapter newFriendAdapter, final String text) {
-        // create a listener to get the data from firebase
-        // the listener checks if the User's username contains the inputted text
-        ValueEventListener valueEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                int count = 0;
-                for (DataSnapshot ds: dataSnapshot.getChildren()) {
-                    if (count >= 20) break;
-                    User user = ds.getValue(User.class);
-                    String username = user.getUsername();
-                    if (username.contains(text)) {
-                        count++;
-                        updateListView(newFriendAdapter, user.getName(), user.getUsername(), R.drawable.blank_account);
+//        // create a listener to get the data from Realtime Database
+//        // the listener checks if the User's username contains the inputted text
+//        ValueEventListener valueEventListener = new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                int count = 0;
+//                for (DataSnapshot ds: dataSnapshot.getChildren()) {
+//                    if (count >= 20) break;
+//                    User user = ds.getValue(User.class);
+//                    String username = user.getUsername();
+//                    if (username.contains(text)) {
+//                        count++;
+//                        updateListView(newFriendAdapter, user.getName(), user.getUsername(), R.drawable.blank_account);
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        };
+//
+//        // clean the listview previous data
+//        newFriendAdapter.clearData();
+//
+//        // get the User whose username is equal to the inputted text
+//        DatabaseReference usersDatabase = FirebaseDatabase.getInstance().getReference().child("Users");
+//        usersDatabase.orderByChild("username").equalTo("text").addValueEventListener(valueEventListener);
+//
+//        // get Users whose username contains the inputted text
+//        usersDatabase.orderByChild("username").addValueEventListener(valueEventListener);
+
+
+
+//        // get the user whose username is exactly the same as the inputted text
+//        FirebaseFirestore.getInstance().collection("Users")
+//                .whereEqualTo("username", textWithAdd)
+//                .get()
+//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                        newFriendAdapter.clearData();
+//                        List<User> users = task.getResult().toObjects(User.class);
+//                        Log.d(TAG, "users SAME = " + users);
+//                        for (User u: users) {
+//                            Log.d(TAG, "SAME USER +" + u.getUsername());
+//                            updateListView(newFriendAdapter, u.getName(), u.getUsername(), R.drawable.blank_account);
+//                            break;
+//                        }
+//                    }
+//                });
+
+        // get users whose usernames contain the inputted text
+        FirebaseFirestore.getInstance().collection("Users")
+                .orderBy("username")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            newFriendAdapter.clearData();
+                            List<User> users = task.getResult().toObjects(User.class);
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                users.sort(new Comparator<User>() {
+                                    @Override
+                                    public int compare(User a, User b) {
+                                        return (a.getUsername().length() - b.getUsername().length());
+                                    }
+                                });
+                            }
+                            int count = 0;
+                            for (User u : users) {
+                                String username = u.getUsername();
+                                if (count > 20) { // limit the search result to 20 friends
+                                    break;
+                                } else if (username.contains(text) ) {
+                                    count++;
+                                    updateListView(newFriendAdapter, u.getName(), u.getUsername(), R.drawable.blank_account);
+                                }
+                            }
+                        } else {
+                            Log.w(TAG, "Error getting documents.", task.getException());
+                        }
                     }
-                }
-            }
+                });
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        };
-
-        // clean the listview previous data
-        newFriendAdapter.clearData();
-
-        // get the User whose username is equal to the inputted text
-        DatabaseReference usersDatabase = FirebaseDatabase.getInstance().getReference().child("Users");
-        usersDatabase.orderByChild("username").equalTo("text").addValueEventListener(valueEventListener);
-
-        // get Users whose username contains the inputted text
-        usersDatabase.orderByChild("username").addValueEventListener(valueEventListener);
     }
 
     @Override

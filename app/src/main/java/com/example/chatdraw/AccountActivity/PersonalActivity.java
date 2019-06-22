@@ -17,6 +17,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class PersonalActivity extends AppCompatActivity {
     private ProgressBar progressBar;
@@ -94,6 +95,10 @@ public class PersonalActivity extends AppCompatActivity {
 
         User usering = new User(email, name, username);
         databaseReference.setValue(usering);
+
+        // update firestore
+        FirebaseFirestore.getInstance().collection("Users").document(Uid)
+                .set(usering);
 
         Toast.makeText(this, "Update Successfully", Toast.LENGTH_SHORT).show();
 

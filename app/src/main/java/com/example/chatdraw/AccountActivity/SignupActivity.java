@@ -134,6 +134,10 @@ public class SignupActivity extends AppCompatActivity {
                                         }
                                     });
 
+                                    // also add user to firestore
+                                    FirebaseFirestore.getInstance().collection("Users")
+                                            .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                            .set(user);
 
                                 }
                             }

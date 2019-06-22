@@ -1,5 +1,7 @@
 package com.example.chatdraw.Contacts;
 
+import com.example.chatdraw.R;
+
 public class NewFriendItem {
     private String name;
     private String username;

@@ -23,8 +23,10 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -38,6 +40,7 @@ import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class FriendListActivity extends AppCompatActivity {
@@ -112,13 +115,32 @@ public class FriendListActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FIND_FRIEND_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            String name = data.getStringExtra("name");
-            String username = data.getStringExtra("username");
-            // TODO get image from intent and status from firestore
-            FriendListItem friendListItem = updateListView(mFriendListAdapter,
-                    name, "[status]", R.drawable.blank_account);
-            mFriendList.add(friendListItem);
-            // TODO add contacts' userID to firestore
+            final String username = data.getStringExtra("username");
+            FirebaseFirestore.getInstance().collection("Users").whereEqualTo("username", username)
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            Log.d(TAG, task.toString());
+                            // get name and status from firestore
+                            List<User> users = task.getResult().toObjects(User.class);
+                            User newFriend = users.get(0);
+                            String name = newFriend.getName();
+
+                            // TODO get profile picture and status from firestore
+
+                            // add the new contact to ListView
+                            FriendListItem friendListItem = updateListView(mFriendListAdapter,
+                                    name, "[status]", R.drawable.blank_account);
+                            mFriendList.add(friendListItem);
+
+                            // add the new contact to contact list in Firestore
+                            String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                            FirebaseFirestore.getInstance().collection("Users")
+                                    .document(uid)
+                                    .update("contacts", FieldValue.arrayUnion(username));
+                        }
+                    });
 
         }
     }
@@ -175,45 +197,19 @@ public class FriendListActivity extends AppCompatActivity {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-        } else if (false){
+        } else if (false) {
             // TODO: get user's contacts ID list from Firestore
-            final FirebaseFirestore db = FirebaseFirestore.getInstance();
-            final String[][] contacts = new String[1][1];
-            db.collection("Users").document(currentUserID).get()
+            FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+            String id = currentFirebaseUser.getUid();
+            FirebaseFirestore.getInstance().collection("Users").document(id)
+                    .get()
                     .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            if (task.isSuccessful()) {
-                                 contacts[0] = (String[]) task.getResult().get("Contacts");
-                            } else {
-                                Log.w(TAG, "Error getting documents.", task.getException());
-                            }
+                            User newFriend = task.getResult().toObject(User.class);
+                            String name = newFriend.getName();
                         }
                     });
-
-            for (String s: contacts[0]) {
-                try {
-                    Log.d(TAG, "finding user: " + s);
-                    Task<DocumentSnapshot> snapshot = db.collection("Users").document(s).get();
-                    snapshot.addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            if (task.isSuccessful()) {
-                                String name = (String) task.getResult().get("name");
-                                // TODO: get profile picture and status
-                                FriendListItem friendListItem = new FriendListItem(name, "[Status]", R.drawable.blank_account);
-                                friendListAdapter.addAdapterItem(friendListItem);
-                                friendListAdapter.notifyDataSetChanged();
-                                arrayList.add(friendListItem);
-                            } else {
-                                Log.w(TAG, "Error getting documents.", task.getException());
-                            }
-                        }
-                    });
-                } catch (NullPointerException e) {
-                    Log.w("TAG", "User's profile with id " + s + " not found");
-                }
-            }
         }
         mFriendList = arrayList;
 
