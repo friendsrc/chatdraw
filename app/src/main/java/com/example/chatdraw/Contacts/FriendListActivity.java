@@ -80,33 +80,14 @@ public class FriendListActivity extends AppCompatActivity {
         // instantiating the friendList
         mFriendList = new ArrayList<>();
 
-        // checked SharedPreferences for existing friendlist
-        checkSavedMessages(mFriendListAdapter);
+        getContacts(mFriendListAdapter);
     }
 
 
     @Override
-    // if the back button is pressed, save friendlist before destroying the activity
     public boolean onSupportNavigateUp() {
-        // get SharedPreferences
-        SharedPreferences.Editor editor = getPreferences(MODE_PRIVATE).edit();
-
-        // parse the FriendList into JSON string
-        String friendlistJSONString = new Gson().toJson(mFriendList);
-
-        // get user ID
-        FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        String id = currentFirebaseUser.getUid();
-
-
-        // save the JSON string and user ID into SharedPreferences
-        editor.putString(FRIEND_LIST_KEY, friendlistJSONString);
-        editor.putString(USER_ID_KEY, id);
-        editor.commit();
-
         // destroy the activity
         finish();
-
         return true;
     }
 
@@ -116,33 +97,37 @@ public class FriendListActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FIND_FRIEND_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             final String username = data.getStringExtra("username");
-            FirebaseFirestore.getInstance().collection("Users").whereEqualTo("username", username)
-                    .get()
-                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                            Log.d(TAG, task.toString());
-                            // get name and status from firestore
-                            List<User> users = task.getResult().toObjects(User.class);
-                            User newFriend = users.get(0);
-                            String name = newFriend.getName();
-
-                            // TODO get profile picture and status from firestore
-
-                            // add the new contact to ListView
-                            FriendListItem friendListItem = updateListView(mFriendListAdapter,
-                                    name, "[status]", R.drawable.blank_account);
-                            mFriendList.add(friendListItem);
-
-                            // add the new contact to contact list in Firestore
-                            String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                            FirebaseFirestore.getInstance().collection("Users")
-                                    .document(uid)
-                                    .update("contacts", FieldValue.arrayUnion(username));
-                        }
-                    });
+            addUserWithUsername(username);
 
         }
+    }
+
+    private void addUserWithUsername(final String username) {
+        FirebaseFirestore.getInstance().collection("Users").whereEqualTo("username", username)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        Log.d(TAG, task.toString());
+                        // get name and status from firestore
+                        List<User> users = task.getResult().toObjects(User.class);
+                        User newFriend = users.get(0);
+                        String name = newFriend.getName();
+
+                        // TODO get profile picture and status from firestore
+
+                        // add the new contact to ListView
+                        FriendListItem friendListItem = updateListView(mFriendListAdapter,
+                                name, "[status]", R.drawable.blank_account);
+                        mFriendList.add(friendListItem);
+
+                        // add the new contact to contact list in Firestore
+                        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                        FirebaseFirestore.getInstance().collection("Users")
+                                .document(uid)
+                                .update("contacts", FieldValue.arrayUnion(username));
+                    }
+                });
     }
 
     public FriendListItem updateListView(FriendListAdapter friendListAdapter, String name, String status, int imageID) {
@@ -158,60 +143,23 @@ public class FriendListActivity extends AppCompatActivity {
         return newFriend;
     }
 
-    public void checkSavedMessages(final FriendListAdapter friendListAdapter) {
+    public void getContacts(final FriendListAdapter friendListAdapter) {
         // get the Contacts listview and set the adapter
         ListView listView = findViewById(R.id.friend_list_listview);
         listView.setAdapter(friendListAdapter);
 
-        // check if the contact in the SharedPreferences belong to the currently signed-in user
-        String savedID = getPreferences(MODE_PRIVATE).getString(USER_ID_KEY, null);
-        String currentUserID = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        final ArrayList<FriendListItem> arrayList = new ArrayList<>();
-
-        if ( !(savedID == null) && savedID.equals(currentUserID) ) {
-            // if it does belong to this user, use the SharedPreferences contact list data to update
-            // the listview
-
-            // get friendList JSON String from SharedPreferences
-            String friendlistJSONString
-                    = getPreferences(MODE_PRIVATE).getString(FRIEND_LIST_KEY, null);
-
-            // if nothing is saved yet, return;
-            if (friendlistJSONString == null) return;
-
-            try {
-                // Parse the JsonArray into ArrayList and update the Contacts listview
-                JSONArray jsonArray = new JSONArray(friendlistJSONString);
-                if (jsonArray != null) {
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        JSONObject jsonObject = jsonArray.getJSONObject(i);
-                        String status = jsonObject.getString("chatPreview");
-                        int imageID = jsonObject.getInt("imageID");
-                        String name = jsonObject.getString("name");
-                        FriendListItem friendListItem = new FriendListItem(name, status, imageID);
-                        friendListAdapter.addAdapterItem(friendListItem);
-                        friendListAdapter.notifyDataSetChanged();
-                        arrayList.add(friendListItem);
-                    }
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        } else if (false) {
-            // TODO: get user's contacts ID list from Firestore
-            FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-            String id = currentFirebaseUser.getUid();
-            FirebaseFirestore.getInstance().collection("Users").document(id)
-                    .get()
-                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            User newFriend = task.getResult().toObject(User.class);
-                            String name = newFriend.getName();
+        FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        String id = currentFirebaseUser.getUid();
+        FirebaseFirestore.getInstance().collection("Users").document(id)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
+                        for (String s: arr) {
+                            addUserWithUsername(s);
                         }
-                    });
-        }
-        mFriendList = arrayList;
-
+                    }
+                });
     }
 }
