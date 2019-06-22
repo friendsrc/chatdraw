@@ -155,9 +155,8 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
 
-
         // set the action bar title
-        getSupportActionBar().setTitle("Settings");
+        getSupportActionBar().setTitle("Privacy and Security");
 
         // add a back button to the action bar
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);

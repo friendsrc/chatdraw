@@ -149,7 +149,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Toast.makeText(this,"Not yet configured", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.nav_settings:
-                Intent intent_settings = new Intent(this, SettingsActivity.class);
+                Intent intent_settings = new Intent(this, ProfileEditActivity.class);
                 startActivityForResult(intent_settings, FIND_SETTINGS_REQUEST_CODE);
                 break;
             default:
