@@ -9,6 +9,10 @@ public class Upload {
         //empty constructor needed
     }
 
+    public Upload(String profileImageUrl) {
+        mImageUrl = profileImageUrl;
+    }
+
     public Upload(String name, String imageUrl) {
         if (name.trim().equals("")) {
             name = "No Name";

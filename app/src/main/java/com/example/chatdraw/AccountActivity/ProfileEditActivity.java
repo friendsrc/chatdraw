@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -36,11 +37,18 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
+
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -51,6 +59,7 @@ public class ProfileEditActivity extends AppCompatActivity {
     private CircleImageView circleImageView;
 
     private Uri selectedImageUri;
+    private Bitmap bmp;
     private ProgressDialog mProgressDialog;
     private StorageReference mStorageRef;
     private DatabaseReference mDatabaseRef;
@@ -66,7 +75,7 @@ public class ProfileEditActivity extends AppCompatActivity {
         mProgressDialog = new ProgressDialog(ProfileEditActivity.this);
         auth = FirebaseAuth.getInstance();
 
-        mStorageRef = FirebaseStorage.getInstance().getReference("Images");
+        mStorageRef = FirebaseStorage.getInstance().getReference("Users");
         mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.photo_button);
@@ -168,7 +177,7 @@ public class ProfileEditActivity extends AppCompatActivity {
 
             if(requestCode == REQUEST_CAMERA){
                 Bundle bundle = data.getExtras();
-                final Bitmap bmp = (Bitmap) bundle.get("data");
+                bmp = (Bitmap) bundle.get("data");
                 circleImageView.setImageBitmap(bmp);
             } else if (requestCode == SELECT_FILE){
                 selectedImageUri = data.getData();
@@ -182,8 +191,8 @@ public class ProfileEditActivity extends AppCompatActivity {
             final String name = "profilePicture";
 
             if (selectedImageUri != null) {
-                StorageReference fileReference = mStorageRef.child(System.currentTimeMillis()
-                        + "." + getFileExtension(selectedImageUri));
+                final StorageReference fileReference = mStorageRef.child(userID).child("profilepic")
+                        .child(System.currentTimeMillis() + "." + getFileExtension(selectedImageUri));
 
                 mUploadTask = fileReference.putFile(selectedImageUri)
                         .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -191,11 +200,22 @@ public class ProfileEditActivity extends AppCompatActivity {
                             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                                 mProgressDialog.dismiss();
                                 Toast.makeText(ProfileEditActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
-                                Upload upload = new Upload(name,
-                                        taskSnapshot.getUploadSessionUri().toString());
-                                String uploadId = mDatabaseRef.push().getKey();
-                                mDatabaseRef.child(userID).child("uploads").setValue(upload);
+                                fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                    @Override
+                                    public void onSuccess(Uri uri) {
+                                        String url = uri.toString();
+                                        Upload upload = new Upload(name, url);
 
+                                        // update realtime
+                                        String uploadId = mDatabaseRef.push().getKey();
+                                        mDatabaseRef.child(userID).child("uploads").setValue(upload);
+
+                                        // update firestore
+                                        Upload profileUpload = new Upload(url);
+                                        FirebaseFirestore.getInstance().collection("Users").document(userID).set(profileUpload, SetOptions.merge());
+
+                                    }
+                                });
                             }
                         })
                         .addOnFailureListener(new OnFailureListener() {
@@ -213,10 +233,84 @@ public class ProfileEditActivity extends AppCompatActivity {
                             }
                         });
                 selectedImageUri = null;
+            } else if (bmp != null) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                byte[] dataforbmp = baos.toByteArray();
+
+                StorageReference fileReference = FirebaseStorage.getInstance().getReference("Users");
+                final StorageReference imageRef = fileReference.child(userID).child("profilepic")
+                        .child(System.currentTimeMillis() + ".bmp");
+
+                UploadTask uploadTask = imageRef.putBytes(dataforbmp);
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        // Handle unsuccessful uploads
+                        mProgressDialog.dismiss();
+                        Toast.makeText(ProfileEditActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        mProgressDialog.dismiss();
+                        Toast.makeText(ProfileEditActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
+                        imageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                String url = uri.toString();
+                                Upload upload = new Upload(name, url);
+
+                                // update realtime
+                                String uploadId = mDatabaseRef.push().getKey();
+                                mDatabaseRef.child(userID).child("uploads").setValue(upload);
+
+                                // update firestore
+                                Upload profileUpload = new Upload(url);
+                                FirebaseFirestore.getInstance().collection("Users").document(userID).set(profileUpload, SetOptions.merge());
+                            }
+                        });
+                    }
+                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                        mProgressDialog.setMessage("Uploading Image...");
+                        mProgressDialog.show();
+                    }
+                });
+
+                bmp = null;
             } else {
                 Toast.makeText(this, "No file selected or camera picture not configured yet", Toast.LENGTH_LONG).show();
             }
 
+        }
+    }
+
+    // CONVERT AND COMPRESS URI IMAGE
+    public void compressUriFile(Intent data) {
+        Uri imageUri = data.getData();
+
+        InputStream imageStream = null;
+        try {
+            imageStream = getContentResolver().openInputStream(
+                    imageUri);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        Bitmap bmp = BitmapFactory.decodeStream(imageStream);
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.JPEG, 50, stream);
+        circleImageView.setImageBitmap(bmp);
+        byte[] byteArray = stream.toByteArray();
+
+        try {
+            stream.close();
+            stream = null;
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
