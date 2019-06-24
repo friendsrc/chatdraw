@@ -7,6 +7,8 @@ import androidx.annotation.Nullable;
 
 import com.example.chatdraw.AccountActivity.ProfileEditActivity;
 import com.example.chatdraw.AccountActivity.User;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -16,6 +18,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.media.Image;
 import android.os.Bundle;
 import androidx.appcompat.widget.Toolbar;
+
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -39,6 +43,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -168,9 +174,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else if (requestCode == FIND_SETTINGS_REQUEST_CODE) {
 
         } else if (requestCode == NEW_MESSAGE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            String name = data.getStringExtra("username");
+            String uID = data.getStringExtra("uID");
+            Log.d("HEY", "uID is " + uID);
+            FirebaseFirestore.getInstance().collection("Users").document(uID)
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            DocumentSnapshot snapshot = task.getResult();
+                            String name = (String) snapshot.get("name");
+                            updateListView(mFriendListAdapter, name, "No messages yet.", R.drawable.blank_account);
+
+                        }
+                    });
             // TODO get messages > this user > username
-            updateListView(mFriendListAdapter, name, "No messages yet.", R.drawable.blank_account);
         }
     }
 
@@ -184,24 +201,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // set the adapter to the ListView
         listView.setAdapter(friendListAdapter);
-    }
-
-    // Check if there exist saved information of the friends list in the phone (not yet working)
-    public void checkSavedMessages(FriendListAdapter friendListAdapter) {
-        try {
-            // get saved file and create its Scanner
-            InputStream inputStream = this.openFileInput("messages.txt");
-            Scanner scan = new Scanner(inputStream);
-
-            // update the listView
-            String[] savedChat = scan.nextLine().split("\t");
-            while (scan.hasNext()) {
-                updateListView(friendListAdapter, savedChat[0],
-                        savedChat[1], R.drawable.blank_account);            }
-            scan.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
