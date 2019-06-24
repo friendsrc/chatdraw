@@ -168,7 +168,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else if (requestCode == FIND_SETTINGS_REQUEST_CODE) {
 
         } else if (requestCode == NEW_MESSAGE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            String name = data.getStringExtra("name");
+            String name = data.getStringExtra("username");
+            // TODO get messages > this user > username
             updateListView(mFriendListAdapter, name, "No messages yet.", R.drawable.blank_account);
         }
     }

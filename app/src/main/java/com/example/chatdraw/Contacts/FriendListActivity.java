@@ -156,8 +156,10 @@ public class FriendListActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
-                        for (String s: arr) {
-                            addUserWithUsername(s);
+                        if (arr != null && !arr.isEmpty()) {
+                            for (String s: arr) {
+                                addUserWithUsername(s);
+                            }
                         }
                     }
                 });
