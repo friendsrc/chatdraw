@@ -65,12 +65,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         final FriendListAdapter friendListAdapter = new FriendListAdapter(this);
         mFriendListAdapter = friendListAdapter;
 
-        // Testing the custom adapter
-        for (int i = 1; i < 3; i++) {
-            updateListView(friendListAdapter, "Person " + i,
-                    "Hi, I write this text.", R.drawable.blank_account);
-        }
-
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -127,6 +121,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Intent intent = new Intent(MainActivity.this, ChatActivity.class);
                 FriendListItem friendListItem = (FriendListItem) mFriendListAdapter.getItem(position);
                 intent.putExtra("name", friendListItem.getName());
+                intent.putExtra("uID", friendListItem.getUID());
                 startActivity(intent);
             }
         });
@@ -175,15 +170,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         } else if (requestCode == NEW_MESSAGE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             String uID = data.getStringExtra("uID");
-            Log.d("HEY", "uID is " + uID);
             FirebaseFirestore.getInstance().collection("Users").document(uID)
                     .get()
                     .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                             DocumentSnapshot snapshot = task.getResult();
+                            String uID = snapshot.getId();
                             String name = (String) snapshot.get("name");
-                            updateListView(mFriendListAdapter, name, "No messages yet.", R.drawable.blank_account);
+                            updateListView(mFriendListAdapter, uID, name, "No messages yet.", R.drawable.blank_account);
 
                         }
                     });
@@ -191,12 +186,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    public void updateListView(FriendListAdapter friendListAdapter, String name, String messagePreview, int imageID) {
+    public void updateListView(FriendListAdapter friendListAdapter, String uID, String name, String messagePreview, int imageID) {
         // find the friend list ListView
         ListView listView = findViewById(R.id.main_chat_listview);
 
         // Instantiate a new FriendListItem and add it to the custom adapter
-        FriendListItem newFriend = new FriendListItem(name, messagePreview, imageID);
+        FriendListItem newFriend = new FriendListItem(name, messagePreview, imageID, uID);
         friendListAdapter.addAdapterItem(newFriend);
 
         // set the adapter to the ListView

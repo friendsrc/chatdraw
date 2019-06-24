@@ -36,6 +36,11 @@ public class ChatAdapter extends BaseAdapter {
         this.items = new ArrayList<>();
     }
 
+    public void clearData() {
+        items = new ArrayList<>();
+        notifyDataSetChanged();
+    }
+
     public void addAdapterItem(ChatItem item) {
         items.add(item);
     }
@@ -67,13 +72,13 @@ public class ChatAdapter extends BaseAdapter {
 
         // if the message is send by the current user, create a right chat bubble
         // else, create a left chat bubble
-        if (chatItem.getUserID().equals(currentFirebaseUser.getUid())) {
+        if (chatItem.getSenderID().equals(currentFirebaseUser.getUid())) {
             view = inflater.inflate(R.layout.right_chat_bubble, parent, false);
         } else {
             view = inflater.inflate(R.layout.left_chat_bubble, parent, false);
             TextView senderName = view.findViewById(R.id.text_message_name);
             //TODO get name from userID
-            senderName.setText(chatItem.getUserID());
+            senderName.setText(chatItem.getSenderID());
         }
 
         // set the text of the chat bubble

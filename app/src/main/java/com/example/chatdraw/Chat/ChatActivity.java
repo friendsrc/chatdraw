@@ -23,7 +23,12 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -35,9 +40,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.Nullable;
+
 public class ChatActivity extends AppCompatActivity {
 
     private static String TAG = "ChatActivity";
+    private String friendsUID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +53,9 @@ public class ChatActivity extends AppCompatActivity {
         setContentView(R.layout.activity_chat);
 
         Intent intent = getIntent();
+
+        // get friend's UID
+        friendsUID = intent.getStringExtra("uID");
 
         // set the action bar title
         getSupportActionBar().setTitle(intent.getStringExtra("name"));
@@ -54,6 +65,8 @@ public class ChatActivity extends AppCompatActivity {
         final ChatAdapter chatAdapter = new ChatAdapter(this);
         ListView listView = findViewById(R.id.chat_listview);
         listView.setAdapter(chatAdapter);
+
+        getMessages(chatAdapter);
 
         //  set onClickListener on the 'Send Message' button
         ImageView sendImageView = findViewById(R.id.chat_send_imageview);
@@ -83,26 +96,40 @@ public class ChatActivity extends AppCompatActivity {
 //            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Messages");
 //            databaseReference.push().setValue(chatItem);
 
-            // Send to Firestore
             FirebaseFirestore db = FirebaseFirestore.getInstance();
+            String userID = FirebaseAuth.getInstance().getUid();
+
+            // Send to this user's message collection
             db.collection("Messages")
-                    .add(chatItem)
-                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                        @Override
-                        public void onSuccess(DocumentReference documentReference) {
-                            Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.w(TAG, "Error adding document", e);
-                        }
-                    });
+                    .document(userID)
+                    .collection(friendsUID)
+                    .add(chatItem);
+
+            // Send to the receiver's message collection
+            db.collection("Messages")
+                    .document(friendsUID)
+                    .collection(userID)
+                    .add(chatItem);
         }
     }
 
-
+    public void getMessages(final ChatAdapter chatAdapter) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("Messages")
+                .document(FirebaseAuth.getInstance().getUid())
+                .collection(friendsUID)
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                        chatAdapter.clearData();
+                        for (DocumentSnapshot q: queryDocumentSnapshots) {
+                            ChatItem chatItem = q.toObject(ChatItem.class);
+                            chatAdapter.addAdapterItem(chatItem);
+                            chatAdapter.notifyDataSetChanged();
+                        }
+                    }
+                });
+    }
 
     @Override
     public boolean onSupportNavigateUp() {
@@ -113,7 +140,7 @@ public class ChatActivity extends AppCompatActivity {
 
     public ChatItem updateListView(ChatAdapter chatAdapter, String messageBody) {
         // create a new ChatItem
-        ChatItem chatItem = new ChatItem(messageBody);
+        ChatItem chatItem = new ChatItem(messageBody, friendsUID);
 
         // add the new ChatItem to the ChatAdapter
         chatAdapter.addAdapterItem(chatItem);

@@ -10,17 +10,22 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class ChatItem {
-    private String userID;
+    private String senderID;
+    private String receiverID;
     private String messageBody;
     private int imageID;
     private Date timestamp;
     private String timeSent;
 
-    public ChatItem(String messageBody) {
+    public ChatItem() {
+    }
+
+    public ChatItem(String messageBody, String receiverID) {
         // get current user's uID
         FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         String id = currentFirebaseUser.getUid();
-        this.userID = id;
+        this.senderID = id;
+        this.receiverID = receiverID;
 
         // set the message body
         this.messageBody = messageBody;
@@ -38,9 +43,11 @@ public class ChatItem {
         this.timeSent = hour_and_minutes;
     }
 
-    public String getUserID() {
-        return this.userID;
+    public String getSenderID() {
+        return this.senderID;
     }
+
+    public String getReceiverID() { return this.receiverID; }
 
     public String getMessageBody() {
         return this.messageBody;
@@ -53,4 +60,28 @@ public class ChatItem {
     public Date getTimestamp() { return this.timestamp; }
 
     public String getTimeSent() { return  this.timeSent; }
+
+    public void setSenderID(String senderID) {
+        this.senderID = senderID;
+    }
+
+    public void setReceiverID(String receiverID) {
+        this.receiverID = receiverID;
+    }
+
+    public void setMessageBody(String messageBody) {
+        this.messageBody = messageBody;
+    }
+
+    public void setImageID(int imageID) {
+        this.imageID = imageID;
+    }
+
+    public void setTimestamp(Date timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public void setTimeSent(String timeSent) {
+        this.timeSent = timeSent;
+    }
 }
