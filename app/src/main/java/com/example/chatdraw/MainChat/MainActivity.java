@@ -44,7 +44,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -65,6 +68,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         final FriendListAdapter friendListAdapter = new FriendListAdapter(this);
         mFriendListAdapter = friendListAdapter;
 
+        getMessageList(friendListAdapter);
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -76,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
         final View hView = navigationView.getHeaderView(0);
+
 
         if (user != null) {
             reference.addValueEventListener(new ValueEventListener() {
@@ -205,6 +211,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else {
             super.onBackPressed();
         }
+    }
+
+    private void getMessageList(FriendListAdapter friendListAdapter) {
+        FirebaseFirestore.getInstance().collection("Messages")
+                .document(FirebaseAuth.getInstance().getUid())
+                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                        // TODO
+                    }
+                });
     }
 
 }
