@@ -77,11 +77,9 @@ public class FindFriendActivity extends AppCompatActivity {
                             @Override
                             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                 if (task.isSuccessful()) {
+                                    final String currentUserID = FirebaseAuth.getInstance().getCurrentUser().getUid();
                                     for (QueryDocumentSnapshot document : task.getResult()) {
                                         final String uID = document.getId();
-                                        intent.putExtra("uID", uID);
-
-                                        // if the chosen contact already exist in this user's contacts list, make a toast
                                         FirebaseFirestore.getInstance().collection("Users")
                                                 .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
                                                 .get()
@@ -89,9 +87,14 @@ public class FindFriendActivity extends AppCompatActivity {
                                                     @Override
                                                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                                                         ArrayList<String> contacts = (ArrayList<String>) task.getResult().get("contacts");
+                                                        // if the chosen contact already exist in this user's contacts list, make a toast
                                                         if (contacts != null && contacts.contains(uID)) {
                                                             Toast.makeText(FindFriendActivity.this, "Already in Contacts", Toast.LENGTH_SHORT).show();
+                                                        } else  if (uID.equals(currentUserID)) {
+                                                            Toast.makeText(FindFriendActivity.this, "Can't add your own account", Toast.LENGTH_SHORT).show();
                                                         } else {
+                                                            intent.putExtra("uID", uID);
+
                                                             // set the result as successful
                                                             setResult(Activity.RESULT_OK, intent);
 

@@ -103,13 +103,17 @@ public class ChatActivity extends AppCompatActivity {
             // Send to this user's message collection
             db.collection("Messages")
                     .document(userID)
-                    .collection(friendsUID)
+                    .collection("Friends")
+                    .document(friendsUID)
+                    .collection("ChatHistory")
                     .add(chatItem);
 
             // Send to the receiver's message collection
             db.collection("Messages")
                     .document(friendsUID)
-                    .collection(userID)
+                    .collection("Friends")
+                    .document(userID)
+                    .collection("ChatHistory")
                     .add(chatItem);
         }
     }
@@ -118,7 +122,9 @@ public class ChatActivity extends AppCompatActivity {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("Messages")
                 .document(FirebaseAuth.getInstance().getUid())
-                .collection(friendsUID)
+                .collection("Friends")
+                .document(friendsUID)
+                .collection("ChatHistory")
                 .orderBy("timestamp")
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override

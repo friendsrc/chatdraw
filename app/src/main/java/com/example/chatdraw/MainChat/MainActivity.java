@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 
 import com.example.chatdraw.AccountActivity.ProfileEditActivity;
 import com.example.chatdraw.AccountActivity.User;
+import com.example.chatdraw.Chat.ChatItem;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
@@ -48,6 +49,7 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -213,13 +215,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    private void getMessageList(FriendListAdapter friendListAdapter) {
-        FirebaseFirestore.getInstance().collection("Messages")
+    private void getMessageList(final FriendListAdapter friendListAdapter) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("Messages")
                 .document(FirebaseAuth.getInstance().getUid())
-                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                .collection("Friends")
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
-                    public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                        // TODO
+                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                        for (DocumentSnapshot q: queryDocumentSnapshots) {
+                            // TODO
+                            String friendsID = q.getId();
+                            updateListView(friendListAdapter, friendsID, friendsID, "No messages yet.", R.drawable.blank_account);
+                        }
                     }
                 });
     }
