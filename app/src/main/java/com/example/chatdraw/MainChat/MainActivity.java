@@ -57,6 +57,7 @@ import java.util.Scanner;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private FriendListAdapter mFriendListAdapter;
+    private static final String TAG = "MainActivity";
     private static final int FIND_FRIEND_REQUEST_CODE = 101;
     private static final int NEW_MESSAGE_REQUEST_CODE = 808;
     private static final int FIND_SETTINGS_REQUEST_CODE = 909;
@@ -217,16 +218,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void getMessageList(final FriendListAdapter friendListAdapter) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        Log.d(TAG, "is this path valid " + db.collection("Messages/29UJzPD9tJYLRkfYmKgJbgtDAXt2/Friends").get());
+        Log.d(TAG, "getting message list for " + FirebaseAuth.getInstance().getCurrentUser().getUid());
+
         db.collection("Messages")
-                .document(FirebaseAuth.getInstance().getUid())
+                .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
                 .collection("Friends")
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
-                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                        for (DocumentSnapshot q: queryDocumentSnapshots) {
-                            // TODO
-                            String friendsID = q.getId();
-                            updateListView(friendListAdapter, friendsID, friendsID, "No messages yet.", R.drawable.blank_account);
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "get " + task.getResult().getDocuments());
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Log.d(TAG, document.getId() + " => " + document.getData());
+                                String friendsID = document.getId();
+                                Log.d(TAG, "adding document + " +friendsID);
+                                updateListView(friendListAdapter, friendsID, friendsID, "No messages yet.", R.drawable.blank_account);
+                            }
+                        } else {
+                            Log.d(TAG, "Error getting documents: ", task.getException());
                         }
                     }
                 });
