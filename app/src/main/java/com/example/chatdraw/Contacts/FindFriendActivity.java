@@ -16,11 +16,13 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.example.chatdraw.AccountActivity.User;
 import com.example.chatdraw.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -28,10 +30,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -59,16 +63,51 @@ public class FindFriendActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // create Intent to send selected friend's name back to FriendListActivity
-                Intent intent = new Intent();
+                // get clicked item
                 NewFriendItem newFriendItem = (NewFriendItem) newFriendAdapter.getItem(position);
-                intent.putExtra("username", newFriendItem.getUsername());
 
-                // set the result as successful
-                setResult(Activity.RESULT_OK, intent);
+                // create Intent to send selected friend's name back to FriendListActivity
+                final Intent intent = new Intent();
 
-                // destroy this activity
-                finish();
+                // get new friend's uID, add to intent, and then destroy this activity
+                FirebaseFirestore.getInstance().collection("Users")
+                        .whereEqualTo("username", newFriendItem.getUsername())
+                        .get()
+                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                if (task.isSuccessful()) {
+                                    for (QueryDocumentSnapshot document : task.getResult()) {
+                                        final String uID = document.getId();
+                                        intent.putExtra("uID", uID);
+
+                                        // if the chosen contact already exist in this user's contacts list, make a toast
+                                        FirebaseFirestore.getInstance().collection("Users")
+                                                .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                                .get()
+                                                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                                        ArrayList<String> contacts = (ArrayList<String>) task.getResult().get("contacts");
+                                                        if (contacts != null && contacts.contains(uID)) {
+                                                            Toast.makeText(FindFriendActivity.this, "Already in Contacts", Toast.LENGTH_SHORT).show();
+                                                        } else {
+                                                            // set the result as successful
+                                                            setResult(Activity.RESULT_OK, intent);
+
+                                                            // destroy this activity
+                                                            finish();
+                                                        }
+                                                    }
+                                                });
+                                    }
+                                } else {
+                                    Log.w(TAG, "Error getting documents.", task.getException());
+                                }
+                            }
+                        });
+
+
             }
         });
 
@@ -156,6 +195,7 @@ public class FindFriendActivity extends AppCompatActivity {
 //                    }
 //                });
 
+        // TODO: change into finding users whose username start with the inputted text, add hint @username to layout
         // get users whose usernames contain the inputted text
         FirebaseFirestore.getInstance().collection("Users")
                 .orderBy("username")

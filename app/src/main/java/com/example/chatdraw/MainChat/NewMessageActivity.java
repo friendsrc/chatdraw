@@ -51,7 +51,7 @@ public class NewMessageActivity extends AppCompatActivity {
                         ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
                         if (arr != null && !arr.isEmpty()) {
                             for (String s: arr) {
-                                addUserWithUsername(s, friendListAdapter);
+                                addUserWithID(s, friendListAdapter);
                             }
                         }
                     }
@@ -100,38 +100,45 @@ public class NewMessageActivity extends AppCompatActivity {
         return true;
     }
 
-    private void addUserWithUsername(final String username, final FriendListAdapter friendListAdapter) {
-        Log.d(TAG, "adding with username = " + username);
-        FirebaseFirestore.getInstance().collection("Users").whereEqualTo("username", username)
+    private void addUserWithID(final String uID, final FriendListAdapter friendListAdapter) {
+        FirebaseFirestore.getInstance().collection("Users").document(uID)
                 .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        Log.d(TAG, task.toString());
-                        // get name and status from firestore
-                        List<User> users = task.getResult().toObjects(User.class);
-                        User newFriend = users.get(0);
-                        String name = newFriend.getName();
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        DocumentSnapshot doc = task.getResult();
+                        String name = (String) doc.get("name");
+                        String status = (String) doc.get("status");
+                        String imageURL = (String) doc.get("imageURL"); //TODO: set profile picture
 
-                        // TODO get profile picture and status from firestore
-                        updateListView(friendListAdapter, username,
-                                name, "[status]", R.drawable.blank_account);
+                        // check if the user doesn't have name/status/imageURL
+                        if (name == null) name = "anonymous";
+                        if (status == null) status = "[status]";
+                        if (imageURL == null) {};  //TODO: set default profile picture
+
+                        // add the contact to ListView
+                        FriendListItem friendListItem
+                                = updateListView(friendListAdapter, name, status, R.drawable.blank_account);
+
+                        // get the current user's uID
+                        String currentUserID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                        FirebaseFirestore.getInstance().collection("Users")
+                                .document(currentUserID)
+                                .update("contacts", FieldValue.arrayUnion(uID));
                     }
                 });
     }
 
-    public FriendListItem updateListView(FriendListAdapter friendListAdapter, String username, String name, String status, int imageID) {
+    public FriendListItem updateListView(FriendListAdapter friendListAdapter, String name, String status, int imageID) {
         // find the friend list ListView
-        ListView listView = findViewById(R.id.new_message_listview);
-        Log.d(TAG, "updating list view with " + name);
+        ListView listView = findViewById(R.id.friend_list_listview);
 
         // Instantiate a new FriendListItem and add it to the custom adapter
-        FriendListItem newFriend = new FriendListItem(username, name, status, imageID);
+        FriendListItem newFriend = new FriendListItem(name, status, imageID);
         friendListAdapter.addAdapterItem(newFriend);
 
         // set the adapter to the ListView
         listView.setAdapter(friendListAdapter);
-
         return newFriend;
     }
 }

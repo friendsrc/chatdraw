@@ -96,36 +96,64 @@ public class FriendListActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FIND_FRIEND_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            final String username = data.getStringExtra("username");
-            addUserWithUsername(username);
+            final String uID = data.getStringExtra("uID");
+            addUserWithID(uID);
 
         }
     }
 
-    private void addUserWithUsername(final String username) {
-        FirebaseFirestore.getInstance().collection("Users").whereEqualTo("username", username)
+    private void addUserWithID(final String uID) {
+//        FirebaseFirestore.getInstance().collection("Users").whereEqualTo("username", username)
+//                .get()
+//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                        Log.d(TAG, task.toString());
+//                        // get name and status from firestore
+//                        List<User> users = task.getResult().toObjects(User.class);
+//                        User newFriend = users.get(0);
+//                        String name = newFriend.getName();
+//
+//                        // TODO get profile picture and status from firestore
+//
+//                        // add the new contact to ListView
+//                        FriendListItem friendListItem = updateListView(mFriendListAdapter,
+//                                name, "[status]", R.drawable.blank_account);
+//                        mFriendList.add(friendListItem);
+//
+//                        // add the new contact to contact list in Firestore
+//                        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+//                        FirebaseFirestore.getInstance().collection("Users")
+//                                .document(uid)
+//                                .update("contacts", FieldValue.arrayUnion(username));
+//                    }
+//                });
+
+        FirebaseFirestore.getInstance().collection("Users").document(uID)
                 .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        Log.d(TAG, task.toString());
-                        // get name and status from firestore
-                        List<User> users = task.getResult().toObjects(User.class);
-                        User newFriend = users.get(0);
-                        String name = newFriend.getName();
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        DocumentSnapshot doc = task.getResult();
+                        String name = (String) doc.get("name");
+                        String status = (String) doc.get("status");
+                        String imageURL = (String) doc.get("imageURL"); //TODO: set profile picture
 
-                        // TODO get profile picture and status from firestore
+                        // check if the user doesn't have name/status/imageURL
+                        if (name == null) name = "anonymous";
+                        if (status == null) status = "[status]";
+                        if (imageURL == null) {};  //TODO: set default profile picture
 
-                        // add the new contact to ListView
-                        FriendListItem friendListItem = updateListView(mFriendListAdapter,
-                                name, "[status]", R.drawable.blank_account);
+                        // add the contact to ListView
+                        FriendListItem friendListItem
+                                = updateListView(mFriendListAdapter, name, status, R.drawable.blank_account);
                         mFriendList.add(friendListItem);
 
-                        // add the new contact to contact list in Firestore
-                        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                        // get the current user's uID
+                        String currentUserID = FirebaseAuth.getInstance().getCurrentUser().getUid();
                         FirebaseFirestore.getInstance().collection("Users")
-                                .document(uid)
-                                .update("contacts", FieldValue.arrayUnion(username));
+                                .document(currentUserID)
+                                .update("contacts", FieldValue.arrayUnion(uID));
                     }
                 });
     }
@@ -158,7 +186,7 @@ public class FriendListActivity extends AppCompatActivity {
                         ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
                         if (arr != null && !arr.isEmpty()) {
                             for (String s: arr) {
-                                addUserWithUsername(s);
+                                addUserWithID(s);
                             }
                         }
                     }
