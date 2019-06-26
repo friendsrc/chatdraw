@@ -47,6 +47,14 @@ public class ChatActivity extends AppCompatActivity {
 
     private static String TAG = "ChatActivity";
     private String friendsUID;
+    final String[] friendName = new String[1];
+    final String[] friendUsername = new String[1];
+    final String[] friendImageUrl = new String[1];
+
+    private String userUID;
+    final String[] userName = new String[1];
+    final String[] userUsername = new String[1];
+    final String[] userImageUrl = new String[1];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +65,35 @@ public class ChatActivity extends AppCompatActivity {
 
         // get friend's UID
         friendsUID = intent.getStringExtra("uID");
+
+        // get user's UID
+        userUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        // get user's display name and profile picture
+        FirebaseFirestore.getInstance().collection("Users")
+                .document(userUID)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        userName[0] = task.getResult().getString("name");
+                        userUsername[0] = task.getResult().getString("username");
+                        userImageUrl[0] = task.getResult().getString("imageUrl");
+                    }
+                });
+
+        // get friends's display name and profile picture
+        FirebaseFirestore.getInstance().collection("Users")
+                .document(friendsUID)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        friendName[0] = task.getResult().getString("name");
+                        friendUsername[0] = task.getResult().getString("username");
+                        friendImageUrl[0] = task.getResult().getString("imageUrl");
+                    }
+                });
 
         // set the action bar title
         getSupportActionBar().setTitle(intent.getStringExtra("name"));
@@ -115,6 +152,16 @@ public class ChatActivity extends AppCompatActivity {
                     .document(userID)
                     .collection("ChatHistory")
                     .add(chatItem);
+
+            // Send to user's message preview collection
+            db.collection("Previews").document(userID)
+                    .collection("ChatPreviews").document(friendsUID)
+                    .set(chatItem);
+
+            // Send to the receiver's message preview collection
+            db.collection("Previews").document(friendsUID)
+                    .collection("ChatPreviews").document(userID)
+                    .set(chatItem);
         }
     }
 
@@ -148,7 +195,7 @@ public class ChatActivity extends AppCompatActivity {
 
     public ChatItem updateListView(ChatAdapter chatAdapter, String messageBody) {
         // create a new ChatItem
-        ChatItem chatItem = new ChatItem(messageBody, friendsUID);
+        ChatItem chatItem = new ChatItem(messageBody, userUID, userName[0], userUsername[0], userImageUrl[0], friendsUID, friendName[0], friendUsername[0], friendImageUrl[0]);
 
         // add the new ChatItem to the ChatAdapter
         chatAdapter.addAdapterItem(chatItem);

@@ -11,27 +11,33 @@ import java.util.Date;
 
 public class ChatItem {
     private String senderID;
+    private String senderName;
+    private String senderUsername;
+    private String senderImageUrl;
+
     private String receiverID;
+    private String receiverName;
+    private String receiverUsername;
+    private String receiverImageUrl;
+
     private String messageBody;
-    private int imageID;
     private Date timestamp;
     private String timeSent;
 
     public ChatItem() {
     }
 
-    public ChatItem(String messageBody, String receiverID) {
-        // get current user's uID
-        FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        String id = currentFirebaseUser.getUid();
-        this.senderID = id;
+    public ChatItem(String messageBody, String senderID, String senderName, String senderUsername, String senderImageUrl, String receiverID, String receiverName, String receiverUsername, String receiverImageUrl) {
+
+        this.senderID = senderID;
+        this.senderName = senderName;
+        this.senderUsername = senderUsername;
+        this.senderImageUrl = senderImageUrl;
         this.receiverID = receiverID;
-
-        // set the message body
+        this.receiverName = receiverName;
+        this.receiverUsername = receiverUsername;
+        this.receiverImageUrl = receiverImageUrl;
         this.messageBody = messageBody;
-
-        // TODO: get the profile picture from database
-        this.imageID = R.drawable.blank_account;
 
         // get the current time
         Calendar cal = Calendar.getInstance();
@@ -53,10 +59,6 @@ public class ChatItem {
         return this.messageBody;
     }
 
-    public int getImageID() {
-        return this.imageID;
-    }
-
     public Date getTimestamp() { return this.timestamp; }
 
     public String getTimeSent() { return  this.timeSent; }
@@ -73,15 +75,59 @@ public class ChatItem {
         this.messageBody = messageBody;
     }
 
-    public void setImageID(int imageID) {
-        this.imageID = imageID;
-    }
-
     public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
     }
 
     public void setTimeSent(String timeSent) {
         this.timeSent = timeSent;
+    }
+
+    public String getSenderName() {
+        return senderName;
+    }
+
+    public void setSenderName(String senderName) {
+        this.senderName = senderName;
+    }
+
+    public String getSenderImageUrl() {
+        return senderImageUrl;
+    }
+
+    public void setSenderImageUrl(String senderImageUrl) {
+        this.senderImageUrl = senderImageUrl;
+    }
+
+    public String getSenderUsername() {
+        return senderUsername;
+    }
+
+    public void setSenderUsername(String senderUsername) {
+        this.senderUsername = senderUsername;
+    }
+
+    public String getReceiverName() {
+        return receiverName;
+    }
+
+    public void setReceiverName(String receiverName) {
+        this.receiverName = receiverName;
+    }
+
+    public String getReceiverUsername() {
+        return receiverUsername;
+    }
+
+    public void setReceiverUsername(String receiverUsername) {
+        this.receiverUsername = receiverUsername;
+    }
+
+    public String getReceiverImageUrl() {
+        return receiverImageUrl;
+    }
+
+    public void setReceiverImageUrl(String receiverImageUrl) {
+        this.receiverImageUrl = receiverImageUrl;
     }
 }
