@@ -16,6 +16,7 @@ import android.provider.MediaStore;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,6 +45,7 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -99,11 +101,19 @@ public class ProfileEditActivity extends AppCompatActivity {
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
 
         if (user != null) {
+            mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
+
             reference.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     String profilename = (String) dataSnapshot.child(user.getUid()).child("name").getValue();
                     String username = (String) dataSnapshot.child(user.getUid()).child("username").getValue();
+                    String imgurl = (String) dataSnapshot.child(user.getUid()).child("uploads").child("imageUrl").getValue();
+
+                    CircleImageView imgview = (CircleImageView) findViewById(R.id.new_profile_picture_image_view);
+                    Picasso.get()
+                            .load(imgurl)
+                            .into(imgview);
 
                     TextView tv = (TextView) findViewById(R.id.profiles_field);
                     tv.setText(profilename);
@@ -192,46 +202,60 @@ public class ProfileEditActivity extends AppCompatActivity {
 
             if (selectedImageUri != null) {
                 final StorageReference fileReference = mStorageRef.child(userID).child("profilepic")
-                        .child(System.currentTimeMillis() + "." + getFileExtension(selectedImageUri));
+                        .child("image.jpg");
 
-                mUploadTask = fileReference.putFile(selectedImageUri)
-                        .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                InputStream imageStream = null;
+
+                try {
+                    imageStream = getContentResolver().openInputStream(selectedImageUri);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+
+                Bitmap bmp = BitmapFactory.decodeStream(imageStream);
+
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                bmp.compress(Bitmap.CompressFormat.JPEG, 50, stream);
+                circleImageView.setImageBitmap(bmp);
+                byte[] byteArray = stream.toByteArray();
+
+                UploadTask uploadTask = fileReference.putBytes(byteArray);
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        // Handle unsuccessful uploads
+                        mProgressDialog.dismiss();
+                        Toast.makeText(ProfileEditActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        mProgressDialog.dismiss();
+                        Toast.makeText(ProfileEditActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
+                        fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                             @Override
-                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                mProgressDialog.dismiss();
-                                Toast.makeText(ProfileEditActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
-                                fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                    @Override
-                                    public void onSuccess(Uri uri) {
-                                        String url = uri.toString();
-                                        Upload upload = new Upload(name, url);
+                            public void onSuccess(Uri uri) {
+                                String url = uri.toString();
+                                Upload upload = new Upload(name, url);
 
-                                        // update realtime
-                                        String uploadId = mDatabaseRef.push().getKey();
-                                        mDatabaseRef.child(userID).child("uploads").setValue(upload);
+                                // update realtime
+                                String uploadId = mDatabaseRef.push().getKey();
+                                mDatabaseRef.child(userID).child("uploads").setValue(upload);
 
-                                        // update firestore
-                                        Upload profileUpload = new Upload(url);
-                                        FirebaseFirestore.getInstance().collection("Users").document(userID).set(profileUpload, SetOptions.merge());
-
-                                    }
-                                });
-                            }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                mProgressDialog.dismiss();
-                                Toast.makeText(ProfileEditActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                            }
-                        })
-                        .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                            @Override
-                            public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                                mProgressDialog.setMessage("Uploading Image...");
-                                mProgressDialog.show();
+                                // update firestore
+                                Upload profileUpload = new Upload(url);
+                                FirebaseFirestore.getInstance().collection("Users").document(userID).set(profileUpload, SetOptions.merge());
                             }
                         });
+                    }
+                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                        mProgressDialog.setMessage("Uploading Image...");
+                        mProgressDialog.show();
+                    }
+                });
+
                 selectedImageUri = null;
             } else if (bmp != null) {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -240,7 +264,7 @@ public class ProfileEditActivity extends AppCompatActivity {
 
                 StorageReference fileReference = FirebaseStorage.getInstance().getReference("Users");
                 final StorageReference imageRef = fileReference.child(userID).child("profilepic")
-                        .child(System.currentTimeMillis() + ".bmp");
+                        .child("image.jpg");
 
                 UploadTask uploadTask = imageRef.putBytes(dataforbmp);
                 uploadTask.addOnFailureListener(new OnFailureListener() {
@@ -292,6 +316,7 @@ public class ProfileEditActivity extends AppCompatActivity {
         Uri imageUri = data.getData();
 
         InputStream imageStream = null;
+
         try {
             imageStream = getContentResolver().openInputStream(
                     imageUri);
@@ -321,3 +346,43 @@ public class ProfileEditActivity extends AppCompatActivity {
         return true;
     }
 }
+
+
+//mUploadTask = fileReference.putFile(selectedImageUri)
+//        .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+//            @Override
+//            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+//                mProgressDialog.dismiss();
+//                Toast.makeText(ProfileEditActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
+//                fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+//                @Override
+//                public void onSuccess(Uri uri) {
+//                    String url = uri.toString();
+//                    Upload upload = new Upload(name, url);
+//
+//                    // update realtime
+//                    String uploadId = mDatabaseRef.push().getKey();
+//                    mDatabaseRef.child(userID).child("uploads").setValue(upload);
+//
+//                    // update firestore
+//                    Upload profileUpload = new Upload(url);
+//                    FirebaseFirestore.getInstance().collection("Users").document(userID).set(profileUpload, SetOptions.merge());
+//
+//                }
+//                });
+//            }
+//        })
+//        .addOnFailureListener(new OnFailureListener() {
+//            @Override
+//            public void onFailure(@NonNull Exception e) {
+//            mProgressDialog.dismiss();
+//            Toast.makeText(ProfileEditActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+//            }
+//        })
+//        .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+//            @Override
+//            public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+//            mProgressDialog.setMessage("Uploading Image...");
+//            mProgressDialog.show();
+//            }
+//        });

@@ -6,8 +6,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.chatdraw.AccountActivity.ProfileEditActivity;
-import com.example.chatdraw.AccountActivity.User;
-import com.example.chatdraw.Chat.ChatItem;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
@@ -16,7 +14,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.media.Image;
 import android.os.Bundle;
 import androidx.appcompat.widget.Toolbar;
 
@@ -30,9 +27,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.chatdraw.AccountActivity.SettingsActivity;
 import com.example.chatdraw.Chat.ChatActivity;
-import com.example.chatdraw.Contacts.FindFriendActivity;
 import com.example.chatdraw.Contacts.FriendListActivity;
 import com.example.chatdraw.Contacts.FriendListAdapter;
 import com.example.chatdraw.Contacts.FriendListItem;
@@ -45,15 +40,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.Scanner;
+import com.squareup.picasso.Picasso;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private FriendListAdapter mFriendListAdapter;
@@ -62,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final int NEW_MESSAGE_REQUEST_CODE = 808;
     private static final int FIND_SETTINGS_REQUEST_CODE = 909;
     private DrawerLayout drawer;
+    private DatabaseReference mDatabaseRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +78,56 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
         if (user != null) {
+            Log.d("userid", user.getUid());
+
+            mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
+
+            reference.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    String imgurl = (String) dataSnapshot.child(user.getUid()).child("uploads").child("imageUrl").getValue();
+
+                    ImageButton imgbut = (ImageButton) hView.findViewById(R.id.profile_edit_button);
+                    Picasso.get()
+                            .load(imgurl)
+                            .fit()
+                            .into(imgbut);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+
+//            try {
+//                StorageReference storageRef = FirebaseStorage.getInstance().getReference("Users")
+//                        .child(user.getUid()).child("profilepic").child("image.jpg");
+//
+//                final ImageButton imgbut = (ImageButton) hView.findViewById(R.id.profile_edit_button);
+//
+//                storageRef.getBytes(1000 * 1000)
+//                        .addOnSuccessListener(new OnSuccessListener<byte[]>() {
+//                            @Override
+//                            public void onSuccess(byte[] bytes) {
+//                                Bitmap bm = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+//                                DisplayMetrics dm = new DisplayMetrics();
+//                                getWindowManager().getDefaultDisplay().getMetrics(dm);
+//
+//                                imgbut.setMinimumHeight(dm.heightPixels);
+//                                imgbut.setMinimumWidth(dm.widthPixels);
+//                                imgbut.setImageBitmap(bm);
+//                            }
+//                        }).addOnFailureListener(new OnFailureListener() {
+//                    @Override
+//                    public void onFailure(@NonNull Exception e) {
+//                        Toast.makeText(MainActivity.this, "no image detected", Toast.LENGTH_SHORT).show();
+//                    }
+//                });
+//            } catch (Exception e) {
+//                Toast.makeText(MainActivity.this, "no file path detected", Toast.LENGTH_SHORT).show();
+//            }
+
             reference.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {

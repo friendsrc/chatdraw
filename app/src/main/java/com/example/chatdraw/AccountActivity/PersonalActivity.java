@@ -3,6 +3,8 @@ package com.example.chatdraw.AccountActivity;
 import android.content.Intent;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -68,6 +70,17 @@ public class PersonalActivity extends AppCompatActivity {
                     inputUsername.requestFocus();
                     return;
                 }
+
+//                SharedPreferences prefs = getSharedPreferences("myprefs", MODE_PRIVATE);
+//                SharedPreferences.Editor prefsEditor = prefs.edit();
+//                prefsEditor.putString("profilename", profile);
+//                prefsEditor.putString("username", username);
+//                prefsEditor.apply();
+
+//                // load the highscore using sharedPreferences for permanent storing of an important value
+//                SharedPreferences prefs = getSharedPreferences("myprefs", MODE_PRIVATE);
+//                highscore = prefs.getInt("highscore", 0);
+
 
                 progressBar.setVisibility(View.VISIBLE);
                 FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
