@@ -24,6 +24,11 @@ public class FriendListAdapter extends BaseAdapter {
         items = new ArrayList<>();
     }
 
+    public void clearData() {
+        items = new ArrayList<>();
+        notifyDataSetChanged();
+    }
+
     public void addAdapterItem(FriendListItem item) {
         items.add(item);
     }

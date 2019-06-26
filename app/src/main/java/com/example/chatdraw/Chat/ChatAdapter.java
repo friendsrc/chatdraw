@@ -78,7 +78,7 @@ public class ChatAdapter extends BaseAdapter {
             view = inflater.inflate(R.layout.left_chat_bubble, parent, false);
             TextView senderName = view.findViewById(R.id.text_message_name);
             //TODO get name from userID
-            senderName.setText(chatItem.getSenderID());
+            senderName.setText(chatItem.getSenderName());
         }
 
         // set the text of the chat bubble

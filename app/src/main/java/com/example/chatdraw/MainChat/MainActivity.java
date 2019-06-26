@@ -41,7 +41,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
@@ -86,8 +88,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         ListView listView = findViewById(R.id.main_chat_listview);
         listView.setAdapter(friendListAdapter);
-
-        getMessageList(friendListAdapter);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -161,17 +161,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(MainActivity.this, ChatActivity.class);
-                FriendListItem friendListItem = (FriendListItem) friendListAdapter.getItem(position);
-                intent.putExtra("name", friendListItem.getName());
-                intent.putExtra("uID", friendListItem.getUID());
-                startActivity(intent);
-            }
-        });
-
         ImageButton imgbutt = (ImageButton) hView.findViewById(R.id.profile_edit_button);
         imgbutt.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -181,6 +170,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getMessageList(mFriendListAdapter);
+
+        //TODO set onChange listener
+
+        ListView listView = findViewById(R.id.main_chat_listview);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(MainActivity.this, ChatActivity.class);
+                FriendListItem friendListItem = (FriendListItem) mFriendListAdapter.getItem(position);
+                intent.putExtra("name", friendListItem.getName());
+                intent.putExtra("uID", friendListItem.getUID());
+                startActivity(intent);
+            }
+        });
     }
 
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -254,40 +264,37 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void getMessageList(final FriendListAdapter friendListAdapter) {
+        mFriendListAdapter.clearData();
+
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         db.collection("Previews")
                 .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
                 .collection("ChatPreviews")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                .orderBy("timestamp")
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            if (task.getResult() != null) {
-                                for (QueryDocumentSnapshot document : task.getResult()) {
-                                    Log.d(TAG, document.getId() + " => " + document.getData());
-                                    ChatItem chatItem = document.toObject(ChatItem.class);
-                                    String uId = chatItem.getSenderID();
-                                    String lastMessage = chatItem.getMessageBody();
-                                    String name, imageUrl; //TODO: user image url
+                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                        mFriendListAdapter.clearData();
+                        for (DocumentSnapshot q: queryDocumentSnapshots) {
+                            ChatItem chatItem = q.toObject(ChatItem.class);
+                            String uId = chatItem.getSenderID();
+                            String lastMessage = chatItem.getMessageBody();
+                            String name, imageUrl; //TODO: user image url
 
-                                    if (uId.equals(userUID)) {
-                                        name = chatItem.getReceiverName();
-                                        imageUrl = chatItem.getReceiverImageUrl();
-                                    } else {
-                                        name = chatItem.getSenderName();
-                                        imageUrl = chatItem.getSenderImageUrl();
-                                    }
-
-                                    FriendListItem friendListItem = new FriendListItem(name, lastMessage, R.drawable.blank_account, uId);
-                                    friendListAdapter.addAdapterItem(friendListItem);
-                                    friendListAdapter.notifyDataSetChanged();
-                                    Log.d("HEY", "finished");
-                                }
+                            if (uId.equals(userUID)) {
+                                uId =chatItem.getReceiverID();
+                                name = chatItem.getReceiverName();
+                                imageUrl = chatItem.getReceiverImageUrl();
+                            } else {
+                                name = chatItem.getSenderName();
+                                imageUrl = chatItem.getSenderImageUrl();
                             }
-                        } else {
-                            Log.w(TAG, "Error getting documents.", task.getException());
+
+                            FriendListItem friendListItem = new FriendListItem(name, lastMessage, R.drawable.blank_account, uId);
+                            friendListAdapter.addAdapterItem(friendListItem);
+                            friendListAdapter.notifyDataSetChanged();
+                            Log.d("HEY", "finished");
                         }
                     }
                 });
