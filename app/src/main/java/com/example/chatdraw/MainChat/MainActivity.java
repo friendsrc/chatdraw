@@ -302,7 +302,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             }
 
                             // create a new FriendListItem and add to ListView
-                            FriendListItem friendListItem = new FriendListItem(name, lastMessage, R.drawable.blank_account, uId);
+                            FriendListItem friendListItem = new FriendListItem(name, lastMessage, R.drawable.blank_account, uId, imageUrl);
                             friendListAdapter.addAdapterItem(friendListItem);
                             friendListAdapter.notifyDataSetChanged();
                         }

@@ -1,6 +1,7 @@
 package com.example.chatdraw.Contacts;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.chatdraw.R;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,8 +63,19 @@ public class FriendListAdapter extends BaseAdapter {
         chatTextView.setText(items.get(position).getChatPreview());
 
         // set the profile picture
+        String imgUrl = items.get(position).getImageURL();
         ImageView imageView = view.findViewById(R.id.friend_list_profilepicture);
-        imageView.setImageResource(items.get(position).getImageID());
+
+        if (imgUrl != null) {
+            Picasso.get()
+                    .load(imgUrl)
+                    .fit()
+                    .into(imageView);
+            Log.d("HEY", "calling picasso");
+        } else {
+            imageView.setImageResource(items.get(position).getImageID());
+        }
+
         return view;
     }
 }

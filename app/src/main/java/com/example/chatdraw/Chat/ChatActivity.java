@@ -92,6 +92,9 @@ public class ChatActivity extends AppCompatActivity {
                         friendName[0] = task.getResult().getString("name");
                         friendUsername[0] = task.getResult().getString("username");
                         friendImageUrl[0] = task.getResult().getString("imageUrl");
+                        Log.d("HEY", "username = " + friendUsername[0]);
+                        Log.d("HEY","name = " +  friendName[0]);
+                        Log.d("HEY", "image = " + friendImageUrl[0]);
                     }
                 });
 
@@ -183,8 +186,13 @@ public class ChatActivity extends AppCompatActivity {
                         chatAdapter.clearData();
                         for (DocumentSnapshot q: queryDocumentSnapshots) {
                             ChatItem chatItem = q.toObject(ChatItem.class);
-                            chatAdapter.addAdapterItem(chatItem);
-                            chatAdapter.notifyDataSetChanged();
+                            // TODO: make this work
+//                            if (chatItem != null && !chatItem.getSenderID().equals(userUID)) {
+//                                String updatedImageURL = friendImageUrl[0];
+//                                chatItem.setSenderImageUrl(updatedImageURL);
+//                            }
+//                            chatAdapter.addAdapterItem(chatItem);
+//                            chatAdapter.notifyDataSetChanged();
                         }
                     }
                 });

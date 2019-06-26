@@ -6,6 +6,7 @@ public class FriendListItem {
     private String name;
     private String chatPreview;
     private int imageID;
+    private String imageURL;
 
     public FriendListItem(String name, String chatPreview, int imageID) {
         this.name = name;
@@ -18,6 +19,14 @@ public class FriendListItem {
         this.chatPreview = chatPreview;
         this.imageID = imageID;
         this.uID = uID;
+    }
+
+    public FriendListItem(String name, String chatPreview, int imageID, String uID, String imageURL) {
+        this.name = name;
+        this.chatPreview = chatPreview;
+        this.imageID = imageID;
+        this.uID = uID;
+        this.imageURL = imageURL;
     }
 
     public FriendListItem(String username, String name, String chatPreview, int imageID) {
@@ -44,4 +53,6 @@ public class FriendListItem {
     }
 
     public String getUsername() { return this.username; }
+
+    public String getImageURL() { return this.imageURL; }
 }

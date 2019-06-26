@@ -22,6 +22,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -88,6 +89,15 @@ public class ChatAdapter extends BaseAdapter {
         // set time 'time sent'
         TextView time = view.findViewById(R.id.text_message_time);
         time.setText(chatItem.getTimeSent());
+
+        String imgUrl = chatItem.getSenderImageUrl();
+        ImageView imageView = view.findViewById(R.id.image_message_profile);
+        if (imgUrl != null) {
+            Picasso.get()
+                    .load(imgUrl)
+                    .fit()
+                    .into(imageView);
+        }
 
         return view;
     }
