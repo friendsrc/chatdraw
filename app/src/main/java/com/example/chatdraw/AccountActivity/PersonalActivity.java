@@ -81,7 +81,6 @@ public class PersonalActivity extends AppCompatActivity {
 //                SharedPreferences prefs = getSharedPreferences("myprefs", MODE_PRIVATE);
 //                highscore = prefs.getInt("highscore", 0);
 
-
                 progressBar.setVisibility(View.VISIBLE);
                 FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
                 String userEmail = currentFirebaseUser.getEmail();

@@ -11,13 +11,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.provider.MediaStore;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -128,7 +125,6 @@ public class ProfileEditActivity extends AppCompatActivity {
                 }
             });
         }
-
 
         // add a back button to the action bar
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);

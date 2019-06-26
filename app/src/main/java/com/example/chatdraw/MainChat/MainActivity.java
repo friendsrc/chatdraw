@@ -100,34 +100,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
             });
 
-//            try {
-//                StorageReference storageRef = FirebaseStorage.getInstance().getReference("Users")
-//                        .child(user.getUid()).child("profilepic").child("image.jpg");
-//
-//                final ImageButton imgbut = (ImageButton) hView.findViewById(R.id.profile_edit_button);
-//
-//                storageRef.getBytes(1000 * 1000)
-//                        .addOnSuccessListener(new OnSuccessListener<byte[]>() {
-//                            @Override
-//                            public void onSuccess(byte[] bytes) {
-//                                Bitmap bm = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-//                                DisplayMetrics dm = new DisplayMetrics();
-//                                getWindowManager().getDefaultDisplay().getMetrics(dm);
-//
-//                                imgbut.setMinimumHeight(dm.heightPixels);
-//                                imgbut.setMinimumWidth(dm.widthPixels);
-//                                imgbut.setImageBitmap(bm);
-//                            }
-//                        }).addOnFailureListener(new OnFailureListener() {
-//                    @Override
-//                    public void onFailure(@NonNull Exception e) {
-//                        Toast.makeText(MainActivity.this, "no image detected", Toast.LENGTH_SHORT).show();
-//                    }
-//                });
-//            } catch (Exception e) {
-//                Toast.makeText(MainActivity.this, "no file path detected", Toast.LENGTH_SHORT).show();
-//            }
-
             reference.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -284,5 +256,35 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     }
                 });
     }
-
 }
+
+// Changing image into bitmap from firebase storage
+//
+//            try {
+//                StorageReference storageRef = FirebaseStorage.getInstance().getReference("Users")
+//                        .child(user.getUid()).child("profilepic").child("image.jpg");
+//
+//                final ImageButton imgbut = (ImageButton) hView.findViewById(R.id.profile_edit_button);
+//
+//                storageRef.getBytes(1000 * 1000)
+//                        .addOnSuccessListener(new OnSuccessListener<byte[]>() {
+//                            @Override
+//                            public void onSuccess(byte[] bytes) {
+//                                Bitmap bm = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+//                                DisplayMetrics dm = new DisplayMetrics();
+//                                getWindowManager().getDefaultDisplay().getMetrics(dm);
+//
+//                                imgbut.setMinimumHeight(dm.heightPixels);
+//                                imgbut.setMinimumWidth(dm.widthPixels);
+//                                imgbut.setImageBitmap(bm);
+//                            }
+//                        }).addOnFailureListener(new OnFailureListener() {
+//                    @Override
+//                    public void onFailure(@NonNull Exception e) {
+//                        Toast.makeText(MainActivity.this, "no image detected", Toast.LENGTH_SHORT).show();
+//                    }
+//                });
+//            } catch (Exception e) {
+//                Toast.makeText(MainActivity.this, "no file path detected", Toast.LENGTH_SHORT).show();
+//            }
+
