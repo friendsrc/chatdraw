@@ -55,12 +55,9 @@ public class FindFriendActivity extends AppCompatActivity {
         // Create a custom adapter for the friend list ListView
         final NewFriendAdapter newFriendAdapter = new NewFriendAdapter(this);
 
-
-        // set onClickListener on the listView
-        // if clicked, go back to FriendListActivity
-        // put extra containing the name of the clicked profile
-        ListView listView = findViewById(R.id.find_friend_listview);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        // create an onItemClickListener for the ListView
+        AdapterView.OnItemClickListener onItemClickListener
+                = new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // get clicked item
@@ -77,21 +74,34 @@ public class FindFriendActivity extends AppCompatActivity {
                             @Override
                             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                 if (task.isSuccessful()) {
-                                    final String currentUserID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                                    final String currentUserID = FirebaseAuth.getInstance()
+                                            .getCurrentUser().getUid();
                                     for (QueryDocumentSnapshot document : task.getResult()) {
                                         final String uID = document.getId();
-                                        FirebaseFirestore.getInstance().collection("Users")
-                                                .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                        FirebaseFirestore.getInstance()
+                                                .collection("Users")
+                                                .document(currentUserID)
                                                 .get()
                                                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                                                     @Override
                                                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                                        ArrayList<String> contacts = (ArrayList<String>) task.getResult().get("contacts");
-                                                        // if the chosen contact already exist in this user's contacts list, make a toast
+                                                        ArrayList<String> contacts
+                                                                = (ArrayList<String>)
+                                                                task.getResult().get("contacts");
+                                                        // if the chosen contact already exist in
+                                                        // this user's contacts list, make a toast
                                                         if (contacts != null && contacts.contains(uID)) {
-                                                            Toast.makeText(FindFriendActivity.this, "Already in Contacts", Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(
+                                                                    FindFriendActivity.this,
+                                                                    "Already in Contacts",
+                                                                    Toast.LENGTH_SHORT
+                                                            ).show();
                                                         } else  if (uID.equals(currentUserID)) {
-                                                            Toast.makeText(FindFriendActivity.this, "Can't add your own account", Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(
+                                                                    FindFriendActivity.this,
+                                                                    "Can't add your own account",
+                                                                    Toast.LENGTH_SHORT
+                                                            ).show();
                                                         } else {
                                                             intent.putExtra("uID", uID);
 
@@ -109,10 +119,14 @@ public class FindFriendActivity extends AppCompatActivity {
                                 }
                             }
                         });
-
-
             }
-        });
+        };
+
+        // set onClickListener on the listView
+        // if clicked, go back to FriendListActivity
+        // put extra containing the name of the clicked profile
+        ListView listView = findViewById(R.id.find_friend_listview);
+        listView.setOnItemClickListener(onItemClickListener);
 
         // set the action bar title
         getSupportActionBar().setTitle("Find Friends");
@@ -138,7 +152,8 @@ public class FindFriendActivity extends AppCompatActivity {
                 newFriendAdapter.clearData();
                 String str = s.toString();
                 if (!str.trim().equals("")) {
-                    findUserInDatabase(newFriendAdapter, str.trim());  // find user and update listview
+                    // find user and update listview
+                    findUserInDatabase(newFriendAdapter, str.trim());
                 }
             }
         });
@@ -206,7 +221,10 @@ public class FindFriendActivity extends AppCompatActivity {
                             List<User> users = task.getResult().toObjects(User.class);
                             int count = 0;
                             for (User u : users) {
-                                updateListView(newFriendAdapter, u.getName(), u.getUsername(), R.drawable.blank_account);
+                                if (count > 20) return;
+                                count++;
+                                updateListView(newFriendAdapter, u.getName(),
+                                        u.getUsername(), R.drawable.blank_account);
                             }
                         } else {
                             Log.w(TAG, "Error getting documents.", task.getException());
@@ -223,7 +241,8 @@ public class FindFriendActivity extends AppCompatActivity {
         return true;
     }
 
-    public void updateListView(NewFriendAdapter newFriendAdapter, String name, String username, int imageID) {
+    public void updateListView(NewFriendAdapter newFriendAdapter, String name,
+                               String username, int imageID) {
         // find the friend list ListView
         ListView listView = findViewById(R.id.find_friend_listview);
 

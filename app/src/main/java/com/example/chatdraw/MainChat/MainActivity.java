@@ -49,13 +49,16 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-    private FriendListAdapter mFriendListAdapter;
+
     private static final String TAG = "MainActivity";
+
     private static final int FIND_FRIEND_REQUEST_CODE = 101;
     private static final int NEW_MESSAGE_REQUEST_CODE = 808;
     private static final int FIND_SETTINGS_REQUEST_CODE = 909;
+
     private DrawerLayout drawer;
     private DatabaseReference mDatabaseRef;
+    private FriendListAdapter mFriendListAdapter;
 
     private String userUID;
     final String[] userName = new String[1];
@@ -83,9 +86,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     }
                 });
 
+        // create Adapter and set to ListView
         final FriendListAdapter friendListAdapter = new FriendListAdapter(this);
         mFriendListAdapter = friendListAdapter;
-
         ListView listView = findViewById(R.id.main_chat_listview);
         listView.setAdapter(friendListAdapter);
 
@@ -152,6 +155,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
+        // set the 'add-message' ImageView
+        // if clicked -> go to NewMessageActivity
         ImageView newChatImageView = findViewById(R.id.main_chat_add_message_imageview);
         newChatImageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -169,17 +174,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 startActivity(intent);
             }
         });
-
-
     }
 
     @Override
     public void onResume() {
         super.onResume();
+
+        // get Messages Previews from Firestore
         getMessageList(mFriendListAdapter);
 
-        //TODO set onChange listener
-
+        // set on click listener to the ListView
         ListView listView = findViewById(R.id.main_chat_listview);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -235,10 +239,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             String uID = snapshot.getId();
                             String name = (String) snapshot.get("name");
                             updateListView(mFriendListAdapter, uID, name, "No messages yet.", R.drawable.blank_account);
-
                         }
                     });
-            // TODO get messages > this user > username
         }
     }
 
@@ -264,10 +266,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void getMessageList(final FriendListAdapter friendListAdapter) {
+        // clear previous data from ListView Adapter
         mFriendListAdapter.clearData();
 
+        // get list of message previews from Firestore and update ListView
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-
         db.collection("Previews")
                 .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
                 .collection("ChatPreviews")
@@ -277,24 +280,31 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
                         mFriendListAdapter.clearData();
                         for (DocumentSnapshot q: queryDocumentSnapshots) {
+                            // turn DocumentSnapshot into ChatItem
                             ChatItem chatItem = q.toObject(ChatItem.class);
+
+                            // get the properties needed to make a new FriendListItem
                             String uId = chatItem.getSenderID();
                             String lastMessage = chatItem.getMessageBody();
                             String name, imageUrl; //TODO: user image url
 
+                            // if the sender of this ChatItem is the current user, get the profile
+                            // of the receiver instead
                             if (uId.equals(userUID)) {
                                 uId =chatItem.getReceiverID();
                                 name = chatItem.getReceiverName();
                                 imageUrl = chatItem.getReceiverImageUrl();
+
+                            // if the sender is not the user, use the sender's profile
                             } else {
                                 name = chatItem.getSenderName();
                                 imageUrl = chatItem.getSenderImageUrl();
                             }
 
+                            // create a new FriendListItem and add to ListView
                             FriendListItem friendListItem = new FriendListItem(name, lastMessage, R.drawable.blank_account, uId);
                             friendListAdapter.addAdapterItem(friendListItem);
                             friendListAdapter.notifyDataSetChanged();
-                            Log.d("HEY", "finished");
                         }
                     }
                 });
