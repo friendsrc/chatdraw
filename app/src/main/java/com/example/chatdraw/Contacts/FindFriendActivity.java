@@ -144,7 +144,7 @@ public class FindFriendActivity extends AppCompatActivity {
         });
     }
 
-    public void findUserInDatabase(final NewFriendAdapter newFriendAdapter, final String text) {
+    public void findUserInDatabase(final NewFriendAdapter newFriendAdapter, String inputText) {
 //        // create a listener to get the data from Realtime Database
 //        // the listener checks if the User's username contains the inputted text
 //        ValueEventListener valueEventListener = new ValueEventListener() {
@@ -179,29 +179,24 @@ public class FindFriendActivity extends AppCompatActivity {
 //        usersDatabase.orderByChild("username").addValueEventListener(valueEventListener);
 
 
+        // Check if the input start with @
+        final String text;
+        if (inputText.charAt(0) != '@') {
+            text = "@" + inputText;
+        }  else {
+            text = inputText;
+        }
 
-//        // get the user whose username is exactly the same as the inputted text
-//        FirebaseFirestore.getInstance().collection("Users")
-//                .whereEqualTo("username", textWithAdd)
-//                .get()
-//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                        newFriendAdapter.clearData();
-//                        List<User> users = task.getResult().toObjects(User.class);
-//                        Log.d(TAG, "users SAME = " + users);
-//                        for (User u: users) {
-//                            Log.d(TAG, "SAME USER +" + u.getUsername());
-//                            updateListView(newFriendAdapter, u.getName(), u.getUsername(), R.drawable.blank_account);
-//                            break;
-//                        }
-//                    }
-//                });
+        if (text.length() < 2) return;
 
-        // TODO: change into finding users whose username start with the inputted text, add hint @username to layout
         // get users whose usernames contain the inputted text
+        char firstChar = text.charAt(1);
+        char nextChar = ++firstChar;
+        Log.d("HEY", "NEXT CHAER = " + nextChar);
         FirebaseFirestore.getInstance().collection("Users")
                 .orderBy("username")
+                .startAt(text)
+                .endBefore("@" + nextChar)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
@@ -209,23 +204,9 @@ public class FindFriendActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             newFriendAdapter.clearData();
                             List<User> users = task.getResult().toObjects(User.class);
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                users.sort(new Comparator<User>() {
-                                    @Override
-                                    public int compare(User a, User b) {
-                                        return (a.getUsername().length() - b.getUsername().length());
-                                    }
-                                });
-                            }
                             int count = 0;
                             for (User u : users) {
-                                String username = u.getUsername();
-                                if (count > 20) { // limit the search result to 20 friends
-                                    break;
-                                } else if (username.contains(text) ) {
-                                    count++;
-                                    updateListView(newFriendAdapter, u.getName(), u.getUsername(), R.drawable.blank_account);
-                                }
+                                updateListView(newFriendAdapter, u.getName(), u.getUsername(), R.drawable.blank_account);
                             }
                         } else {
                             Log.w(TAG, "Error getting documents.", task.getException());

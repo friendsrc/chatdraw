@@ -153,6 +153,10 @@ public class ChatActivity extends AppCompatActivity {
                     .collection("ChatHistory")
                     .add(chatItem);
 
+            if (chatItem.getMessageBody().length() > 43) {
+                chatItem.setMessageBody(chatItem.getMessageBody().substring(0, 40) + "...");
+            }
+
             // Send to user's message preview collection
             db.collection("Previews").document(userID)
                     .collection("ChatPreviews").document(friendsUID)

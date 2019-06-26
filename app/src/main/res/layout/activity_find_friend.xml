@@ -11,10 +11,10 @@
         android:id="@+id/find_friend_edittext"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Search friend"
+        android:layout_marginLeft="20dp"
         android:layout_marginTop="20dp"
         android:layout_marginRight="20dp"
-        android:layout_marginLeft="20dp"/>
+        android:hint="@string/addUsername" />
 
     <ListView
         android:id="@+id/find_friend_listview"
