@@ -56,6 +56,8 @@ public class ChatActivity extends AppCompatActivity {
     final String[] userUsername = new String[1];
     final String[] userImageUrl = new String[1];
 
+    private ChatAdapter mChatAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,6 +84,12 @@ public class ChatActivity extends AppCompatActivity {
                     }
                 });
 
+        //set adapter to listview
+        final ChatAdapter chatAdapter = new ChatAdapter(this);
+        mChatAdapter = chatAdapter;
+        ListView listView = findViewById(R.id.chat_listview);
+        listView.setAdapter(chatAdapter);
+
         // get friends's display name and profile picture
         FirebaseFirestore.getInstance().collection("Users")
                 .document(friendsUID)
@@ -92,22 +100,13 @@ public class ChatActivity extends AppCompatActivity {
                         friendName[0] = task.getResult().getString("name");
                         friendUsername[0] = task.getResult().getString("username");
                         friendImageUrl[0] = task.getResult().getString("imageUrl");
-                        Log.d("HEY", "username = " + friendUsername[0]);
-                        Log.d("HEY","name = " +  friendName[0]);
-                        Log.d("HEY", "image = " + friendImageUrl[0]);
+                        getMessages(chatAdapter);
                     }
                 });
 
         // set the action bar title
         getSupportActionBar().setTitle(intent.getStringExtra("name"));
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        //set adapter to listview
-        final ChatAdapter chatAdapter = new ChatAdapter(this);
-        ListView listView = findViewById(R.id.chat_listview);
-        listView.setAdapter(chatAdapter);
-
-        getMessages(chatAdapter);
 
         //  set onClickListener on the 'Send Message' button
         ImageView sendImageView = findViewById(R.id.chat_send_imageview);
@@ -186,13 +185,14 @@ public class ChatActivity extends AppCompatActivity {
                         chatAdapter.clearData();
                         for (DocumentSnapshot q: queryDocumentSnapshots) {
                             ChatItem chatItem = q.toObject(ChatItem.class);
-                            // TODO: make this work
-//                            if (chatItem != null && !chatItem.getSenderID().equals(userUID)) {
-//                                String updatedImageURL = friendImageUrl[0];
-//                                chatItem.setSenderImageUrl(updatedImageURL);
-//                            }
-//                            chatAdapter.addAdapterItem(chatItem);
-//                            chatAdapter.notifyDataSetChanged();
+
+                            if (chatItem != null && !chatItem.getSenderID().equals(userUID)) {
+                                String updatedImageURL = friendImageUrl[0];
+                                chatItem.setSenderImageUrl(updatedImageURL);
+                            }
+
+                            chatAdapter.addAdapterItem(chatItem);
+                            chatAdapter.notifyDataSetChanged();
                         }
                     }
                 });

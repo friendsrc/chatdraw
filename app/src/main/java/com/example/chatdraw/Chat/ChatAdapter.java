@@ -78,8 +78,16 @@ public class ChatAdapter extends BaseAdapter {
         } else {
             view = inflater.inflate(R.layout.left_chat_bubble, parent, false);
             TextView senderName = view.findViewById(R.id.text_message_name);
-            //TODO get name from userID
             senderName.setText(chatItem.getSenderName());
+
+            String imgUrl = chatItem.getSenderImageUrl();
+            ImageView imageView = view.findViewById(R.id.image_message_profile);
+            if (imgUrl != null) {
+                Picasso.get()
+                        .load(imgUrl)
+                        .fit()
+                        .into(imageView);
+            }
         }
 
         // set the text of the chat bubble
@@ -89,15 +97,6 @@ public class ChatAdapter extends BaseAdapter {
         // set time 'time sent'
         TextView time = view.findViewById(R.id.text_message_time);
         time.setText(chatItem.getTimeSent());
-
-        String imgUrl = chatItem.getSenderImageUrl();
-        ImageView imageView = view.findViewById(R.id.image_message_profile);
-        if (imgUrl != null) {
-            Picasso.get()
-                    .load(imgUrl)
-                    .fit()
-                    .into(imageView);
-        }
 
         return view;
     }
