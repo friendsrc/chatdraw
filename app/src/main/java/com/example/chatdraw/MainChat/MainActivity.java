@@ -10,6 +10,8 @@ import com.example.chatdraw.Chat.ChatItem;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+
+import androidx.appcompat.app.ActionBar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -70,22 +72,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // get user's UID
-        userUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-        // get user's display name and profile picture
-        FirebaseFirestore.getInstance().collection("Users")
-                .document(userUID)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        userName[0] = task.getResult().getString("name");
-                        userUsername[0] = task.getResult().getString("username");
-                        userImageUrl[0] = task.getResult().getString("imageUrl");
-                    }
-                });
-
         // create Adapter and set to ListView
         final FriendListAdapter friendListAdapter = new FriendListAdapter(this);
         mFriendListAdapter = friendListAdapter;
@@ -103,7 +89,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
         final View hView = navigationView.getHeaderView(0);
-
 
         if (user != null) {
             Log.d("userid", user.getUid());
@@ -148,7 +133,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             });
         }
 
-        getSupportActionBar().setTitle("ChatDraw");
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setTitle("Chatdraw");
+        }
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar,
                 R.string.drawer_open, R.string.drawer_close);
@@ -341,3 +329,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 //                Toast.makeText(MainActivity.this, "no file path detected", Toast.LENGTH_SHORT).show();
 //            }
 
+
+// Updating profile picture and username from firestore
+
+//        // get user's UID
+//        userUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+//        // get user's display name and profile picture
+//        FirebaseFirestore.getInstance().collection("Users")
+//                .document(userUID)
+//                .get()
+//                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+//                        userName[0] = task.getResult().getString("name");
+//                        userUsername[0] = task.getResult().getString("username");
+//                        userImageUrl[0] = task.getResult().getString("imageUrl");
+//                    }
+//                });

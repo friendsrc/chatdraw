@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright 2018 The app Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/bio_header">
+
+        <EditTextPreference
+            android:key="profilenames"
+            android:title="@string/profile_name_title"
+            android:summary="changethis"/>
+
+        <EditTextPreference
+            android:key="usernames"
+            android:title="@string/username_title"
+            android:summary="changethis"/>
+
+        <ListPreference
+            android:entries="@array/status_entries"
+            android:entryValues="@array/status_values"
+            android:key="status"
+            android:title="@string/status_title"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/settings_header">
+        <PreferenceScreen
+            android:title="@string/settings_butt"
+            android:summary="Privacy and Security">
+
+            <intent
+                android:targetPackage="com.example.chatdraw"
+                android:targetClass="com.example.chatdraw.AccountActivity.SettingsActivity" />
+
+        </PreferenceScreen>
+        <PreferenceScreen
+            android:title="@string/notification_butt"
+            android:summary="Sounds and ringtone">
+
+            <intent
+                android:targetPackage="com.example.chatdraw"
+                android:targetClass="com.example.chatdraw.AccountActivity.NotificationHeaderActivity" />
+
+        </PreferenceScreen>
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/messages_header">
+
+        <EditTextPreference
+            android:key="signature"
+            android:title="@string/signature_title"
+            android:summary="Not set"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/sync_header">
+
+        <SwitchPreference
+            android:key="sync"
+            android:title="@string/sync_title" />
+
+        <SwitchPreference
+            android:dependency="sync"
+            android:key="attachment"
+            android:summaryOff="@string/attachment_summary_off"
+            android:summaryOn="@string/attachment_summary_on"
+            android:title="@string/attachment_title" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Help and Support">
+
+        <EditTextPreference
+            android:key="happy"
+            android:title="If you happy and I know it clap your hand"
+            android:summary="yey" />
+
+    </PreferenceCategory>
+</PreferenceScreen>

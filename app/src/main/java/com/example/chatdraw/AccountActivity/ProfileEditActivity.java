@@ -9,9 +9,19 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.EditTextPreference;
+import android.preference.ListPreference;
+import android.preference.Preference;
+import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
+import android.preference.RingtonePreference;
 import android.provider.MediaStore;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
@@ -19,10 +29,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.preference.PreferenceFragmentCompat;
+// import androidx.preference.PreferenceFragmentCompat;
 
 import com.example.chatdraw.R;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -75,31 +88,11 @@ public class ProfileEditActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
 
         mStorageRef = FirebaseStorage.getInstance().getReference("Users");
-        mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.photo_button);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                SelectImage();
-            }
-        });
-
-        Button settingspage = (Button) findViewById(R.id.settings_redirect);
-        settingspage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent_settings = new Intent(ProfileEditActivity.this, SettingsActivity.class);
-                startActivity(intent_settings);
-            }
-        });
 
         final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
 
         if (user != null) {
-            mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
-
             reference.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -126,11 +119,128 @@ public class ProfileEditActivity extends AppCompatActivity {
             });
         }
 
-        // add a back button to the action bar
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.photo_button);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SelectImage();
+            }
+        });
 
-        getSupportActionBar().setTitle("Settings");
+        Button settingspage = (Button) findViewById(R.id.settings_redirect);
+        settingspage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent_settings = new Intent(ProfileEditActivity.this, SettingsActivity.class);
+                startActivity(intent_settings);
+            }
+        });
+
+        getFragmentManager()
+                .beginTransaction()
+                .replace(R.id.settings, new SettingsFragment())
+                .commit();
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setTitle("Settings");
+        }
     }
+
+    public static class SettingsFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.root_preferences);
+
+            bindSummaryValue(findPreference("profilenames"));
+            bindSummaryValue(findPreference("usernames"));
+            bindSummaryValue(findPreference("status"));
+            bindSummaryValue(findPreference("signature"));
+        }
+    }
+
+     private static void bindSummaryValue(Preference preference) {
+        preference.setOnPreferenceChangeListener(listener);
+        listener.onPreferenceChange(preference,
+                PreferenceManager.getDefaultSharedPreferences(preference.getContext())
+                        .getString(preference.getKey(), "Not setting"));
+
+    }
+
+    private static Preference.OnPreferenceChangeListener listener = new Preference.OnPreferenceChangeListener() {
+        @Override
+        public boolean onPreferenceChange(final Preference preference, Object newValue) {
+            String stringValue = newValue.toString();
+            if (preference instanceof ListPreference){
+                ListPreference listPreference = (ListPreference) preference;
+                int index = listPreference.findIndexOfValue(stringValue);
+
+                // Set the summary to reflect the new value
+                preference.setSummary(index > -1
+                        ? listPreference.getEntries()[index]
+                        : null);
+            } else if (preference instanceof EditTextPreference) {
+                if (stringValue.length() == 0) {
+                    if (preference.getSummary().equals("changethis")) {
+                        Log.v("PASS HERE", "CHANGETHIS");
+                        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
+
+                        if (user != null) {
+                            reference.addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    String profilename = (String) dataSnapshot.child(user.getUid()).child("name").getValue();
+                                    String username = (String) dataSnapshot.child(user.getUid()).child("username").getValue();
+
+                                    if (preference.getKey().equals("profilenames") && (profilename != null)) {
+                                        preference.setSummary(profilename);
+                                    } else if (preference.getKey().equals("usernames") && username != null) {
+                                        preference.setSummary(username);
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            });
+                        }
+                    } else {
+                        Log.v("HERE", "SET HERE");
+                        preference.setSummary("Not set");
+                    }
+                } else {
+                    if (preference.getKey().equals("profilenames")) {
+                        preference.setSummary(stringValue);
+                    } else if (preference.getKey().equals("usernames")) {
+                        preference.setSummary(stringValue);
+                    } else {
+                        preference.setSummary(stringValue);
+                    }
+                }
+            } else if (preference instanceof RingtonePreference){
+                if (TextUtils.isEmpty(stringValue)) {
+                    preference.setSummary("Silent");
+                } else {
+                    Ringtone ringtone = RingtoneManager.getRingtone(preference.getContext(),
+                            Uri.parse(stringValue));
+
+                    if (ringtone == null) {
+                        // Clear the summary
+                        preference.setSummary("Choose notification ringtone");
+                    } else {
+                        String name = ringtone.getTitle(preference.getContext());
+                        preference.setSummary(name);
+                    }
+                }
+            }
+
+            return true;
+        }
+    };
 
     private void SelectImage(){
         final CharSequence[] items={"Camera","Gallery", "Cancel"};
@@ -304,34 +414,6 @@ public class ProfileEditActivity extends AppCompatActivity {
                 Toast.makeText(this, "No file selected or camera picture not configured yet", Toast.LENGTH_LONG).show();
             }
 
-        }
-    }
-
-    // CONVERT AND COMPRESS URI IMAGE
-    public void compressUriFile(Intent data) {
-        Uri imageUri = data.getData();
-
-        InputStream imageStream = null;
-
-        try {
-            imageStream = getContentResolver().openInputStream(
-                    imageUri);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        Bitmap bmp = BitmapFactory.decodeStream(imageStream);
-
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bmp.compress(Bitmap.CompressFormat.JPEG, 50, stream);
-        circleImageView.setImageBitmap(bmp);
-        byte[] byteArray = stream.toByteArray();
-
-        try {
-            stream.close();
-            stream = null;
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 

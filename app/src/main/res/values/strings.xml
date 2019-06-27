@@ -46,7 +46,35 @@
     <string name="long_username">Username too long</string>
     <string name="long_name">Name too long</string>
     <string name="addUsername">@username</string>
-    <string name="settings_butt">Privacy and Security</string>
+    <string name="settings_butt">Account</string>
+    <string name="notification_butt">Notification</string>
+    <string name="sound_butt">Sound</string>
+    <string name="settings_pref">Settings Preference</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_settings_edit">SettingsEdit</string>
+
+    <!-- Preference Titles -->
+    <string name="bio_header">Bio</string>
+    <string name="settings_header">Settings</string>
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Bio Preferences -->
+    <string name="profile_name_title">Profile Name</string>
+    <string name="username_title">Username</string>
+    <string name="status_title">Status</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+
 </resources>

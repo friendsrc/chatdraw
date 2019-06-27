@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="Message notifications">
+
+        <SwitchPreference
+            android:key="enable_notification"
+            android:editable="true"
+            android:title="Push notifications" />
+
+        <RingtonePreference
+            android:key="key_notification_ringtone"
+            android:title="Notification ringtone"
+            android:summary="Choose notification sound"
+            android:ringtoneType="notification"
+            android:dependency="enable_notification" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
