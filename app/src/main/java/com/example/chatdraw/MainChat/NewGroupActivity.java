@@ -22,12 +22,14 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class NewGroupActivity extends AppCompatActivity {
 
     public static final String TAG = "NewGroupActivity";
     private FriendListAdapter mFriendListAdapter;
     private ListView mListView;
+    private HashMap<String, FriendListItem> contacts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +43,7 @@ public class NewGroupActivity extends AppCompatActivity {
         // set adapter on ListView
         mFriendListAdapter = new FriendListAdapter(this);
         mListView = findViewById(R.id.new_group_listview);
+        contacts = new HashMap<>();
 
         // get contacts from Firebase
         getContacts();
@@ -52,10 +55,10 @@ public class NewGroupActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // TODO: create proper layout
-//                FriendListItem friendListItem = (FriendListItem) mFriendListAdapter.getItem(position);
-//                View viewItem = getLayoutInflater().inflate(R.layout.new_group_contact_item, layout);
-//                TextView textView = viewItem.findViewById(R.id.new_group_contact_textview);
-//                textView.setText(friendListItem.getName());
+                FriendListItem friendListItem = (FriendListItem) mFriendListAdapter.getItem(position);
+                View viewItem = getLayoutInflater().inflate(R.layout.new_group_contact_item, layout);
+                TextView textView = viewItem.findViewById(R.id.new_group_contact_textview);
+                textView.setText(friendListItem.getName());
             }
         });
 

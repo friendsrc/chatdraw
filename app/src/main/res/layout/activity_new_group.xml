@@ -8,14 +8,14 @@
     android:orientation="vertical"
     tools:context=".MainChat.NewGroupActivity">
 
-    <EditText
-        android:id="@+id/new_group_groupname_edittext"
-        android:hint="@string/group_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginTop="16dp"/>
+    <!--<EditText-->
+        <!--android:id="@+id/new_group_groupname_edittext"-->
+        <!--android:hint="@string/group_name"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_marginLeft="16dp"-->
+        <!--android:layout_marginRight="16dp"-->
+        <!--android:layout_marginTop="16dp"/>-->
 
     <EditText
         android:id="@+id/new_group_addpeople_edittext"
