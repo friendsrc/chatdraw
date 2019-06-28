@@ -1,6 +1,7 @@
 package com.example.chatdraw.Contacts;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -56,7 +57,12 @@ public class FriendListAdapter extends BaseAdapter {
 
         // set the name
         TextView nameTextView = view.findViewById(R.id.friend_list_name);
-        nameTextView.setText(items.get(position).getName());
+        String name = items.get(position).getName();
+        if (name == null) {
+            name = "Anonymous";
+            nameTextView.setTypeface(null, Typeface.ITALIC);;
+        }
+        nameTextView.setText(name);
 
         // set the chatpreview
         TextView chatTextView = view.findViewById(R.id.friend_list_chat_preview);
@@ -71,7 +77,6 @@ public class FriendListAdapter extends BaseAdapter {
                     .load(imgUrl)
                     .fit()
                     .into(imageView);
-            Log.d("HEY", "calling picasso");
         } else {
             imageView.setImageResource(items.get(position).getImageID());
         }

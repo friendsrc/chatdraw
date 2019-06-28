@@ -1,12 +1,14 @@
 package com.example.chatdraw.Contacts;
 
 public class FriendListItem {
+
     private String uID;
     private String username;
     private String name;
+    private String imageURL;
+
     private String chatPreview;
     private int imageID;
-    private String imageURL;
 
     public FriendListItem(String name, String chatPreview, int imageID) {
         this.name = name;

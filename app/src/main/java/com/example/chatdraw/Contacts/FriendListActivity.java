@@ -146,7 +146,7 @@ public class FriendListActivity extends AppCompatActivity {
 
                         // add the contact to ListView
                         FriendListItem friendListItem
-                                = updateListView(mFriendListAdapter, name, status, R.drawable.blank_account);
+                                = updateListView(mFriendListAdapter, name, status, uID, imageURL);
                         mFriendList.add(friendListItem);
 
                         // get the current user's uID
@@ -158,12 +158,12 @@ public class FriendListActivity extends AppCompatActivity {
                 });
     }
 
-    public FriendListItem updateListView(FriendListAdapter friendListAdapter, String name, String status, int imageID) {
+    public FriendListItem updateListView(FriendListAdapter friendListAdapter, String name, String status, String uid, String imageUrl) {
         // find the friend list ListView
         ListView listView = findViewById(R.id.friend_list_listview);
 
         // Instantiate a new FriendListItem and add it to the custom adapter
-        FriendListItem newFriend = new FriendListItem(name, status, imageID);
+        FriendListItem newFriend = new FriendListItem(name, status,R.drawable.blank_account, uid ,imageUrl);
         friendListAdapter.addAdapterItem(newFriend);
 
         // set the adapter to the ListView

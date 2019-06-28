@@ -8,14 +8,15 @@
     android:layout_height="wrap_content"
     android:paddingTop="8dp">
 
-    <ImageView
+    <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/image_message_profile"
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:background="@drawable/blank_account"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
         android:layout_marginLeft="8dp"
-        app:layout_constraintLeft_toLeftOf="parent" />
+        app:civ_border_color="@color/colorPrimaryDark"/>
 
     <TextView
         android:id="@+id/text_message_name"

@@ -63,9 +63,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private FriendListAdapter mFriendListAdapter;
 
     private String userUID;
-    final String[] userName = new String[1];
-    final String[] userUsername = new String[1];
-    final String[] userImageUrl = new String[1];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -257,6 +254,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // clear previous data from ListView Adapter
         mFriendListAdapter.clearData();
 
+        if (userUID == null) {
+            userUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        }
+
         // get list of message previews from Firestore and update ListView
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("Previews")
@@ -282,7 +283,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                 uId =chatItem.getReceiverID();
                                 name = chatItem.getReceiverName();
                                 imageUrl = chatItem.getReceiverImageUrl();
-
                             // if the sender is not the user, use the sender's profile
                             } else {
                                 name = chatItem.getSenderName();
