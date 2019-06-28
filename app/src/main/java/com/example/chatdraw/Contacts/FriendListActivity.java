@@ -50,6 +50,7 @@ public class FriendListActivity extends AppCompatActivity {
     private static final int FIND_FRIEND_REQUEST_CODE = 101;
 
     private FriendListAdapter mFriendListAdapter;
+    private ListView mListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +75,7 @@ public class FriendListActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // get Contacts list from Firebase
-        getContacts(mFriendListAdapter);
+        getContacts();
     }
 
     @Override
@@ -104,17 +105,14 @@ public class FriendListActivity extends AppCompatActivity {
                         DocumentSnapshot doc = task.getResult();
                         String name = (String) doc.get("name");
                         String status = (String) doc.get("status");
-                        String imageURL = (String) doc.get("imageUrl"); //TODO: set profile picture
-                        Log.d("HEJ", "image url =  " + imageURL);
+                        String imageURL = (String) doc.get("imageUrl");
 
                         // check if the user doesn't have name/status/imageURL
-                        if (name == null) name = "anonymous";
                         if (status == null) status = "[status]";
-                        if (imageURL == null) {};  //TODO: set default profile picture
 
                         // add the contact to ListView
                         FriendListItem friendListItem
-                                = updateListView(mFriendListAdapter, name, status, uID, imageURL);
+                                = updateListView(name, status, uID, imageURL);
 
                         // get the current user's uID
                         String currentUserID = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -125,24 +123,20 @@ public class FriendListActivity extends AppCompatActivity {
                 });
     }
 
-    public FriendListItem updateListView(FriendListAdapter friendListAdapter, String name, String status, String uid, String imageUrl) {
+    public FriendListItem updateListView(String name, String status, String uid, String imageUrl) {
         // find the friend list ListView
-        ListView listView = findViewById(R.id.friend_list_listview);
+        if(mListView == null) mListView = findViewById(R.id.friend_list_listview);
 
         // Instantiate a new FriendListItem and add it to the custom adapter
         FriendListItem newFriend = new FriendListItem(name, status, uid ,imageUrl);
-        friendListAdapter.addAdapterItem(newFriend);
+        mFriendListAdapter.addAdapterItem(newFriend);
 
         // set the adapter to the ListView
-        listView.setAdapter(friendListAdapter);
+        mListView.setAdapter(mFriendListAdapter);
         return newFriend;
     }
 
-    public void getContacts(final FriendListAdapter friendListAdapter) {
-        // get the Contacts listview and set the adapter
-        ListView listView = findViewById(R.id.friend_list_listview);
-        listView.setAdapter(friendListAdapter);
-
+    public void getContacts() {
         FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         String id = currentFirebaseUser.getUid();
         FirebaseFirestore.getInstance().collection("Users").document(id)

@@ -4,21 +4,60 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginLeft="16dp"
-    android:layout_marginRight="16dp"
+    android:gravity="center_horizontal"
     android:orientation="vertical"
     tools:context=".MainChat.NewGroupActivity">
 
     <EditText
+        android:id="@+id/new_group_groupname_edittext"
         android:hint="@string/group_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
         android:layout_marginTop="16dp"/>
 
     <EditText
-        android:hint="@string/add_friend"
+        android:id="@+id/new_group_addpeople_edittext"
+        android:hint="Add people"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
         android:layout_marginTop="8dp"/>
+
+    <ListView
+        android:padding="8dp"
+        android:id="@+id/new_group_listview"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:minHeight="400dp"
+        android:divider="@null"
+        android:dividerHeight="0dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/bluegray600"
+        android:paddingRight="16dp"
+        android:paddingLeft="8dp">
+
+        <LinearLayout
+            android:id="@+id/new_group_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp" />
+
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="64dp"
+            android:src="@drawable/arrow_forward"/>
+
+    </LinearLayout>
 
 </LinearLayout>

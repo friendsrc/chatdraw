@@ -20,7 +20,6 @@ public class FriendListAdapter extends BaseAdapter {
     private List<FriendListItem> items;
     private Context context;
 
-
     public FriendListAdapter(Context context) {
         super();
         this.context = context;
@@ -60,7 +59,8 @@ public class FriendListAdapter extends BaseAdapter {
         String name = items.get(position).getName();
         if (name == null) {
             name = "Anonymous";
-            nameTextView.setTypeface(null, Typeface.ITALIC);;
+//            nameTextView.setTypeface(null, Typeface.ITALIC);
+            nameTextView.setTextColor(context.getResources().getColor(R.color.bluegray100));
         }
         nameTextView.setText(name);
 

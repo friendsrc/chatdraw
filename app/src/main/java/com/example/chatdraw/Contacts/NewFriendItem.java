@@ -5,12 +5,11 @@ import com.example.chatdraw.R;
 public class NewFriendItem {
     private String name;
     private String username;
-    private int imageID;
+    private String imageUrl;
 
-    public NewFriendItem(String name, String username, int imageID) {
-        //TODO change parameter to username only, get the other attributes from firestore
+    public NewFriendItem(String name, String username, String imageUrl) {
         this.name = name;
-        this.imageID = imageID;
+        this.imageUrl = imageUrl;
         this.username = username;
     }
 
@@ -20,8 +19,8 @@ public class NewFriendItem {
 
     public String getUsername() { return this.username; }
 
-    public int getImageID() {
-        return this.imageID;
+    public String getImageUrl() {
+        return this.imageUrl;
     }
 
 }

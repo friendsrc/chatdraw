@@ -56,7 +56,6 @@ public class ChatActivity extends AppCompatActivity {
     final String[] userUsername = new String[1];
     final String[] userImageUrl = new String[1];
 
-    private ChatAdapter mChatAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,7 +85,6 @@ public class ChatActivity extends AppCompatActivity {
 
         //set adapter to listview
         final ChatAdapter chatAdapter = new ChatAdapter(this);
-        mChatAdapter = chatAdapter;
         ListView listView = findViewById(R.id.chat_listview);
         listView.setAdapter(chatAdapter);
 

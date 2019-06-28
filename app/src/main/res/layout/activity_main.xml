@@ -40,7 +40,6 @@
                 android:paddingLeft="16dp"
                 android:paddingRight="16dp" />
 
-            <!--TODO: change image src-->
             <ImageView
                 android:id="@+id/main_chat_add_message_imageview"
                 android:layout_width="56dp"
