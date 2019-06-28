@@ -222,19 +222,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                             DocumentSnapshot snapshot = task.getResult();
                             String uID = snapshot.getId();
-                            String name = (String) snapshot.get("name");
-                            updateListView(mFriendListAdapter, uID, name, "No messages yet.", R.drawable.blank_account);
+                            String name = snapshot.getString("name");
+                            String imageUrl = snapshot.getString("imageUrl");
+                            updateListView(mFriendListAdapter, uID, name, "No messages yet.", imageUrl);
                         }
                     });
         }
     }
 
-    public void updateListView(FriendListAdapter friendListAdapter, String uID, String name, String messagePreview, int imageID) {
+    public void updateListView(FriendListAdapter friendListAdapter, String uID, String name, String messagePreview, String imageUrl) {
         // find the friend list ListView
         ListView listView = findViewById(R.id.main_chat_listview);
 
         // Instantiate a new FriendListItem and add it to the custom adapter
-        FriendListItem newFriend = new FriendListItem(name, messagePreview, imageID, uID);
+        FriendListItem newFriend = new FriendListItem(name, messagePreview, uID, imageUrl);
         friendListAdapter.addAdapterItem(newFriend);
 
         // set the adapter to the ListView
@@ -290,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             }
 
                             // create a new FriendListItem and add to ListView
-                            FriendListItem friendListItem = new FriendListItem(name, lastMessage, R.drawable.blank_account, uId, imageUrl);
+                            FriendListItem friendListItem = new FriendListItem(name, lastMessage, uId, imageUrl);
                             friendListAdapter.addAdapterItem(friendListItem);
                             friendListAdapter.notifyDataSetChanged();
                         }

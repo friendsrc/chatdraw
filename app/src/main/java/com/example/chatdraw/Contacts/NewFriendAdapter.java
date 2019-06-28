@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.chatdraw.R;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +54,15 @@ public class NewFriendAdapter extends BaseAdapter {
 
         // set the profile picture
         ImageView imageView = view.findViewById(R.id.find_friend_imageview);
-        imageView.setImageResource(items.get(position).getImageID());
+        String imageUrl  = items.get(position).getImageUrl();
+        if (imageUrl == null) {
+            imageView.setImageResource(R.drawable.blank_account);
+        } else {
+            Picasso.get()
+                    .load(imageUrl)
+                    .fit()
+                    .into(imageView);
+        }
         return view;
     }
 

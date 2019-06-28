@@ -68,26 +68,9 @@ public class NewMessageActivity extends AppCompatActivity {
                 // create Intent to send selected friend's name back to MainActivity
                 final Intent intent = new Intent();
                 FriendListItem friendListItem = (FriendListItem) friendListAdapter.getItem(position);
-
-                // find friend's uID
-                FirebaseFirestore.getInstance().collection("Users")
-                        .whereEqualTo("username", friendListItem.getUsername())
-                        .get()
-                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                            @Override
-                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                for (QueryDocumentSnapshot document : task.getResult()) {
-                                    // put friend's uID into intent
-                                    intent.putExtra("uID", document.getId());
-
-                                    // set the result as successful
-                                    setResult(Activity.RESULT_OK, intent);
-
-                                    // destroy this activity
-                                    finish();
-                                }
-                            }
-                        });
+                intent.putExtra("uID", friendListItem.getUID());
+                setResult(Activity.RESULT_OK, intent);
+                finish();
             }
         });
 
@@ -121,29 +104,25 @@ public class NewMessageActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         DocumentSnapshot doc = task.getResult();
-                        String username = (String) doc.get("username");
                         String name = (String) doc.get("name");
                         String status = (String) doc.get("status");
-                        String imageURL = (String) doc.get("imageURL"); //TODO: set profile picture
+                        String imageURL = (String) doc.get("imageUrl");
 
-                        // check if the user doesn't have name/status/imageURL
-                        if (username == null) username = "";
-                        if (name == null) name = "anonymous";
+                        // check if the user doesn't have name/status
                         if (status == null) status = "[status]";
-                        if (imageURL == null) {};  //TODO: set default profile picture
 
                         // add the contact to ListView
-                        updateListView(friendListAdapter, username, name, status, R.drawable.blank_account);
+                        updateListView(friendListAdapter, uID, name, status, imageURL);
                     }
                 });
     }
 
-    public FriendListItem updateListView(FriendListAdapter friendListAdapter, String username, String name, String status, int imageID) {
+    public FriendListItem updateListView(FriendListAdapter friendListAdapter, String uId, String name, String status, String imageUrl) {
         // find the friend list ListView
         ListView listView = findViewById(R.id.new_message_listview);
 
         // Instantiate a new FriendListItem and add it to the custom adapter
-        FriendListItem newFriend = new FriendListItem(username, name, status, imageID);
+        FriendListItem newFriend = new FriendListItem(name, status, uId, imageUrl);
         friendListAdapter.addAdapterItem(newFriend);
 
         // set the adapter to the ListView

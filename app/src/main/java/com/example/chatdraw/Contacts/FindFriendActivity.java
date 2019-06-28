@@ -160,40 +160,6 @@ public class FindFriendActivity extends AppCompatActivity {
     }
 
     public void findUserInDatabase(final NewFriendAdapter newFriendAdapter, String inputText) {
-//        // create a listener to get the data from Realtime Database
-//        // the listener checks if the User's username contains the inputted text
-//        ValueEventListener valueEventListener = new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                int count = 0;
-//                for (DataSnapshot ds: dataSnapshot.getChildren()) {
-//                    if (count >= 20) break;
-//                    User user = ds.getValue(User.class);
-//                    String username = user.getUsername();
-//                    if (username.contains(text)) {
-//                        count++;
-//                        updateListView(newFriendAdapter, user.getName(), user.getUsername(), R.drawable.blank_account);
-//                    }
-//                }
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//            }
-//        };
-//
-//        // clean the listview previous data
-//        newFriendAdapter.clearData();
-//
-//        // get the User whose username is equal to the inputted text
-//        DatabaseReference usersDatabase = FirebaseDatabase.getInstance().getReference().child("Users");
-//        usersDatabase.orderByChild("username").equalTo("text").addValueEventListener(valueEventListener);
-//
-//        // get Users whose username contains the inputted text
-//        usersDatabase.orderByChild("username").addValueEventListener(valueEventListener);
-
-
         // Check if the input start with @
         final String text;
         if (inputText.charAt(0) != '@') {
@@ -207,7 +173,7 @@ public class FindFriendActivity extends AppCompatActivity {
         // get users whose usernames contain the inputted text
         char firstChar = text.charAt(1);
         char nextChar = ++firstChar;
-        Log.d("HEY", "NEXT CHAER = " + nextChar);
+
         FirebaseFirestore.getInstance().collection("Users")
                 .orderBy("username")
                 .startAt(text)
@@ -218,13 +184,16 @@ public class FindFriendActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
                             newFriendAdapter.clearData();
-                            List<User> users = task.getResult().toObjects(User.class);
                             int count = 0;
-                            for (User u : users) {
-                                if (count > 20) return;
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                if (count > 20) break;
+                                Log.d(TAG, document.getId() + " => " + document.getData());
                                 count++;
-                                updateListView(newFriendAdapter, u.getName(),
-                                        u.getUsername(), R.drawable.blank_account);
+                                updateListView(
+                                        newFriendAdapter,
+                                        document.getString("name"),
+                                        document.getString("username"),
+                                        document.getString("imageUrl"));
                             }
                         } else {
                             Log.w(TAG, "Error getting documents.", task.getException());
@@ -242,12 +211,12 @@ public class FindFriendActivity extends AppCompatActivity {
     }
 
     public void updateListView(NewFriendAdapter newFriendAdapter, String name,
-                               String username, int imageID) {
+                               String username, String imageUrl) {
         // find the friend list ListView
         ListView listView = findViewById(R.id.find_friend_listview);
 
         // Instantiate a new NewFriendItem and add it to the custom adapter
-        NewFriendItem newFriendItem = new NewFriendItem(name, username, imageID);
+        NewFriendItem newFriendItem = new NewFriendItem(name, username, imageUrl);
         newFriendAdapter.addAdapterItem(newFriendItem);
 
         // set the adapter to the ListView

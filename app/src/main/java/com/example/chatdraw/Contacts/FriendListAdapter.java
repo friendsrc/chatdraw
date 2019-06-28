@@ -78,7 +78,7 @@ public class FriendListAdapter extends BaseAdapter {
                     .fit()
                     .into(imageView);
         } else {
-            imageView.setImageResource(items.get(position).getImageID());
+            imageView.setImageResource(R.drawable.blank_account);
         }
 
         return view;
