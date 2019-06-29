@@ -1,4 +1,4 @@
-package com.example.chatdraw.Contacts;
+package com.example.chatdraw.RecyclerView;
 
 import com.example.chatdraw.R;
 

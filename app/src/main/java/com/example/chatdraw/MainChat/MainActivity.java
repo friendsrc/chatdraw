@@ -33,7 +33,7 @@ import android.widget.Toast;
 import com.example.chatdraw.Chat.ChatActivity;
 import com.example.chatdraw.Contacts.FriendListActivity;
 import com.example.chatdraw.Contacts.FriendListAdapter;
-import com.example.chatdraw.Contacts.FriendListItem;
+import com.example.chatdraw.RecyclerView.FriendListItem;
 import com.example.chatdraw.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -46,7 +46,6 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 

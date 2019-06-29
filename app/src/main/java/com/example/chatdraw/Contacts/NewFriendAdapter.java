@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.chatdraw.R;
+import com.example.chatdraw.RecyclerView.NewFriendItem;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;

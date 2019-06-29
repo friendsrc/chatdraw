@@ -12,7 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.example.chatdraw.Contacts.FriendListAdapter;
-import com.example.chatdraw.Contacts.FriendListItem;
+import com.example.chatdraw.RecyclerView.FriendListItem;
 import com.example.chatdraw.CreateGroup.NewGroupActivity;
 import com.example.chatdraw.R;
 import com.google.android.gms.tasks.OnCompleteListener;

@@ -2,26 +2,23 @@ package com.example.chatdraw.CreateGroup;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.TextView;
 
-import com.example.chatdraw.Contacts.FriendListAdapter;
-import com.example.chatdraw.Contacts.FriendListItem;
+import com.example.chatdraw.RecyclerView.FriendListItem;
 import com.example.chatdraw.R;
+import com.example.chatdraw.RecyclerView.RecyclerViewAdapter;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -32,23 +29,33 @@ public class NewGroupActivity extends AppCompatActivity {
     public static final int GROUP_CREATE_REQUEST_CODE = 1001;
 
     public static final String TAG = "NewGroupActivity";
-    private FriendListAdapter mFriendListAdapter;
-    private ListView mListView;
     private HashMap<String, FriendListItem> addedContacts;
+
+    private RecyclerView recyclerView;
+    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.LayoutManager layoutManager;
+    private ArrayList<FriendListItem> myDataset;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_group);
 
+        recyclerView = findViewById(R.id.new_group_recycler_view);
+
+        // use this setting to improve performance if you know that changes
+        // in content do not change the layout size of the RecyclerView
+        recyclerView.setHasFixedSize(true);
+
+        // use a linear layout manager
+        layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+
+
+
         // set the action bar
         getSupportActionBar().setTitle("New Group");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        // set adapter on ListView
-        mFriendListAdapter = new FriendListAdapter(this);
-        mListView = findViewById(R.id.new_group_listview);
-        mListView.setAdapter(mFriendListAdapter);
 
         // create a hashmap to store chosen contacts
         addedContacts = new HashMap<>();
@@ -58,17 +65,6 @@ public class NewGroupActivity extends AppCompatActivity {
 
         // get layout
         final LinearLayout layout = findViewById(R.id.new_group_layout);
-
-        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // TODO: create proper layout
-                FriendListItem friendListItem = (FriendListItem) mFriendListAdapter.getItem(position);
-                View viewItem = getLayoutInflater().inflate(R.layout.new_group_contact_item, layout);
-                TextView textView = viewItem.findViewById(R.id.new_group_contact_textview);
-                textView.setText(friendListItem.getName());
-            }
-        });
 
         ImageView imageView = findViewById(R.id.new_group_nextbutton_imageview);
         imageView.setOnClickListener(new View.OnClickListener() {
@@ -90,6 +86,10 @@ public class NewGroupActivity extends AppCompatActivity {
     }
 
     public void getContacts() {
+        myDataset = new ArrayList<>();
+        mAdapter = new RecyclerViewAdapter(myDataset);
+        recyclerView.setAdapter(mAdapter);
+
         FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         String id = currentFirebaseUser.getUid();
         FirebaseFirestore.getInstance().collection("Users").document(id)
@@ -105,6 +105,8 @@ public class NewGroupActivity extends AppCompatActivity {
                         }
                     }
                 });
+
+
     }
 
     private void addUserWithID(final String uID) {
@@ -121,29 +123,12 @@ public class NewGroupActivity extends AppCompatActivity {
                         // check if the user doesn't have name/status/imageURL
                         if (status == null) status = "[status]";
 
-                        // add the contact to ListView
-                        FriendListItem friendListItem
-                                = updateListView(name, status, uID, imageURL);
+                        FriendListItem friendListItem = new FriendListItem(name, status, uID, imageURL);
 
-                        // get the current user's uID
-                        String currentUserID = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                        FirebaseFirestore.getInstance().collection("Users")
-                                .document(currentUserID)
-                                .update("contacts", FieldValue.arrayUnion(uID));
+                        myDataset.add(friendListItem);
+                        mAdapter.notifyDataSetChanged();
                     }
                 });
     }
 
-    public FriendListItem updateListView(String name, String status, String uid, String imageUrl) {
-        // find the friend list ListView
-        if (mListView == null) mListView = findViewById(R.id.new_group_listview);
-
-        // Instantiate a new FriendListItem and add it to the custom adapter
-        FriendListItem newFriend = new FriendListItem(name, status, uid ,imageUrl);
-        mFriendListAdapter.addAdapterItem(newFriend);
-
-        // set the adapter to the ListView
-        mListView.setAdapter(mFriendListAdapter);
-        return newFriend;
-    }
 }
