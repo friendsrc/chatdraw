@@ -6,16 +6,8 @@
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    tools:context=".MainChat.NewGroupActivity">
+    tools:context=".CreateGroup.NewGroupActivity">
 
-    <!--<EditText-->
-        <!--android:id="@+id/new_group_groupname_edittext"-->
-        <!--android:hint="@string/group_name"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_marginLeft="16dp"-->
-        <!--android:layout_marginRight="16dp"-->
-        <!--android:layout_marginTop="16dp"/>-->
 
     <EditText
         android:id="@+id/new_group_addpeople_edittext"
@@ -54,6 +46,7 @@
             android:paddingBottom="6dp" />
 
         <ImageView
+            android:id="@+id/new_group_nextbutton_imageview"
             android:layout_width="32dp"
             android:layout_height="64dp"
             android:src="@drawable/arrow_forward"/>

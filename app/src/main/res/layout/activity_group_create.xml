@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    tools:context=".CreateGroup.GroupCreateActivity">
+
+    <ImageView
+        android:id="@+id/group_create_imageview"
+        android:layout_width="144dp"
+        android:layout_height="144dp"
+        android:src="@drawable/blank_account" />
+
+    <EditText
+        android:id="@+id/group_create_edittext"
+        android:hint="@string/group_name"
+        android:gravity="center_horizontal"
+        android:layout_width="280dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="8dp"
+        android:layout_height="40dp"/>
+
+    <Button
+        android:id="@+id/group_create_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="CREATE GROUP"/>
+
+</LinearLayout>

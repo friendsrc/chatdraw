@@ -1,11 +1,14 @@
-package com.example.chatdraw.MainChat;
+package com.example.chatdraw.CreateGroup;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -26,10 +29,12 @@ import java.util.HashMap;
 
 public class NewGroupActivity extends AppCompatActivity {
 
+    public static final int GROUP_CREATE_REQUEST_CODE = 1001;
+
     public static final String TAG = "NewGroupActivity";
     private FriendListAdapter mFriendListAdapter;
     private ListView mListView;
-    private HashMap<String, FriendListItem> contacts;
+    private HashMap<String, FriendListItem> addedContacts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +48,10 @@ public class NewGroupActivity extends AppCompatActivity {
         // set adapter on ListView
         mFriendListAdapter = new FriendListAdapter(this);
         mListView = findViewById(R.id.new_group_listview);
-        contacts = new HashMap<>();
+        mListView.setAdapter(mFriendListAdapter);
+
+        // create a hashmap to store chosen contacts
+        addedContacts = new HashMap<>();
 
         // get contacts from Firebase
         getContacts();
@@ -59,6 +67,16 @@ public class NewGroupActivity extends AppCompatActivity {
                 View viewItem = getLayoutInflater().inflate(R.layout.new_group_contact_item, layout);
                 TextView textView = viewItem.findViewById(R.id.new_group_contact_textview);
                 textView.setText(friendListItem.getName());
+            }
+        });
+
+        ImageView imageView = findViewById(R.id.new_group_nextbutton_imageview);
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: add checker and add people list
+                Intent intent = new Intent(NewGroupActivity.this, GroupCreateActivity.class);
+                startActivityForResult(intent, GROUP_CREATE_REQUEST_CODE);
             }
         });
 

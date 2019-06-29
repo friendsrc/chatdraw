@@ -18,7 +18,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".AccountActivity.UsernameEditActivity"></activity>
+        <activity android:name=".CreateGroup.GroupCreateActivity"></activity>
+        <activity android:name=".AccountActivity.UsernameEditActivity" />
         <activity android:name=".AccountActivity.NameEditActivity" />
         <activity android:name=".AccountActivity.ProfileEditActivity" />
 
@@ -34,7 +35,7 @@
         <activity android:name=".AccountActivity.NotificationHeaderActivity" />
         <activity android:name=".AccountActivity.PersonalActivity" />
         <activity android:name=".Chat.ChatActivity" />
-        <activity android:name=".MainChat.NewGroupActivity" />
+        <activity android:name=".CreateGroup.NewGroupActivity" />
         <activity android:name=".MainChat.NewMessageActivity" />
         <activity android:name=".AccountActivity.SettingsActivity" />
         <activity android:name=".Contacts.FindFriendActivity" />
