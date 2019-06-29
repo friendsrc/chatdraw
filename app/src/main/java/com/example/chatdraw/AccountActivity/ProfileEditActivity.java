@@ -101,9 +101,14 @@ public class ProfileEditActivity extends AppCompatActivity {
                     String imgurl = (String) dataSnapshot.child(user.getUid()).child("uploads").child("imageUrl").getValue();
 
                     CircleImageView imgview = (CircleImageView) findViewById(R.id.new_profile_picture_image_view);
-                    Picasso.get()
-                            .load(imgurl)
-                            .into(imgview);
+
+                    if (imgurl == null) {
+                        imgview.setImageResource(R.drawable.account_circle_black_75dp);
+                    } else {
+                        Picasso.get()
+                                .load(imgurl)
+                                .into(imgview);
+                    }
 
                     TextView tv = (TextView) findViewById(R.id.profiles_field);
                     tv.setText(profilename);
@@ -127,15 +132,6 @@ public class ProfileEditActivity extends AppCompatActivity {
             }
         });
 
-        Button settingspage = (Button) findViewById(R.id.settings_redirect);
-        settingspage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent_settings = new Intent(ProfileEditActivity.this, SettingsActivity.class);
-                startActivity(intent_settings);
-            }
-        });
-
         getFragmentManager()
                 .beginTransaction()
                 .replace(R.id.settings, new SettingsFragment())
@@ -154,8 +150,6 @@ public class ProfileEditActivity extends AppCompatActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.root_preferences);
 
-            bindSummaryValue(findPreference("profilenames"));
-            bindSummaryValue(findPreference("usernames"));
             bindSummaryValue(findPreference("status"));
             bindSummaryValue(findPreference("signature"));
         }
@@ -165,7 +159,7 @@ public class ProfileEditActivity extends AppCompatActivity {
         preference.setOnPreferenceChangeListener(listener);
         listener.onPreferenceChange(preference,
                 PreferenceManager.getDefaultSharedPreferences(preference.getContext())
-                        .getString(preference.getKey(), "Not setting"));
+                        .getString(preference.getKey(), "Not set"));
 
     }
 
@@ -178,9 +172,15 @@ public class ProfileEditActivity extends AppCompatActivity {
                 int index = listPreference.findIndexOfValue(stringValue);
 
                 // Set the summary to reflect the new value
-                preference.setSummary(index > -1
-                        ? listPreference.getEntries()[index]
-                        : null);
+                if (index > -1) {
+                    preference.setSummary(listPreference.getEntries()[index]);
+
+                    final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(user.getUid()).child("status");
+                    databaseReference.setValue(stringValue);
+                } else {
+                    preference.setSummary(null);
+                }
             } else if (preference instanceof EditTextPreference) {
                 if (stringValue.length() == 0) {
                     if (preference.getSummary().equals("changethis")) {

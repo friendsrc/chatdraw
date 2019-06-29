@@ -20,15 +20,25 @@
 
     <PreferenceCategory android:title="@string/bio_header">
 
-        <EditTextPreference
-            android:key="profilenames"
+        <PreferenceScreen
             android:title="@string/profile_name_title"
-            android:summary="changethis"/>
+            android:summary="Tap to edit profile name">
 
-        <EditTextPreference
-            android:key="usernames"
+            <intent
+                android:targetPackage="com.example.chatdraw"
+                android:targetClass="com.example.chatdraw.AccountActivity.NameEditActivity" />
+
+        </PreferenceScreen>
+
+        <PreferenceScreen
             android:title="@string/username_title"
-            android:summary="changethis"/>
+            android:summary="Tap to edit username">
+
+            <intent
+                android:targetPackage="com.example.chatdraw"
+                android:targetClass="com.example.chatdraw.AccountActivity.UsernameEditActivity" />
+
+        </PreferenceScreen>
 
         <ListPreference
             android:entries="@array/status_entries"

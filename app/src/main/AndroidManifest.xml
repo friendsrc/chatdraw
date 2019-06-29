@@ -18,7 +18,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
+        <activity android:name=".AccountActivity.UsernameEditActivity"></activity>
+        <activity android:name=".AccountActivity.NameEditActivity" />
         <activity android:name=".AccountActivity.ProfileEditActivity" />
 
         <service

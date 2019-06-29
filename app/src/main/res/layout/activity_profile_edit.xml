@@ -57,6 +57,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|end"
                 android:layout_margin="8sp"
+
+                app:backgroundTint="@color/design_default_color_primary_dark"
                 app:srcCompat="@android:drawable/ic_menu_camera" />
 
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
@@ -67,11 +69,5 @@
         android:id="@+id/settings"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
-    <Button
-        android:id="@+id/settings_redirect"
-        android:text="@string/settings_butt"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
 
 </LinearLayout>

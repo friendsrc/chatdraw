@@ -98,10 +98,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     String imgurl = (String) dataSnapshot.child(user.getUid()).child("uploads").child("imageUrl").getValue();
 
                     ImageButton imgbut = (ImageButton) hView.findViewById(R.id.profile_edit_button);
-                    Picasso.get()
-                            .load(imgurl)
-                            .fit()
-                            .into(imgbut);
+
+                    if (imgurl == null) {
+                        imgbut.setImageResource(R.drawable.account_circle_black_75dp);
+                    } else {
+                        Picasso.get()
+                                .load(imgurl)
+                                .fit()
+                                .into(imgbut);
+                    }
                 }
 
                 @Override

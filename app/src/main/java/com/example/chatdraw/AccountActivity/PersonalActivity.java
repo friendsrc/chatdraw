@@ -50,6 +50,12 @@ public class PersonalActivity extends AppCompatActivity {
             public void onClick(View view) {
                 String temp = inputName.getText().toString().trim();
 
+                if (temp.length() < 3) {
+                    inputName.setError(getString(R.string.short_name));
+                    inputName.requestFocus();
+                    return;
+                }
+
                 if (temp.length() > 20) {
                     inputName.setError(getString(R.string.long_name));
                     inputName.requestFocus();
@@ -57,15 +63,15 @@ public class PersonalActivity extends AppCompatActivity {
                 }
 
                 String profile = temp.substring(0, 1).toUpperCase() + temp.substring(1).toLowerCase();
-                String username = "@" + inputUsername.getText().toString().trim();
+                String username = inputUsername.getText().toString().trim();
 
-                if (username.length() < 4 && username.length() != 1) {
+                if (username.length() < 3 && username.length() != 0) {
                     inputUsername.setError(getString(R.string.short_username));
                     inputUsername.requestFocus();
                     return;
                 }
 
-                if (username.length() > 21) {
+                if (username.length() > 20) {
                     inputUsername.setError(getString(R.string.long_username));
                     inputUsername.requestFocus();
                     return;
@@ -87,11 +93,13 @@ public class PersonalActivity extends AppCompatActivity {
 
                 if (TextUtils.isEmpty(profile)) {
                     if (!TextUtils.isEmpty(username)) {
-                        updateUser(currentFirebaseUser.getUid(), userEmail, null, username);
+                        updateUser(currentFirebaseUser.getUid(), userEmail, "Anonymous", "@" + username);
+                    } else {
+                        updateUser(currentFirebaseUser.getUid(), userEmail, "Anonymous", null);
                     }
                 } else {
                     if (!TextUtils.isEmpty(username)) {
-                        updateUser(currentFirebaseUser.getUid(), userEmail, profile, username);
+                        updateUser(currentFirebaseUser.getUid(), userEmail, profile, "@" + username);
                     } else {
                         updateUser(currentFirebaseUser.getUid(), userEmail, profile, null);
                     }
@@ -109,8 +117,8 @@ public class PersonalActivity extends AppCompatActivity {
         databaseReference.setValue(usering);
 
         // update firestore
-        FirebaseFirestore.getInstance().collection("Users").document(Uid)
-                .set(usering);
+//        FirebaseFirestore.getInstance().collection("Users").document(Uid)
+//                .set(usering);
 
         Toast.makeText(this, "Update Successfully", Toast.LENGTH_SHORT).show();
 
