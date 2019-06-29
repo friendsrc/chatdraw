@@ -6,6 +6,8 @@ import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.view.View;
@@ -14,6 +16,7 @@ import android.widget.ListView;
 
 import com.example.chatdraw.R;
 import com.example.chatdraw.RecyclerView.FriendListItem;
+import com.example.chatdraw.RecyclerView.RecyclerViewAdapter;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -30,16 +33,30 @@ public class FriendListActivity extends AppCompatActivity {
 
     private static final int FIND_FRIEND_REQUEST_CODE = 101;
 
-    private FriendListAdapter mFriendListAdapter;
-    private ListView mListView;
+    private RecyclerView recyclerView;
+    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.LayoutManager layoutManager;
+    private ArrayList<FriendListItem> myDataset;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friend_list);
 
-        // Create a custom adapter for the friend list ListView
-        mFriendListAdapter = new FriendListAdapter(this);
+        recyclerView = findViewById(R.id.friend_list_recycler_view);
+
+        // use this setting to improve performance if you know that changes
+        // in content do not change the layout size of the RecyclerView
+        recyclerView.setHasFixedSize(true);
+
+        // use a linear layout manager
+        layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+
+        // specify an adapter (see also next example)
+        myDataset = new ArrayList<>();
+        mAdapter = new RecyclerViewAdapter(myDataset);
+        recyclerView.setAdapter(mAdapter);
 
         // Set the "add" button to go to the FindFriendActivity
         ImageView imageView = findViewById(R.id.add_friend_imageview);
@@ -91,9 +108,9 @@ public class FriendListActivity extends AppCompatActivity {
                         // check if the user doesn't have name/status/imageURL
                         if (status == null) status = "[status]";
 
-                        // add the contact to ListView
-                        FriendListItem friendListItem
-                                = updateListView(name, status, uID, imageURL);
+                        FriendListItem newFriend = new FriendListItem(name, status, uID ,imageURL);
+                        myDataset.add(newFriend);
+                        mAdapter.notifyDataSetChanged();
 
                         // get the current user's uID
                         String currentUserID = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -102,19 +119,6 @@ public class FriendListActivity extends AppCompatActivity {
                                 .update("contacts", FieldValue.arrayUnion(uID));
                     }
                 });
-    }
-
-    public FriendListItem updateListView(String name, String status, String uid, String imageUrl) {
-        // find the friend list ListView
-        if(mListView == null) mListView = findViewById(R.id.friend_list_listview);
-
-        // Instantiate a new FriendListItem and add it to the custom adapter
-        FriendListItem newFriend = new FriendListItem(name, status, uid ,imageUrl);
-        mFriendListAdapter.addAdapterItem(newFriend);
-
-        // set the adapter to the ListView
-        mListView.setAdapter(mFriendListAdapter);
-        return newFriend;
     }
 
     public void getContacts() {

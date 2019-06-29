@@ -1,5 +1,6 @@
 package com.example.chatdraw.RecyclerView;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,16 +16,24 @@ import java.util.ArrayList;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.MyViewHolder> {
     private ArrayList<FriendListItem> mDataset;
+    private Context context;
+    private static RecyclerViewClickListener itemListener;
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
     // you provide access to all the views for a data item in a view holder
-    public static class MyViewHolder extends RecyclerView.ViewHolder {
+    public static class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         // each data item is just a string in this case
         public View view;
         public MyViewHolder(View v) {
             super(v);
             view = v;
+            v.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            itemListener.recyclerViewListClicked(v, this.getAdapterPosition());
         }
     }
 
@@ -33,15 +42,18 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         mDataset = myDataset;
     }
 
+    public RecyclerViewAdapter(ArrayList<FriendListItem> myDataset, Context context, RecyclerViewClickListener listener) {
+        mDataset = myDataset;
+        this.context = context;
+        itemListener = listener;
+    }
+
+
     // Create new views (invoked by the layout manager)
     @Override
     public RecyclerViewAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent,
                                                      int viewType) {
         // create a new view
-//        TextView v = (TextView) LayoutInflater.from(parent.getContext())
-//                .inflate(R.layout.my_text_view, parent, false);
-//
-//        MyViewHolder vh = new MyViewHolder(v);
         View friendListItem = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.friend_list_item, parent, false);
         MyViewHolder vh = new MyViewHolder(friendListItem);
@@ -76,4 +88,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     public int getItemCount() {
         return mDataset.size();
     }
+
+    public FriendListItem getItem(int position) { return  mDataset.get(position); };
 }
