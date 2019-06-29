@@ -3,6 +3,7 @@ package com.example.chatdraw.CreateGroup;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -15,6 +16,8 @@ public class GroupCreateActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_create);
+
+        String[] memberUIDs = getIntent().getStringArrayExtra("memberList");
 
         // set the action bar
         getSupportActionBar().setTitle("Create Group");
