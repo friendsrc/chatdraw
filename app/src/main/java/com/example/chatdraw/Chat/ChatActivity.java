@@ -1,9 +1,13 @@
 package com.example.chatdraw.Chat;
 
+import android.app.Activity;
 import android.content.Intent;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -13,7 +17,12 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.chatdraw.MainChat.MainActivity;
+import com.example.chatdraw.MainChat.NewMessageActivity;
 import com.example.chatdraw.R;
+import com.example.chatdraw.RecyclerView.ChatRecyclerViewAdapter;
+import com.example.chatdraw.RecyclerView.FriendListItem;
+import com.example.chatdraw.RecyclerView.RecyclerViewAdapter;
+import com.example.chatdraw.RecyclerView.RecyclerViewClickListener;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -37,13 +46,14 @@ import com.google.firebase.messaging.RemoteMessage;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
 
-public class ChatActivity extends AppCompatActivity {
+public class ChatActivity extends AppCompatActivity implements RecyclerViewClickListener {
 
     private static String TAG = "ChatActivity";
     private String friendsUID;
@@ -56,11 +66,29 @@ public class ChatActivity extends AppCompatActivity {
     final String[] userUsername = new String[1];
     final String[] userImageUrl = new String[1];
 
+    private ChatRecyclerViewAdapter mAdapter;
+    private ArrayList<ChatItem> myDataset;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
+        RecyclerView recyclerView = findViewById(R.id.chat_recycler_view);
+
+        // use this setting to improve performance if you know that changes
+        // in content do not change the layout size of the RecyclerView
+        recyclerView.setHasFixedSize(true);
+
+        // use a linear layout manager
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+
+        // specify an adapter
+        myDataset = new ArrayList<>();
+        mAdapter = new ChatRecyclerViewAdapter(myDataset, ChatActivity.this, this);
+        recyclerView.setAdapter(mAdapter);
 
         Intent intent = getIntent();
 
@@ -83,10 +111,6 @@ public class ChatActivity extends AppCompatActivity {
                     }
                 });
 
-        //set adapter to listview
-        final ChatAdapter chatAdapter = new ChatAdapter(this);
-        ListView listView = findViewById(R.id.chat_listview);
-        listView.setAdapter(chatAdapter);
 
         // get friends's display name and profile picture
         FirebaseFirestore.getInstance().collection("Users")
@@ -98,7 +122,7 @@ public class ChatActivity extends AppCompatActivity {
                         friendName[0] = task.getResult().getString("name");
                         friendUsername[0] = task.getResult().getString("username");
                         friendImageUrl[0] = task.getResult().getString("imageUrl");
-                        getMessages(chatAdapter);
+                        getMessages();
                     }
                 });
 
@@ -118,7 +142,7 @@ public class ChatActivity extends AppCompatActivity {
                 String message = editText.getText().toString();
 
                 // create a new ChatItem
-                ChatItem newChatItem = updateListView(chatAdapter, message);
+                ChatItem newChatItem = updateListView(message);
 
                 sendMessage(newChatItem); // send the ChatItem to Firebase
                 editText.setText(""); // erase the content of the EditText
@@ -169,7 +193,7 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-    public void getMessages(final ChatAdapter chatAdapter) {
+    public void getMessages() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("Messages")
                 .document(FirebaseAuth.getInstance().getUid())
@@ -180,7 +204,7 @@ public class ChatActivity extends AppCompatActivity {
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                        chatAdapter.clearData();
+                        mAdapter.clearData();
                         for (DocumentSnapshot q: queryDocumentSnapshots) {
                             ChatItem chatItem = q.toObject(ChatItem.class);
 
@@ -189,8 +213,7 @@ public class ChatActivity extends AppCompatActivity {
                                 chatItem.setSenderImageUrl(updatedImageURL);
                             }
 
-                            chatAdapter.addAdapterItem(chatItem);
-                            chatAdapter.notifyDataSetChanged();
+                            mAdapter.addData(chatItem);
                         }
                     }
                 });
@@ -203,13 +226,17 @@ public class ChatActivity extends AppCompatActivity {
         return true;
     }
 
-    public ChatItem updateListView(ChatAdapter chatAdapter, String messageBody) {
+    public ChatItem updateListView(String messageBody) {
         // create a new ChatItem
         ChatItem chatItem = new ChatItem(messageBody, userUID, userName[0], userUsername[0], userImageUrl[0], friendsUID, friendName[0], friendUsername[0], friendImageUrl[0]);
 
         // add the new ChatItem to the ChatAdapter
-        chatAdapter.addAdapterItem(chatItem);
-        chatAdapter.notifyDataSetChanged();
+        mAdapter.addData(chatItem);
         return chatItem;
+    }
+
+    @Override
+    public void recyclerViewListClicked(View v, int position){
+        // Todo
     }
 }
