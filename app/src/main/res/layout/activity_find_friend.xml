@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".Contacts.FindFriendActivity">
+    tools:context=".ContactActivites.FindFriendActivity">
 
     <EditText
         android:id="@+id/find_friend_edittext"

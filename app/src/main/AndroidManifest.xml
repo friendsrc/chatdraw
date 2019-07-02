@@ -18,13 +18,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".CreateGroup.GroupCreateActivity"></activity>
+        <activity android:name=".CreateGroupActivities.GroupCreateActivity"></activity>
         <activity android:name=".AccountActivity.UsernameEditActivity" />
         <activity android:name=".AccountActivity.NameEditActivity" />
         <activity android:name=".AccountActivity.ProfileEditActivity" />
 
         <service
-            android:name=".MyFirebaseMessagingService"
+            android:name=".Services.MyFirebaseMessagingService"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
@@ -34,16 +34,16 @@
 
         <activity android:name=".AccountActivity.NotificationHeaderActivity" />
         <activity android:name=".AccountActivity.PersonalActivity" />
-        <activity android:name=".Chat.ChatActivity" />
-        <activity android:name=".CreateGroup.NewGroupActivity" />
-        <activity android:name=".MainChat.NewMessageActivity" />
+        <activity android:name=".ChatActivites.ChatActivity" />
+        <activity android:name=".CreateGroupActivities.NewGroupActivity" />
+        <activity android:name=".ChatActivites.NewMessageActivity" />
         <activity android:name=".AccountActivity.SettingsActivity" />
-        <activity android:name=".Contacts.FindFriendActivity" />
-        <activity android:name=".Contacts.FriendListActivity" />
+        <activity android:name=".ContactActivites.FindFriendActivity" />
+        <activity android:name=".ContactActivites.FriendListActivity" />
         <activity android:name=".AccountActivity.ResetPasswordActivity" />
         <activity android:name=".AccountActivity.SignupActivity" />
         <activity
-            android:name=".MainChat.MainActivity"
+            android:name=".ChatActivites.MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".AccountActivity.LoginActivity">
             <intent-filter>

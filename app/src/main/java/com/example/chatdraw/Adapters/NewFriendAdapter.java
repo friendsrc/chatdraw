@@ -1,4 +1,4 @@
-package com.example.chatdraw.Contacts;
+package com.example.chatdraw.Adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,7 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.chatdraw.R;
-import com.example.chatdraw.RecyclerView.NewFriendItem;
+import com.example.chatdraw.Items.NewFriendItem;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;

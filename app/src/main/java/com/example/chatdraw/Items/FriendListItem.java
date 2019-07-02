@@ -1,4 +1,4 @@
-package com.example.chatdraw.RecyclerView;
+package com.example.chatdraw.Items;
 
 public class FriendListItem {
 

@@ -1,4 +1,4 @@
-package com.example.chatdraw.RecyclerView;
+package com.example.chatdraw.Adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,8 +9,9 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.chatdraw.Chat.ChatItem;
+import com.example.chatdraw.Items.ChatItem;
 import com.example.chatdraw.R;
+import com.example.chatdraw.Listeners.RecyclerViewClickListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.squareup.picasso.Picasso;
 

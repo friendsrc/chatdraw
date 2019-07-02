@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    tools:context=".CreateGroup.GroupCreateActivity">
+    tools:context=".CreateGroupActivities.GroupCreateActivity">
 
     <ImageView
         android:id="@+id/group_create_imageview"

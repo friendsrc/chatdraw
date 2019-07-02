@@ -1,4 +1,4 @@
-package com.example.chatdraw.MainChat;
+package com.example.chatdraw.ChatActivites;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.chatdraw.AccountActivity.ProfileEditActivity;
-import com.example.chatdraw.Chat.ChatItem;
+import com.example.chatdraw.Items.ChatItem;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
@@ -30,10 +30,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.chatdraw.Chat.ChatActivity;
-import com.example.chatdraw.Contacts.FriendListActivity;
-import com.example.chatdraw.Contacts.FriendListAdapter;
-import com.example.chatdraw.RecyclerView.FriendListItem;
+import com.example.chatdraw.ContactActivites.FriendListActivity;
+import com.example.chatdraw.Adapters.FriendListAdapter;
+import com.example.chatdraw.Items.FriendListItem;
 import com.example.chatdraw.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -46,6 +45,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
@@ -268,7 +268,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         db.collection("Previews")
                 .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
                 .collection("ChatPreviews")
-                .orderBy("timestamp")
+                .orderBy("timestamp", Query.Direction.DESCENDING)
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {

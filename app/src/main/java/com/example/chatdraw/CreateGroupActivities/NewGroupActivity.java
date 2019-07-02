@@ -1,26 +1,21 @@
-package com.example.chatdraw.MainChat;
-
-import android.app.Activity;
-import android.content.Intent;
+package com.example.chatdraw.CreateGroupActivities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.text.Layout;
 import android.view.View;
-import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 
-import com.example.chatdraw.Contacts.FriendListAdapter;
-import com.example.chatdraw.RecyclerView.FriendListItem;
-import com.example.chatdraw.CreateGroup.NewGroupActivity;
+import com.example.chatdraw.Items.FriendListItem;
 import com.example.chatdraw.R;
-import com.example.chatdraw.RecyclerView.RecyclerViewAdapter;
-import com.example.chatdraw.RecyclerView.RecyclerViewClickListener;
+import com.example.chatdraw.Adapters.RecyclerViewAdapter;
+import com.example.chatdraw.Listeners.RecyclerViewClickListener;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -29,35 +24,84 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
-public class NewMessageActivity extends AppCompatActivity implements RecyclerViewClickListener {
+public class NewGroupActivity extends AppCompatActivity implements RecyclerViewClickListener {
 
-    public static final String TAG = "NewMessageActivity";
+    public static final int GROUP_CREATE_REQUEST_CODE = 1001;
+
+    public static final String TAG = "NewGroupActivity";
+    private HashMap<Integer, FriendListItem> chosenContacts;
+
+    private RecyclerView recyclerView;
     private RecyclerViewAdapter mAdapter;
+    private RecyclerView.LayoutManager layoutManager;
     private ArrayList<FriendListItem> myDataset;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_new_message);
+        setContentView(R.layout.activity_new_group);
 
-        RecyclerView recyclerView = findViewById(R.id.new_message_recycler_view);
+        recyclerView = findViewById(R.id.new_group_recycler_view);
 
         // use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
         recyclerView.setHasFixedSize(true);
 
         // use a linear layout manager
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
+        layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
-        // specify an adapter
         myDataset = new ArrayList<>();
-        mAdapter = new RecyclerViewAdapter(myDataset, NewMessageActivity.this, this);
+        mAdapter = new RecyclerViewAdapter(myDataset, NewGroupActivity.this, this);
         recyclerView.setAdapter(mAdapter);
 
+        // set the action bar
+        getSupportActionBar().setTitle("New Group");
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        // get Contacts list
+        // create a hashmap to store chosen contacts
+        chosenContacts = new HashMap<>();
+
+        // get contacts from Firebase
+        getContacts();
+
+        // get layout
+        final LinearLayout layout = findViewById(R.id.new_group_layout);
+
+        ImageView imageView = findViewById(R.id.new_group_nextbutton_imageview);
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: add checker and add people list
+                Intent intent = new Intent(NewGroupActivity.this, GroupCreateActivity.class);
+//                String memberList = "";
+//                for (FriendListItem f : chosenContacts.values()) {
+//                    memberList += f.getUID();
+//                    memberList += "\t";
+//                }
+                String[] memberList = new String[chosenContacts.size()];
+                int i = 0;
+                for (FriendListItem f: chosenContacts.values()) {
+                    memberList[i] = f.getUID();
+                    i++;
+                }
+                intent.putExtra("memberList", memberList);
+                startActivityForResult(intent, GROUP_CREATE_REQUEST_CODE);
+            }
+        });
+
+    }
+
+    @Override
+    // if the back button is pressed, destroy the activity
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
+    }
+
+    public void getContacts() {
         FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         String id = currentFirebaseUser.getUid();
         FirebaseFirestore.getInstance().collection("Users").document(id)
@@ -74,27 +118,7 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
                     }
                 });
 
-        LinearLayout linearLayout = findViewById(R.id.new_group_chat_linearlayout);
-        linearLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(NewMessageActivity.this, NewGroupActivity.class);
-                startActivity(intent);
-            }
-        });
 
-        // set the action bar title
-        getSupportActionBar().setTitle("New Message");
-
-        // add a back button to the action bar
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-    }
-
-    @Override
-    public boolean onSupportNavigateUp() {
-        // if the back button is pressed, go back to previous activity
-        finish();
-        return true;
     }
 
     private void addUserWithID(final String uID) {
@@ -108,7 +132,7 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
                         String status = (String) doc.get("status");
                         String imageURL = (String) doc.get("imageUrl");
 
-                        // check if the user doesn't have name/status
+                        // check if the user doesn't have name/status/imageURL
                         if (status == null) status = "[status]";
 
                         FriendListItem friendListItem = new FriendListItem(name, status, uID, imageURL);
@@ -121,11 +145,14 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
 
     @Override
     public void recyclerViewListClicked(View v, int position){
-        Intent intent = new Intent();
         FriendListItem friendListItem = mAdapter.getItem(position);
-        intent.putExtra("uID", friendListItem.getUID());
-        setResult(Activity.RESULT_OK, intent);
-        finish();
+        if (chosenContacts.containsKey(position)) {
+            chosenContacts.remove(position);
+            v.setBackgroundColor(Color.TRANSPARENT);
+        } else {
+           chosenContacts.put(position, friendListItem);
+           v.setBackgroundColor(getResources().getColor(R.color.bluegray100));
+        }
     }
 
 }

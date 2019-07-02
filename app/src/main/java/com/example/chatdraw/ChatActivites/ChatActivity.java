@@ -1,6 +1,5 @@
-package com.example.chatdraw.Chat;
+package com.example.chatdraw.ChatActivites;
 
-import android.app.Activity;
 import android.content.Intent;
 
 import androidx.annotation.NonNull;
@@ -14,43 +13,22 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.Toast;
 
-import com.example.chatdraw.MainChat.MainActivity;
-import com.example.chatdraw.MainChat.NewMessageActivity;
+import com.example.chatdraw.Items.ChatItem;
 import com.example.chatdraw.R;
-import com.example.chatdraw.RecyclerView.ChatRecyclerViewAdapter;
-import com.example.chatdraw.RecyclerView.FriendListItem;
-import com.example.chatdraw.RecyclerView.RecyclerViewAdapter;
-import com.example.chatdraw.RecyclerView.RecyclerViewClickListener;
+import com.example.chatdraw.Adapters.ChatRecyclerViewAdapter;
+import com.example.chatdraw.Listeners.RecyclerViewClickListener;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.firestore.DocumentChange;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.RemoteMessage;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
 
@@ -244,12 +222,14 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
 
     @Override
     public void onRefresh() {
-        Toast.makeText(this, "Getting older messages", Toast.LENGTH_SHORT).show();
+        //TODO: paginate data
+//        Toast.makeText(this, "Getting older messages", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Not yet configured", Toast.LENGTH_SHORT).show();
         mSwipeRefreshLayout.setRefreshing(false);
     }
 
     @Override
     public void recyclerViewListClicked(View v, int position){
-        // Todo
+        // TODO: add delete/copy option
     }
 }

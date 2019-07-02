@@ -1,4 +1,4 @@
-package com.example.chatdraw.Chat;
+package com.example.chatdraw.Items;
 
 import com.example.chatdraw.R;
 import com.google.firebase.auth.FirebaseAuth;

@@ -1,4 +1,4 @@
-package com.example.chatdraw.Contacts;
+package com.example.chatdraw.ContactActivites;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -16,8 +16,9 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.chatdraw.Adapters.NewFriendAdapter;
 import com.example.chatdraw.R;
-import com.example.chatdraw.RecyclerView.NewFriendItem;
+import com.example.chatdraw.Items.NewFriendItem;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
