@@ -17,6 +17,7 @@
     <EditText
         android:id="@+id/group_create_edittext"
         android:hint="@string/group_name"
+        android:textColorHint="@color/pLight"
         android:gravity="center_horizontal"
         android:layout_width="280dp"
         android:layout_marginTop="24dp"
@@ -27,6 +28,10 @@
         android:id="@+id/group_create_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@drawable/chat_bubble"
+        android:textColor="@color/colorPrimaryDark"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
         android:text="CREATE GROUP"/>
 
 </LinearLayout>

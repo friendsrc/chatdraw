@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.example.chatdraw.Listeners.RecyclerViewClickListener;
 import com.example.chatdraw.R;
 import com.example.chatdraw.Items.FriendListItem;
 import com.example.chatdraw.Adapters.RecyclerViewAdapter;
@@ -54,7 +55,12 @@ public class FriendListActivity extends AppCompatActivity {
 
         // specify an adapter (see also next example)
         myDataset = new ArrayList<>();
-        mAdapter = new RecyclerViewAdapter(myDataset);
+        mAdapter = new RecyclerViewAdapter(myDataset, this, new RecyclerViewClickListener() {
+            @Override
+            public void recyclerViewListClicked(View v, int position) {
+                // do nothing
+            }
+        });
         recyclerView.setAdapter(mAdapter);
 
         // Set the "add" button to go to the FindFriendActivity

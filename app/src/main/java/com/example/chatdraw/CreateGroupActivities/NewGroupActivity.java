@@ -67,8 +67,6 @@ public class NewGroupActivity extends AppCompatActivity implements RecyclerViewC
         // get contacts from Firebase
         getContacts();
 
-        // get layout
-        final LinearLayout layout = findViewById(R.id.new_group_layout);
 
         ImageView imageView = findViewById(R.id.new_group_nextbutton_imageview);
         imageView.setOnClickListener(new View.OnClickListener() {

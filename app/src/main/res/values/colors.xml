@@ -1,8 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#00bfbf</color>
-    <color name="colorPrimaryDark">#555959</color>
-    <color name="colorAccent">#009e9e</color>
+    <!--Color Theme-->
+    <color name="colorPrimary">#344955</color>
+    <color name="colorPrimaryDark">#232f34</color>
+    <color name="colorAccent">#4a5672</color>
+    <color name="secondary">#f9aa33</color>
+
+
+
+
+    <!--use the colors below only if rly necessary-->
+
+    <!--colorPrimary Variation-->
+    <color name="p">#344955</color>
+    <color name="pLight">#5f7481</color>
+    <color name="pDark">#0b222c</color>
+
+    <!--secondary Variation-->
+    <color name="s">#f9aa33</color>
+    <color name="sLight">#ffdc65</color>
+    <color name="sDark">#c17b00</color>
+
     <color name="darkgray">#6c6c6c</color>
 
     <color name="bg_login">#26ae90</color>
@@ -18,7 +36,6 @@
     <color name="btn_login_bg">#eceef1</color>
     <color name="lbl_name">#333333</color>
     <color name="btn_logut_bg">#ff6861</color>
-
     <color name="bluegray100">#CFD8DC</color>
     <color name="bluegray600">#546E7A</color>
 </resources>

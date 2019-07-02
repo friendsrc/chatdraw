@@ -51,7 +51,12 @@ public class NewFriendAdapter extends BaseAdapter {
 
         // set the name
         TextView nameTextView = view.findViewById(R.id.find_friend_edittext);
-        nameTextView.setText(items.get(position).getName());
+        String name = items.get(position).getName();
+        if (name == null) {
+            name = "Anonymous";
+            nameTextView.setTextColor(context.getResources().getColor(R.color.pLight));
+        }
+        nameTextView.setText(name);
 
         // set the profile picture
         ImageView imageView = view.findViewById(R.id.find_friend_imageview);

@@ -58,8 +58,7 @@ public class FriendListAdapter extends BaseAdapter {
         String name = items.get(position).getName();
         if (name == null) {
             name = "Anonymous";
-//            nameTextView.setTypeface(null, Typeface.ITALIC);
-            nameTextView.setTextColor(context.getResources().getColor(R.color.bluegray100));
+            nameTextView.setTextColor(context.getResources().getColor(R.color.pLight));
         }
         nameTextView.setText(name);
 

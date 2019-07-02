@@ -87,8 +87,14 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAd
         // - replace the contents of the view with that element
         ChatItem chatItem = mDataset.get(position);
 
-        TextView name = holder.view.findViewById(R.id.text_message_name);
-        if (name != null) name.setText(mDataset.get(position).getSenderName());
+        TextView name = holder.view.findViewById(R.id.friend_list_name);
+        String nameString = mDataset.get(position).getSenderName();
+        if (nameString == null) {
+            nameString = "Anonymous";
+            name.setTextColor(context.getResources().getColor(R.color.pLight));
+        }
+        name.setText(nameString);
+        if (name != null) name.setText(nameString);
 
         TextView message = holder.view.findViewById(R.id.text_message_body);
         message.setText(mDataset.get(position).getMessageBody());

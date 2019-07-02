@@ -69,7 +69,14 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         // - replace the contents of the view with that element
 
         TextView name = holder.view.findViewById(R.id.friend_list_name);
-        name.setText(mDataset.get(position).getName());
+        if (name != null) {
+            String nameString = mDataset.get(position).getName();
+            if (nameString == null) {
+                nameString = "Anonymous";
+                name.setTextColor(context.getResources().getColor(R.color.pLight));
+            }
+            name.setText(nameString);
+        }
 
         TextView status = holder.view.findViewById(R.id.friend_list_chat_preview);
         status.setText(mDataset.get(position).getChatPreview());
