@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -53,7 +54,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
 
-public class ChatActivity extends AppCompatActivity implements RecyclerViewClickListener {
+public class ChatActivity extends AppCompatActivity implements RecyclerViewClickListener, SwipeRefreshLayout.OnRefreshListener {
 
     private static String TAG = "ChatActivity";
     private String friendsUID;
@@ -66,29 +67,35 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
     final String[] userUsername = new String[1];
     final String[] userImageUrl = new String[1];
 
+    private RecyclerView mRecyclerView;
     private ChatRecyclerViewAdapter mAdapter;
     private ArrayList<ChatItem> myDataset;
 
+    SwipeRefreshLayout mSwipeRefreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        RecyclerView recyclerView = findViewById(R.id.chat_recycler_view);
+        mRecyclerView = findViewById(R.id.chat_recycler_view);
 
         // use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
-        recyclerView.setHasFixedSize(true);
+        mRecyclerView.setHasFixedSize(true);
 
         // use a linear layout manager
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(layoutManager);
+        mRecyclerView.setLayoutManager(layoutManager);
 
         // specify an adapter
         myDataset = new ArrayList<>();
         mAdapter = new ChatRecyclerViewAdapter(myDataset, ChatActivity.this, this);
-        recyclerView.setAdapter(mAdapter);
+        mRecyclerView.setAdapter(mAdapter);
+
+        // set 'pull-to-fetch-older-messages'
+        mSwipeRefreshLayout = findViewById(R.id.chat_refresh_layout);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
 
         Intent intent = getIntent();
 
@@ -212,8 +219,8 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                                 String updatedImageURL = friendImageUrl[0];
                                 chatItem.setSenderImageUrl(updatedImageURL);
                             }
-
                             mAdapter.addData(chatItem);
+                            mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
                         }
                     }
                 });
@@ -233,6 +240,12 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
         // add the new ChatItem to the ChatAdapter
         mAdapter.addData(chatItem);
         return chatItem;
+    }
+
+    @Override
+    public void onRefresh() {
+        Toast.makeText(this, "Getting older messages", Toast.LENGTH_SHORT).show();
+        mSwipeRefreshLayout.setRefreshing(false);
     }
 
     @Override
