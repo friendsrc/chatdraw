@@ -17,7 +17,7 @@
     <EditText
         android:id="@+id/group_create_edittext"
         android:hint="@string/group_name"
-        android:textColorHint="@color/pLight"
+        android:textColorHint="@color/bluegray100"
         android:gravity="center_horizontal"
         android:layout_width="280dp"
         android:layout_marginTop="24dp"
@@ -29,7 +29,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/chat_bubble"
-        android:textColor="@color/colorPrimaryDark"
+        android:textColor="@color/white"
         android:paddingLeft="8dp"
         android:paddingRight="8dp"
         android:text="CREATE GROUP"/>

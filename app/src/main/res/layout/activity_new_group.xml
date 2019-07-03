@@ -41,9 +41,9 @@
 
     <ImageView
         android:id="@+id/new_group_nextbutton_imageview"
-        android:layout_width="32dp"
+        android:layout_width="64dp"
         android:layout_height="64dp"
-        android:layout_marginRight="24dp"
+        android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"

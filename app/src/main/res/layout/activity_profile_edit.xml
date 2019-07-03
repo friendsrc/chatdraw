@@ -11,7 +11,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="140sp"
-        android:background="#20B2AA"
+        android:background="@color/colorPrimary"
         android:gravity="start|bottom"
         android:padding="25dp"
         android:theme="@style/ThemeOverlay.AppCompat.Dark">
@@ -58,8 +58,9 @@
                 android:layout_gravity="bottom|end"
                 android:layout_margin="8sp"
 
-                app:backgroundTint="@color/design_default_color_primary_dark"
-                app:srcCompat="@android:drawable/ic_menu_camera" />
+                app:backgroundTint="@color/secondary"
+                app:srcCompat="@android:drawable/ic_menu_camera"
+                />
 
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
