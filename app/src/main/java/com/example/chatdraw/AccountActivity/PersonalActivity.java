@@ -14,6 +14,8 @@ import android.widget.Toast;
 
 import com.example.chatdraw.ChatActivites.MainActivity;
 import com.example.chatdraw.R;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -35,6 +37,11 @@ public class PersonalActivity extends AppCompatActivity {
         laterButton = (Button) findViewById(R.id.later_button);
         finishButton = (Button) findViewById(R.id.finish_button);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
+
+
+        String sessionName = getIntent().getStringExtra("GoogleName");
+        final String googleUserID = getIntent().getStringExtra("userID");
+        inputName.setText(sessionName);
 
         laterButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -85,41 +92,45 @@ public class PersonalActivity extends AppCompatActivity {
 //                SharedPreferences prefs = getSharedPreferences("myprefs", MODE_PRIVATE);
 //                highscore = prefs.getInt("highscore", 0);
 
-                progressBar.setVisibility(View.VISIBLE);
-                FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-                String userEmail = currentFirebaseUser.getEmail();
 
-                if (TextUtils.isEmpty(profile)) {
-                    if (!TextUtils.isEmpty(username)) {
-                        updateUser(currentFirebaseUser.getUid(), userEmail, "Anonymous", "@" + username);
+                String personId = "";
+                DatabaseReference databaseReference;
+
+                progressBar.setVisibility(View.VISIBLE);
+
+                GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(PersonalActivity.this);
+                if (acct != null) {
+                    personId = acct.getId();
+
+                    if (personId != null) {
+                        databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(personId);
                     } else {
-                        updateUser(currentFirebaseUser.getUid(), userEmail, "Anonymous", null);
+                        Toast.makeText(PersonalActivity.this, "Unable to get google profile ID", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(PersonalActivity.this, LoginActivity.class));
+                        return;
                     }
                 } else {
-                    if (!TextUtils.isEmpty(username)) {
-                        updateUser(currentFirebaseUser.getUid(), userEmail, profile, "@" + username);
-                    } else {
-                        updateUser(currentFirebaseUser.getUid(), userEmail, profile, null);
-                    }
+                    FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                    databaseReference = FirebaseDatabase
+                            .getInstance()
+                            .getReference("Users")
+                            .child(currentFirebaseUser.getUid());
+                }
+
+                if (TextUtils.isEmpty(profile)) {
+                    databaseReference.child("name").setValue("Anonymous");
+                } else {
+                    databaseReference.child("name").setValue(profile);
+                }
+
+                if (TextUtils.isEmpty(username)) {
+                    databaseReference.child("username").setValue(null);
+                } else {
+                    databaseReference.child("username").setValue("@" + username);
                 }
 
                 startActivity(new Intent(PersonalActivity.this, MainActivity.class));
             }
         });
-    }
-
-    private boolean updateUser(String Uid, String email, String name, String username) {
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(Uid);
-
-        User usering = new User(email, name, username);
-        databaseReference.setValue(usering);
-
-        // update firestore
-//        FirebaseFirestore.getInstance().collection("Users").document(Uid)
-//                .set(usering);
-
-        Toast.makeText(this, "Update Successfully", Toast.LENGTH_SHORT).show();
-
-        return true;
     }
 }

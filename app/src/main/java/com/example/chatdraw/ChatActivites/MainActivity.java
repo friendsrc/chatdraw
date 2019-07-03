@@ -5,8 +5,11 @@ import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.chatdraw.AccountActivity.PersonalActivity;
 import com.example.chatdraw.AccountActivity.ProfileEditActivity;
 import com.example.chatdraw.Items.ChatItem;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
@@ -86,53 +89,73 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
         final View hView = navigationView.getHeaderView(0);
 
-        if (user != null) {
-            Log.d("userid", user.getUid());
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(MainActivity.this);
 
-            mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
+                String imgurl = "";
 
-            reference.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    String imgurl = (String) dataSnapshot.child(user.getUid()).child("uploads").child("imageUrl").getValue();
+                if (acct != null) {
+                    imgurl = (String) dataSnapshot.child(acct.getId()).child("imageUrl").getValue();
+                } else {
+                    imgurl = (String) dataSnapshot.child(user.getUid()).child("imageUrl").getValue();
+                }
 
-                    ImageButton imgbut = (ImageButton) hView.findViewById(R.id.profile_edit_button);
+                ImageButton imgbut = (ImageButton) hView.findViewById(R.id.profile_edit_button);
 
-                    if (imgurl == null) {
-                        imgbut.setImageResource(R.drawable.account_circle_black_75dp);
+                if (imgurl == null) {
+                    imgbut.setImageResource(R.drawable.account_circle_black_75dp);
+                } else {
+                    Picasso.get()
+                            .load(imgurl)
+                            .fit()
+                            .into(imgbut);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(MainActivity.this);
+                String tempName = "";
+                String tempUsername = "";
+
+                if (acct != null) {
+                    String uID = acct.getId();
+
+                    if (uID != null) {
+                        tempName = (String) dataSnapshot.child(uID).child("name").getValue();
+                        tempUsername = (String) dataSnapshot.child(uID).child("username").getValue();
                     } else {
-                        Picasso.get()
-                                .load(imgurl)
-                                .fit()
-                                .into(imgbut);
+                        Toast.makeText(MainActivity.this, "Error on user validation", Toast.LENGTH_SHORT).show();
                     }
+                } else {
+                    tempName = (String) dataSnapshot.child(user.getUid()).child("name").getValue();
+                    tempUsername = (String) dataSnapshot.child(user.getUid()).child("username").getValue();
                 }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.v("NAMEE", tempName);
+                Log.v("USERNAMEE", tempUsername);
 
-                }
-            });
+                TextView tv = (TextView) hView.findViewById(R.id.profile_field);
+                tv.setText(tempName);
 
-            reference.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    String profilename = (String) dataSnapshot.child(user.getUid()).child("name").getValue();
-                    String username = (String) dataSnapshot.child(user.getUid()).child("username").getValue();
+                TextView tv1 = (TextView) hView.findViewById(R.id.username_field);
+                tv1.setText(tempUsername);
+            }
 
-                    TextView tv = (TextView) hView.findViewById(R.id.profile_field);
-                    tv.setText(profilename);
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                    TextView tv1 = (TextView) hView.findViewById(R.id.username_field);
-                    tv1.setText(username);
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                }
-            });
-        }
+            }
+        });
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -259,14 +282,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // clear previous data from ListView Adapter
         mFriendListAdapter.clearData();
 
-        if (userUID == null) {
-            userUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(MainActivity.this);
+        if (acct != null) {
+            userUID = acct.getId();
+        } else {
+            if (userUID == null) {
+                userUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            } else {
+                Toast.makeText(MainActivity.this, "User not validated", Toast.LENGTH_SHORT).show();
+            }
         }
 
         // get list of message previews from Firestore and update ListView
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("Previews")
-                .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .document(userUID)
                 .collection("ChatPreviews")
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {

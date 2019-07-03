@@ -2,9 +2,13 @@ package com.example.chatdraw.AccountActivity;
 
 import android.content.Intent;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,21 +17,67 @@ import android.widget.Toast;
 
 import com.example.chatdraw.ChatActivites.MainActivity;
 import com.example.chatdraw.R;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInApi;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity
+        implements GoogleApiClient.OnConnectionFailedListener,
+        GoogleApiClient.ConnectionCallbacks {
     private EditText inputEmail, inputPassword;
     private FirebaseAuth auth;
     private ProgressBar progressBar;
     private Button btnSignup, btnLogin, btnReset;
+    private SignInButton signIn;
+    private GoogleApiClient googleApiClient;
+    private static final int REQ_CODE = 9001;
+    private GoogleSignInClient mGoogleSignInClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        // request the user's ID, email address, and basic profile
+        GoogleSignInOptions signInOptions = new GoogleSignInOptions.Builder(
+                GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .requestId()
+                .build();
+
+        // build API client with access to Sign-In API and options above
+//        googleApiClient = new GoogleApiClient.Builder(this)
+//                .enableAutoManage(this, this)
+//                .addApi(Auth.GOOGLE_SIGN_IN_API, signInOptions)
+//                .addConnectionCallbacks(this)
+//                .build();
+
+        // Build a GoogleSignInClient with the options specified by gso.
+        mGoogleSignInClient= GoogleSignIn.getClient(this, signInOptions);
+
+        signIn = (SignInButton) findViewById(R.id.bn_login);
+        signIn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                signInMethod();
+            }
+        });
 
         /* Get Firebase auth instance
            Returns an instance of this class corresponding
@@ -35,11 +85,19 @@ public class LoginActivity extends AppCompatActivity {
         */
         auth = FirebaseAuth.getInstance();
 
+
         // If there is user login already, start the MainActivity
         if (auth.getCurrentUser() != null) {
             startActivity(new Intent(LoginActivity.this, MainActivity.class));
 
             finish();
+        } else {
+            GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(LoginActivity.this);
+            if (acct != null) {
+                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+
+                finish();
+            }
         }
 
         // setContentView(R.layout.activity_login);
@@ -118,5 +176,89 @@ public class LoginActivity extends AppCompatActivity {
                 });
             }
         });
+    }
+
+    private void signInMethod(){
+        Intent intent = mGoogleSignInClient.getSignInIntent();
+        startActivityForResult(intent, REQ_CODE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQ_CODE) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            handleResult(task);
+//            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+//            handleResult(result);
+        }
+    }
+
+    private void signOut() {
+        Auth.GoogleSignInApi.signOut(googleApiClient).setResultCallback(new ResultCallback<Status>() {
+            @Override
+            public void onResult(@NonNull Status status) {
+
+            }
+        });
+    }
+
+    private void handleResult(Task<GoogleSignInAccount> completedTask) {
+        try {
+            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+
+            if (account != null) {
+                final String name = account.getDisplayName();
+                String email = account.getEmail();
+                final String personId = account.getId();
+                final Uri img_url = account.getPhotoUrl();
+                String username = null;
+                User user;
+
+                if (img_url != null) {
+                    user = new User(email, name, username, img_url.toString());
+                } else {
+                    user = new User(email, name, username);
+                }
+
+                final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users");
+                databaseReference
+                        .child(personId)
+                        .setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            // startActivity(new Intent(SignupActivity.this, FriendListActivity.class));
+                            Intent intention = new Intent(LoginActivity.this, PersonalActivity.class);
+                            intention.putExtra("GoogleName", name);
+                            intention.putExtra("userID", personId);
+                            startActivity(intention);
+                        } else {
+                            Toast.makeText(LoginActivity.this, "error at signup through google", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+
+            }
+        } catch(ApiException e) {
+            Log.w("TAG", "signInResult:failed code=" + e);
+            Toast.makeText(this, "Login fail", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        Log.v("connection: ", "onConnected");
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.v("connection: ","onConnectionSuspended");
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.v("connection: ","onConnectionFailed");
     }
 }

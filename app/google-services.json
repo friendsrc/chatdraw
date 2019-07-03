@@ -5,6 +5,11 @@
     "project_id": "chatdraw-ff7eb",
     "storage_bucket": "chatdraw-ff7eb.appspot.com"
   },
+  
+  "web": {
+    "client_id":"437200162274-0el2qrfag7lllvi3tghp63egc3qkkbc1.apps.googleusercontent.com","project_id":"chatdraw-ff7eb","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"OuhtgTTQNiOwG-2tPm1hfrF9"
+  },
+  
   "client": [
     {
       "client_info": {

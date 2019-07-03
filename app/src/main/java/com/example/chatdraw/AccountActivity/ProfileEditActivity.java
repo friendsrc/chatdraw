@@ -37,7 +37,10 @@ import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceFragmentCompat;
 // import androidx.preference.PreferenceFragmentCompat;
 
+import com.example.chatdraw.ChatActivites.MainActivity;
 import com.example.chatdraw.R;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -75,6 +78,7 @@ public class ProfileEditActivity extends AppCompatActivity {
     private ProgressDialog mProgressDialog;
     private StorageReference mStorageRef;
     private DatabaseReference mDatabaseRef;
+    private String userUID;
     private FirebaseAuth auth;
     private StorageTask mUploadTask;
 
@@ -90,39 +94,58 @@ public class ProfileEditActivity extends AppCompatActivity {
         mStorageRef = FirebaseStorage.getInstance().getReference("Users");
 
         final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
+        mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
 
-        if (user != null) {
-            reference.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    String profilename = (String) dataSnapshot.child(user.getUid()).child("name").getValue();
-                    String username = (String) dataSnapshot.child(user.getUid()).child("username").getValue();
-                    String imgurl = (String) dataSnapshot.child(user.getUid()).child("uploads").child("imageUrl").getValue();
+        mDatabaseRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(ProfileEditActivity.this);
+                String tempName = "";
+                String tempUsername = "";
+                String imgurl = "";
 
-                    CircleImageView imgview = (CircleImageView) findViewById(R.id.new_profile_picture_image_view);
+                if (acct != null) {
+                    String uID = acct.getId();
 
-                    if (imgurl == null) {
-                        imgview.setImageResource(R.drawable.account_circle_black_75dp);
+                    if (uID != null) {
+                        userUID = uID;
+                        tempName = (String) dataSnapshot.child(uID).child("name").getValue();
+                        tempUsername = (String) dataSnapshot.child(uID).child("username").getValue();
+                        imgurl = (String) dataSnapshot.child(uID).child("imageUrl").getValue();
                     } else {
-                        Picasso.get()
-                                .load(imgurl)
-                                .into(imgview);
+                        Toast.makeText(ProfileEditActivity.this, "Error on user validation", Toast.LENGTH_SHORT).show();
                     }
-
-                    TextView tv = (TextView) findViewById(R.id.profiles_field);
-                    tv.setText(profilename);
-
-                    TextView tv1 = (TextView) findViewById(R.id.usernames_field);
-                    tv1.setText(username);
+                } else {
+                    userUID = user.getUid();
+                    tempName = (String) dataSnapshot.child(userUID).child("name").getValue();
+                    tempUsername = (String) dataSnapshot.child(userUID).child("username").getValue();
+                    imgurl = (String) dataSnapshot.child(userUID).child("imageUrl").getValue();
                 }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
 
+                CircleImageView imgview = (CircleImageView) findViewById(R.id.new_profile_picture_image_view);
+
+                if (imgurl == null) {
+                    imgview.setImageResource(R.drawable.account_circle_black_75dp);
+                } else {
+                    Picasso.get()
+                            .load(imgurl)
+                            .into(imgview);
                 }
-            });
-        }
+
+                TextView tv = (TextView) findViewById(R.id.profiles_field);
+                tv.setText(tempName);
+
+                TextView tv1 = (TextView) findViewById(R.id.usernames_field);
+                tv1.setText(tempUsername);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.photo_button);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -175,9 +198,18 @@ public class ProfileEditActivity extends AppCompatActivity {
                 if (index > -1) {
                     preference.setSummary(listPreference.getEntries()[index]);
 
-                    final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(user.getUid()).child("status");
-                    databaseReference.setValue(stringValue);
+                    Activity activity = (Activity) preference.getContext();
+                    GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(activity);
+
+                    if (acct != null) {
+                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(acct.getId()).child("status");
+                        databaseReference.setValue(stringValue);
+                    } else {
+                        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(user.getUid()).child("status");
+                        databaseReference.setValue(stringValue);
+                    }
+
                 } else {
                     preference.setSummary(null);
                 }
@@ -188,26 +220,38 @@ public class ProfileEditActivity extends AppCompatActivity {
                         final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
 
-                        if (user != null) {
-                            reference.addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    String profilename = (String) dataSnapshot.child(user.getUid()).child("name").getValue();
-                                    String username = (String) dataSnapshot.child(user.getUid()).child("username").getValue();
+                        reference.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                Activity activity = (Activity) preference.getContext();
+                                GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(activity);
 
-                                    if (preference.getKey().equals("profilenames") && (profilename != null)) {
-                                        preference.setSummary(profilename);
-                                    } else if (preference.getKey().equals("usernames") && username != null) {
-                                        preference.setSummary(username);
-                                    }
+                                String profilename = "";
+                                String username = "";
+
+                                if (acct != null) {
+                                    String tempID = acct.getId();
+                                    profilename = (String) dataSnapshot.child(tempID).child("name").getValue();
+                                    username = (String) dataSnapshot.child(tempID).child("username").getValue();
+                                } else {
+                                    String tempID = user.getUid();
+                                    profilename = (String) dataSnapshot.child(tempID).child("name").getValue();
+                                    username = (String) dataSnapshot.child(tempID).child("username").getValue();
                                 }
 
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                                if (preference.getKey().equals("profilenames") && (profilename != null)) {
+                                    preference.setSummary(profilename);
+                                } else if (preference.getKey().equals("usernames") && username != null) {
+                                    preference.setSummary(username);
                                 }
-                            });
-                        }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+
                     } else {
                         Log.v("HERE", "SET HERE");
                         preference.setSummary("Not set");
@@ -342,15 +386,15 @@ public class ProfileEditActivity extends AppCompatActivity {
                             @Override
                             public void onSuccess(Uri uri) {
                                 String url = uri.toString();
-                                Upload upload = new Upload(name, url);
+                                // Upload upload = new Upload(name, url);
 
                                 // update realtime
                                 String uploadId = mDatabaseRef.push().getKey();
-                                mDatabaseRef.child(userID).child("uploads").setValue(upload);
+                                mDatabaseRef.child(userID).child("imageUrl").setValue(url);
 
                                 // update firestore
-                                Upload profileUpload = new Upload(url);
-                                FirebaseFirestore.getInstance().collection("Users").document(userID).set(profileUpload, SetOptions.merge());
+//                                Upload profileUpload = new Upload(url);
+//                                FirebaseFirestore.getInstance().collection("Users").document(userID).set(profileUpload, SetOptions.merge());
                             }
                         });
                     }
@@ -389,11 +433,11 @@ public class ProfileEditActivity extends AppCompatActivity {
                             @Override
                             public void onSuccess(Uri uri) {
                                 String url = uri.toString();
-                                Upload upload = new Upload(name, url);
+                                // Upload upload = new Upload(name, url);
 
                                 // update realtime
                                 String uploadId = mDatabaseRef.push().getKey();
-                                mDatabaseRef.child(userID).child("uploads").setValue(upload);
+                                mDatabaseRef.child(userID).child("imageUrl").setValue(url);
 
                                 // update firestore
                                 Upload profileUpload = new Upload(url);
@@ -440,7 +484,7 @@ public class ProfileEditActivity extends AppCompatActivity {
 //
 //                    // update realtime
 //                    String uploadId = mDatabaseRef.push().getKey();
-//                    mDatabaseRef.child(userID).child("uploads").setValue(upload);
+//                    mDatabaseRef.child(userID).child("imageUrl").setValue(url);
 //
 //                    // update firestore
 //                    Upload profileUpload = new Upload(url);

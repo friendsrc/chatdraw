@@ -39,6 +39,21 @@
         android:textColor="@android:color/white"
         android:textColorHint="@android:color/white" />
 
+    <LinearLayout
+        android:layout_marginTop="20sp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.gms.common.SignInButton
+            android:id="@+id/bn_login"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start">
+
+        </com.google.android.gms.common.SignInButton>
+
+    </LinearLayout>
+
     <!-- Login Button -->
     <Button
         android:id="@+id/btn_login"
