@@ -17,8 +17,11 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.chatdraw.Adapters.NewFriendAdapter;
+import com.example.chatdraw.ChatActivites.NewMessageActivity;
 import com.example.chatdraw.R;
 import com.example.chatdraw.Items.NewFriendItem;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -61,8 +64,14 @@ public class FindFriendActivity extends AppCompatActivity {
                             @Override
                             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                 if (task.isSuccessful()) {
-                                    final String currentUserID = FirebaseAuth.getInstance()
-                                            .getCurrentUser().getUid();
+                                    String id;
+                                    GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(FindFriendActivity.this);
+                                    if (acct != null) {
+                                        id = acct.getId();
+                                    } else {
+                                        id = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                                    }
+                                    final String currentUserID = id;
                                     for (QueryDocumentSnapshot document : task.getResult()) {
                                         final String uID = document.getId();
                                         FirebaseFirestore.getInstance()

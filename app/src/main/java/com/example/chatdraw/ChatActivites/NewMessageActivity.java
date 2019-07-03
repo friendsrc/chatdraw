@@ -17,6 +17,8 @@ import com.example.chatdraw.CreateGroupActivities.NewGroupActivity;
 import com.example.chatdraw.R;
 import com.example.chatdraw.Adapters.RecyclerViewAdapter;
 import com.example.chatdraw.Listeners.RecyclerViewClickListener;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -54,8 +56,14 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
 
 
         // get Contacts list
-        FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        String id = currentFirebaseUser.getUid();
+        String id;
+        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(NewMessageActivity.this);
+        if (acct != null) {
+            id = acct.getId();
+        } else {
+            id = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        }
+
         FirebaseFirestore.getInstance().collection("Users").document(id)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {

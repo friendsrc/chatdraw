@@ -1,6 +1,7 @@
 package com.example.chatdraw.Adapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,9 +10,12 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.chatdraw.AccountActivity.LoginActivity;
 import com.example.chatdraw.Items.ChatItem;
 import com.example.chatdraw.R;
 import com.example.chatdraw.Listeners.RecyclerViewClickListener;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.firebase.auth.FirebaseAuth;
 import com.squareup.picasso.Picasso;
 
@@ -50,7 +54,12 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAd
         mDataset = myDataset;
         this.context = context;
         itemListener = listener;
-        this.userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(context);
+        if (acct != null) {
+            this.userId = acct.getId();
+        } else {
+            this.userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        }
     }
 
     @Override
@@ -87,30 +96,35 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAd
         // - replace the contents of the view with that element
         ChatItem chatItem = mDataset.get(position);
 
-        TextView name = holder.view.findViewById(R.id.friend_list_name);
-        String nameString = mDataset.get(position).getSenderName();
-        if (nameString == null) {
-            nameString = "Anonymous";
-            name.setTextColor(context.getResources().getColor(R.color.pLight));
+        TextView name = holder.view.findViewById(R.id.text_message_name);
+        if (name != null) {
+            String nameString = mDataset.get(position).getSenderName();
+            Log.d("HEY", "namestring = " + nameString);
+            if (nameString == null) {
+                nameString = "Anonymous";
+                name.setTextColor(context.getResources().getColor(R.color.pLight));
+            }
+            name.setText(nameString);
         }
-        name.setText(nameString);
-        if (name != null) name.setText(nameString);
 
         TextView message = holder.view.findViewById(R.id.text_message_body);
         message.setText(mDataset.get(position).getMessageBody());
 
         ImageView profilePicture = holder.view.findViewById(R.id.image_message_profile);
-        String imageUrl = mDataset.get(position).getSenderImageUrl();
+        if (profilePicture != null) {
+            String imageUrl = mDataset.get(position).getSenderImageUrl();
+            if (profilePicture != null && imageUrl != null) {
+                Picasso.get()
+                        .load(imageUrl)
+                        .fit()
+                        .into(profilePicture);
+            }
+        }
 
         TextView time = holder.view.findViewById(R.id.text_message_time);
         time.setText(mDataset.get(position).getTimeSent());
 
-        if (profilePicture != null && imageUrl != null) {
-            Picasso.get()
-                    .load(imageUrl)
-                    .fit()
-                    .into(profilePicture);
-        }
+
     }
 
     // Return the size of your dataset (invoked by the layout manager)

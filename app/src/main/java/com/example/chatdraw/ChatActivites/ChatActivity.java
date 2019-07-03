@@ -19,6 +19,8 @@ import com.example.chatdraw.Items.ChatItem;
 import com.example.chatdraw.R;
 import com.example.chatdraw.Adapters.ChatRecyclerViewAdapter;
 import com.example.chatdraw.Listeners.RecyclerViewClickListener;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -81,7 +83,12 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
         friendsUID = intent.getStringExtra("uID");
 
         // get user's UID
-        userUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(ChatActivity.this);
+        if (acct != null) {
+            this.userUID = acct.getId();
+        } else {
+            userUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        }
 
         // get user's display name and profile picture
         FirebaseFirestore.getInstance().collection("Users")

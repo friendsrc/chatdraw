@@ -13,10 +13,13 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.example.chatdraw.ChatActivites.NewMessageActivity;
 import com.example.chatdraw.Listeners.RecyclerViewClickListener;
 import com.example.chatdraw.R;
 import com.example.chatdraw.Items.FriendListItem;
 import com.example.chatdraw.Adapters.RecyclerViewAdapter;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -118,7 +121,13 @@ public class FriendListActivity extends AppCompatActivity {
                         mAdapter.notifyDataSetChanged();
 
                         // get the current user's uID
-                        String currentUserID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                        String currentUserID;
+                        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(FriendListActivity.this);
+                        if (acct != null) {
+                            currentUserID = acct.getId();
+                        } else {
+                            currentUserID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                        }
                         FirebaseFirestore.getInstance().collection("Users")
                                 .document(currentUserID)
                                 .update("contacts", FieldValue.arrayUnion(uID));
