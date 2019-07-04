@@ -1,10 +1,12 @@
 package com.example.chatdraw.CreateGroupActivities;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -150,6 +152,15 @@ public class NewGroupActivity extends AppCompatActivity implements RecyclerViewC
         } else {
            chosenContacts.put(position, friendListItem);
            v.setBackgroundColor(getResources().getColor(R.color.bluegray100));
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == GROUP_CREATE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            setResult(Activity.RESULT_OK, data);
+            finish();
         }
     }
 

@@ -30,6 +30,9 @@ import java.util.ArrayList;
 
 public class NewMessageActivity extends AppCompatActivity implements RecyclerViewClickListener {
 
+    private static final int NEW_GROUP_REQUEST_CODE = 505;
+
+
     public static final String TAG = "NewMessageActivity";
     private RecyclerViewAdapter mAdapter;
     private ArrayList<FriendListItem> myDataset;
@@ -83,7 +86,7 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(NewMessageActivity.this, NewGroupActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, NEW_GROUP_REQUEST_CODE);
             }
         });
 
