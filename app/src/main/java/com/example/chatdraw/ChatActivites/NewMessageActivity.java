@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -135,4 +136,12 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
         finish();
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == NEW_GROUP_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            setResult(55, data);
+            finish();
+        }
+    }
 }

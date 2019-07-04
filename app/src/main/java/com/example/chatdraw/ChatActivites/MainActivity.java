@@ -254,10 +254,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             updateListView(mFriendListAdapter, uID, name, "No messages yet.", imageUrl);
                         }
                     });
+        } else if (requestCode == NEW_MESSAGE_REQUEST_CODE && resultCode == 55) {
+            final String groupID = data.getStringExtra("groupID");
+            FirebaseFirestore.getInstance().collection("Groups").document(groupID)
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            DocumentSnapshot snapshot = task.getResult();
+                            String groupName = snapshot.getString("groupName");
+                            String imageUrl = snapshot.getString("imageUrl");
+                            updateListView(mFriendListAdapter, groupID, groupName, "No messages yet", imageUrl);
+                        }
+                    });
         }
     }
 
     public void updateListView(FriendListAdapter friendListAdapter, String uID, String name, String messagePreview, String imageUrl) {
+        Log.d("HEY", "updating with id = " + uID);
         // find the friend list ListView
         ListView listView = findViewById(R.id.main_chat_listview);
 
