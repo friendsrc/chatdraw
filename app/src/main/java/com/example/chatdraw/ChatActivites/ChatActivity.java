@@ -24,6 +24,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -56,6 +58,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
     private boolean isGroup = false;
     private String groupID;
     private ArrayList<String> membersID;
+    private ArrayList<DocumentReference> membersPreview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -214,9 +217,16 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                 if (chatItem.getMessageBody().length() > 43) {
                     chatItem.setMessageBody(chatItem.getMessageBody().substring(0, 40) + "...");
                 }
-                db.collection("GroupPreviews")
-                        .document(groupID)
-                        .set(chatItem);
+                if (membersPreview == null) {
+                    membersPreview = new ArrayList<>();
+                    CollectionReference previews = db.collection("Previews");
+                    for (String s: membersID) {
+                        membersPreview.add(previews.document(s).collection("ChatPreviews").document(groupID));
+                    }
+                }
+                for (DocumentReference d: membersPreview) {
+                    d.set(chatItem);
+                }
             }
 
 
