@@ -9,10 +9,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.example.chatdraw.Adapters.GroupListRecyclerViewAdapter;
 import com.example.chatdraw.ChatActivites.ChatActivity;
@@ -44,6 +47,9 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager layoutManager;
     private ArrayList<FriendListItem> myDataset;
+    private boolean isFriendsToggledOff = false;
+    private boolean isGroupToggledOff = false;
+    private GroupListRecyclerViewAdapter mGroupAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +95,43 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
 
         // get Contacts list from Firebase
         getContacts();
+
+        LinearLayout groupToggle = findViewById(R.id.group_toggle);
+        groupToggle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RecyclerView recyclerView = findViewById(R.id.friend_list_group_recycler_view);
+                ImageView arrow = findViewById(R.id.group_arrow);
+                if (isGroupToggledOff) {
+                    recyclerView.setAdapter(mGroupAdapter);
+//                    arrow.setImageResource(R.drawable.arrow_drop_down);
+                } else {
+                    ArrayList<NewFriendItem> emptyDataset = new ArrayList<>();
+                    final GroupListRecyclerViewAdapter adapter
+                            = new GroupListRecyclerViewAdapter(emptyDataset);
+                    recyclerView.setAdapter(adapter);
+//                    arrow.setImageResource(R.drawable.arrow_drop_up);
+                }
+                isGroupToggledOff = !isGroupToggledOff;
+            }
+        });
+
+        LinearLayout friendToggle = findViewById(R.id.friend_toggle);
+        friendToggle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RecyclerView recyclerView = findViewById(R.id.friend_list_recycler_view);
+                if (isFriendsToggledOff) {
+                    recyclerView.setAdapter(mAdapter);
+                } else {
+                    ArrayList<FriendListItem> emptyDataset = new ArrayList<>();
+                    final RecyclerViewAdapter adapter
+                            = new RecyclerViewAdapter(emptyDataset);
+                    recyclerView.setAdapter(adapter);
+                }
+                isFriendsToggledOff = !isFriendsToggledOff;
+            }
+        });
     }
 
     @Override
@@ -190,6 +233,7 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
         ArrayList<NewFriendItem> myDataset = new ArrayList<>();
         final GroupListRecyclerViewAdapter adapter
                 = new GroupListRecyclerViewAdapter(myDataset, FriendListActivity.this, this);
+        mGroupAdapter = adapter;
         recyclerView.setAdapter(adapter);
 
 
