@@ -318,7 +318,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                             // if the sender of this ChatItem is the current user, get the profile
                             // of the receiver instead
-                            if (uId.equals(userUID)) {
+                            if (uId.equals(userUID) || chatItem.getReceiverID().startsWith("GROUP_")) {
                                 uId =chatItem.getReceiverID();
                                 name = chatItem.getReceiverName();
                                 imageUrl = chatItem.getReceiverImageUrl();

@@ -57,6 +57,8 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
 
     private boolean isGroup = false;
     private String groupID;
+    private String groupName;
+    private String groupImageUrl;
     private ArrayList<String> membersID;
     private ArrayList<DocumentReference> membersPreview;
 
@@ -100,6 +102,9 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                             DocumentSnapshot snapshot = task.getResult();
                             membersID = (ArrayList<String>) snapshot.get("members");
+                            groupName = snapshot.getString("groupName");
+                            //TODO: set group image url
+                            groupImageUrl = snapshot.getString("groupImageUrl");
                         }
                     });
         }
@@ -208,6 +213,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                         .set(chatItem);
             } else {
                 // Send to group's message collection
+                chatItem.setReceiverName(groupName);
                 db.collection("GroupMessages")
                         .document(groupID)
                         .collection("ChatHistory")
@@ -216,6 +222,9 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                 // Send to group's preview collection
                 if (chatItem.getMessageBody().length() > 43) {
                     chatItem.setMessageBody(chatItem.getMessageBody().substring(0, 40) + "...");
+                    chatItem.setSenderID(groupID);
+                    chatItem.setSenderName(groupName);
+                    chatItem.setSenderImageUrl(groupImageUrl);
                 }
                 if (membersPreview == null) {
                     membersPreview = new ArrayList<>();
