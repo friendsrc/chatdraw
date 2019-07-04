@@ -53,6 +53,10 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
 
     SwipeRefreshLayout mSwipeRefreshLayout;
 
+    private boolean isGroup = false;
+    private String groupID;
+    private ArrayList<String> membersID;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,6 +85,21 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
 
         // get friend's UID
         friendsUID = intent.getStringExtra("uID");
+
+        if (friendsUID.startsWith("GROUP_")) {
+            isGroup = true;
+            groupID = friendsUID;
+            FirebaseFirestore.getInstance().collection("Groups")
+                    .document(groupID)
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            DocumentSnapshot snapshot = task.getResult();
+                            membersID = (ArrayList<String>) snapshot.get("members");
+                        }
+                    });
+        }
 
         // get user's UID
         GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(ChatActivity.this);
@@ -146,6 +165,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
     private void sendMessage(ChatItem chatItem) {
         Log.d(TAG, "sending Message");
         if (!chatItem.getMessageBody().equals("")) {
+
 //            // Send to Realtime Database
 //            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Messages");
 //            databaseReference.push().setValue(chatItem);
@@ -153,62 +173,104 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
             FirebaseFirestore db = FirebaseFirestore.getInstance();
             String userID = FirebaseAuth.getInstance().getUid();
 
-            // Send to this user's message collection
-            db.collection("Messages")
-                    .document(userID)
-                    .collection("Friends")
-                    .document(friendsUID)
-                    .collection("ChatHistory")
-                    .add(chatItem);
+            if (!isGroup) {
+                // Send to this user's message collection
+                db.collection("Messages")
+                        .document(userID)
+                        .collection("Friends")
+                        .document(friendsUID)
+                        .collection("ChatHistory")
+                        .add(chatItem);
 
-            // Send to the receiver's message collection
-            db.collection("Messages")
-                    .document(friendsUID)
-                    .collection("Friends")
-                    .document(userID)
-                    .collection("ChatHistory")
-                    .add(chatItem);
+                // Send to the receiver's message collection
+                db.collection("Messages")
+                        .document(friendsUID)
+                        .collection("Friends")
+                        .document(userID)
+                        .collection("ChatHistory")
+                        .add(chatItem);
 
-            if (chatItem.getMessageBody().length() > 43) {
-                chatItem.setMessageBody(chatItem.getMessageBody().substring(0, 40) + "...");
+                if (chatItem.getMessageBody().length() > 43) {
+                    chatItem.setMessageBody(chatItem.getMessageBody().substring(0, 40) + "...");
+                }
+
+                // Send to user's message preview collection
+                db.collection("Previews").document(userID)
+                        .collection("ChatPreviews").document(friendsUID)
+                        .set(chatItem);
+
+                // Send to the receiver's message preview collection
+                db.collection("Previews").document(friendsUID)
+                        .collection("ChatPreviews").document(userID)
+                        .set(chatItem);
+            } else {
+                // Send to group's message collection
+                db.collection("GroupMessages")
+                        .document(groupID)
+                        .collection("ChatHistory")
+                        .add(chatItem);
+
+                // Send to group's preview collection
+                if (chatItem.getMessageBody().length() > 43) {
+                    chatItem.setMessageBody(chatItem.getMessageBody().substring(0, 40) + "...");
+                }
+                db.collection("GroupPreviews")
+                        .document(groupID)
+                        .set(chatItem);
             }
 
-            // Send to user's message preview collection
-            db.collection("Previews").document(userID)
-                    .collection("ChatPreviews").document(friendsUID)
-                    .set(chatItem);
 
-            // Send to the receiver's message preview collection
-            db.collection("Previews").document(friendsUID)
-                    .collection("ChatPreviews").document(userID)
-                    .set(chatItem);
         }
     }
 
     public void getMessages() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("Messages")
-                .document(FirebaseAuth.getInstance().getUid())
-                .collection("Friends")
-                .document(friendsUID)
-                .collection("ChatHistory")
-                .orderBy("timestamp")
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                        mAdapter.clearData();
-                        for (DocumentSnapshot q: queryDocumentSnapshots) {
-                            ChatItem chatItem = q.toObject(ChatItem.class);
+        if (!isGroup) {
+            db.collection("Messages")
+                    .document(FirebaseAuth.getInstance().getUid())
+                    .collection("Friends")
+                    .document(friendsUID)
+                    .collection("ChatHistory")
+                    .orderBy("timestamp")
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                            mAdapter.clearData();
+                            for (DocumentSnapshot q: queryDocumentSnapshots) {
+                                ChatItem chatItem = q.toObject(ChatItem.class);
 
-                            if (chatItem != null && !chatItem.getSenderID().equals(userUID)) {
-                                String updatedImageURL = friendImageUrl[0];
-                                chatItem.setSenderImageUrl(updatedImageURL);
+                                if (chatItem != null && !chatItem.getSenderID().equals(userUID)) {
+                                    String updatedImageURL = friendImageUrl[0];
+                                    chatItem.setSenderImageUrl(updatedImageURL);
+                                }
+                                mAdapter.addData(chatItem);
+                                mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
                             }
-                            mAdapter.addData(chatItem);
-                            mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
                         }
-                    }
-                });
+                    });
+        } else {
+            db.collection("GroupMessages")
+                    .document(groupID)
+                    .collection("ChatHistory")
+                    .orderBy("timestamp")
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                            mAdapter.clearData();
+                            for (DocumentSnapshot q: queryDocumentSnapshots) {
+                                ChatItem chatItem = q.toObject(ChatItem.class);
+
+                                if (chatItem != null && !chatItem.getSenderID().equals(userUID)) {
+                                    String updatedImageURL = friendImageUrl[0];
+                                    chatItem.setSenderImageUrl(updatedImageURL);
+                                }
+                                mAdapter.addData(chatItem);
+                                mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
+                            }
+                        }
+                    });
+        }
+
     }
 
     @Override

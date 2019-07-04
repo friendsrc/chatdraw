@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.example.chatdraw.ChatActivites.ChatActivity;
+import com.example.chatdraw.Items.ChatItem;
 import com.example.chatdraw.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -22,6 +23,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -36,6 +38,9 @@ public class GroupCreateActivity extends AppCompatActivity {
         // get the added group members' IDs
         final String[] memberUIDs = getIntent().getStringArrayExtra("memberList");
 
+        final ArrayList<String> members = new ArrayList<>();
+        for (String s : memberUIDs) members.add(s);
+
         // get this user's ID and add to array
         final String userUID;
         GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(GroupCreateActivity.this);
@@ -44,6 +49,7 @@ public class GroupCreateActivity extends AppCompatActivity {
         } else {
             userUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
         }
+        members.add(userUID);
 
         // set the action bar
         getSupportActionBar().setTitle("Create Group");
@@ -78,21 +84,29 @@ public class GroupCreateActivity extends AppCompatActivity {
 
                 // add each member's id to group document and add group id to each
                 // member's document
-                for (String s: memberUIDs) {
+                for (String s: members) {
                     // add member id to group
                     reference.update("members", FieldValue.arrayUnion(s));
 
                     // add group id to member
-                    FirebaseFirestore.getInstance().collection("Users")
+                    FirebaseFirestore.getInstance()
+                            .collection("Users")
                             .document(s)
                             .update("groups", FieldValue.arrayUnion(groupID));
-                }
 
-                // add this user
-                reference.update("members", FieldValue.arrayUnion(userUID));
-                FirebaseFirestore.getInstance().collection("Users")
-                        .document(userUID)
-                        .update("groups", FieldValue.arrayUnion(groupID));
+                    // create a placeholder chat item, TODO: set imageUrl
+                    ChatItem chatItem = new ChatItem("", groupID, groupName,
+                            null, null, s,
+                            null, null, null);
+
+                    // Send to user's message preview collection
+                    FirebaseFirestore.getInstance()
+                            .collection("Previews")
+                            .document(s)
+                            .collection("ChatPreviews")
+                            .document(groupID)
+                            .set(chatItem);
+                }
 
                 // set the result as successful
                 Intent intent = new Intent();

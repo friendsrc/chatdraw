@@ -255,18 +255,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         }
                     });
         } else if (requestCode == NEW_MESSAGE_REQUEST_CODE && resultCode == 55) {
-            final String groupID = data.getStringExtra("groupID");
-            FirebaseFirestore.getInstance().collection("Groups").document(groupID)
-                    .get()
-                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            DocumentSnapshot snapshot = task.getResult();
-                            String groupName = snapshot.getString("groupName");
-                            String imageUrl = snapshot.getString("imageUrl");
-                            updateListView(mFriendListAdapter, groupID, groupName, "No messages yet", imageUrl);
-                        }
-                    });
+//            String groupID = data.getStringExtra("groupID");
+//            String groupName = data.getStringExtra("groupName");
         }
     }
 
