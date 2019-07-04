@@ -10,10 +10,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.example.chatdraw.Adapters.GroupListRecyclerViewAdapter;
+import com.example.chatdraw.ChatActivites.ChatActivity;
 import com.example.chatdraw.ChatActivites.NewMessageActivity;
+import com.example.chatdraw.Items.NewFriendItem;
 import com.example.chatdraw.Listeners.RecyclerViewClickListener;
 import com.example.chatdraw.R;
 import com.example.chatdraw.Items.FriendListItem;
@@ -30,7 +34,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 
-public class FriendListActivity extends AppCompatActivity {
+public class FriendListActivity extends AppCompatActivity implements RecyclerViewClickListener {
 
     private static String TAG = "FriendListActivity";
 
@@ -79,6 +83,9 @@ public class FriendListActivity extends AppCompatActivity {
         // set the Action Bar title
         getSupportActionBar().setTitle("Contacts");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        // get Groups list from Firebase
+        getGroups();
 
         // get Contacts list from Firebase
         getContacts();
@@ -136,8 +143,14 @@ public class FriendListActivity extends AppCompatActivity {
     }
 
     public void getContacts() {
-        FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        String id = currentFirebaseUser.getUid();
+        String id;
+        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(FriendListActivity.this);
+        if (acct != null) {
+            id = acct.getId();
+        } else {
+            id = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        }
+
         FirebaseFirestore.getInstance().collection("Users").document(id)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -151,5 +164,70 @@ public class FriendListActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
+
+    public void getGroups() {
+        // get this user's id
+        final String id;
+        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(FriendListActivity.this);
+        if (acct != null) {
+            id = acct.getId();
+        } else {
+            id = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        }
+
+        RecyclerView recyclerView = findViewById(R.id.friend_list_group_recycler_view);
+
+        // use this setting to improve performance if you know that changes
+        // in content do not change the layout size of the RecyclerView
+        recyclerView.setHasFixedSize(true);
+
+        // use a linear layout manager
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+
+        // specify an adapter
+        ArrayList<NewFriendItem> myDataset = new ArrayList<>();
+        final GroupListRecyclerViewAdapter adapter
+                = new GroupListRecyclerViewAdapter(myDataset, FriendListActivity.this, this);
+        recyclerView.setAdapter(adapter);
+
+
+        FirebaseFirestore.getInstance().collection("Users").document(id)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        ArrayList<String> arr = (ArrayList<String>) task.getResult().get("groups");
+                        if (arr != null && !arr.isEmpty()) {
+                            for (String s: arr) {
+                                Log.d("HEY", "adding group " + s);
+                                FirebaseFirestore.getInstance().collection("Groups").document(id)
+                                        .get()
+                                        .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                                DocumentSnapshot doc = task.getResult();
+                                                String name = (String) doc.get("groupName");
+                                                String imageURL = (String) doc.get("imageUrl");
+
+                                                NewFriendItem newFriendItem = new NewFriendItem(name, id, imageURL);
+                                                adapter.addData(newFriendItem);
+                                            }
+                                        });
+
+                            }
+                        }
+                    }
+
+                });
+
+
+    }
+
+    @Override
+    public void recyclerViewListClicked(View v, int position){
+
     }
 }
