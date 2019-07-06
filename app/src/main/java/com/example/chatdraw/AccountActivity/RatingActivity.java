@@ -1,5 +1,6 @@
 package com.example.chatdraw.AccountActivity;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -35,6 +36,12 @@ public class RatingActivity extends AppCompatActivity {
         commentHeader.setVisibility(View.GONE);
         commentSection.setVisibility(View.GONE);
         submitButton.setVisibility(View.GONE);
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setTitle("Help and Support");
+        }
 
         RatingBar ratingBar = (RatingBar) findViewById(R.id.rating_bar);
         ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
@@ -92,5 +99,12 @@ public class RatingActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        // if the back button is pressed, go back to previous activity
+        finish();
+        return true;
     }
 }
