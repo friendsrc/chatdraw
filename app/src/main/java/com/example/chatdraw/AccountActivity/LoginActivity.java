@@ -34,8 +34,11 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class LoginActivity extends AppCompatActivity
         implements GoogleApiClient.OnConnectionFailedListener,
@@ -195,51 +198,60 @@ public class LoginActivity extends AppCompatActivity
         }
     }
 
-    private void signOut() {
-        Auth.GoogleSignInApi.signOut(googleApiClient).setResultCallback(new ResultCallback<Status>() {
-            @Override
-            public void onResult(@NonNull Status status) {
-
-            }
-        });
-    }
-
     private void handleResult(Task<GoogleSignInAccount> completedTask) {
         try {
-            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+            final GoogleSignInAccount account = completedTask.getResult(ApiException.class);
 
             if (account != null) {
-                final String name = account.getDisplayName();
-                String email = account.getEmail();
-                final String personId = account.getId();
-                final Uri img_url = account.getPhotoUrl();
-                String username = null;
-                User user;
-
-                if (img_url != null) {
-                    user = new User(email, name, username, img_url.toString());
-                } else {
-                    user = new User(email, name, username);
-                }
-
-                final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users");
-                databaseReference
-                        .child(personId)
-                        .setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+                String userID = account.getId();
+                DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users");
+                databaseReference.orderByKey().equalTo(userID).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            // startActivity(new Intent(SignupActivity.this, FriendListActivity.class));
-                            Intent intention = new Intent(LoginActivity.this, PersonalActivity.class);
-                            intention.putExtra("GoogleName", name);
-                            intention.putExtra("userID", personId);
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        Toast.makeText(LoginActivity.this, "" + dataSnapshot, Toast.LENGTH_SHORT).show();
+                        if (dataSnapshot.exists()) {
+                            // if a user from google sign in has signed in before
+                            Intent intention = new Intent(LoginActivity.this, MainActivity.class);
                             startActivity(intention);
                         } else {
-                            Toast.makeText(LoginActivity.this, "error at signup through google", Toast.LENGTH_SHORT).show();
+                            final String name = account.getDisplayName();
+                            String email = account.getEmail();
+                            final String personId = account.getId();
+                            final Uri img_url = account.getPhotoUrl();
+                            String username = null;
+                            User user;
+
+                            if (img_url != null) {
+                                user = new User(email, name, username, img_url.toString());
+                            } else {
+                                user = new User(email, name, username);
+                            }
+
+                            final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users");
+                            databaseReference
+                                    .child(personId)
+                                    .setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
+                                        // startActivity(new Intent(SignupActivity.this, FriendListActivity.class));
+                                        Intent intention = new Intent(LoginActivity.this, PersonalActivity.class);
+                                        intention.putExtra("GoogleName", name);
+                                        intention.putExtra("userID", personId);
+                                        startActivity(intention);
+                                    } else {
+                                        Toast.makeText(LoginActivity.this, "error at signup through google", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
                         }
                     }
-                });
 
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
             }
         } catch(ApiException e) {
             Log.w("TAG", "signInResult:failed code=" + e);

@@ -13,10 +13,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.chatdraw.R;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class SettingsActivity extends AppCompatActivity {
     private Button btnChangePassword, btnRemoveUser,
@@ -25,6 +34,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     private EditText password, newPassword;
     private ProgressBar progressBar;
+    private FirebaseUser user;
     private FirebaseAuth auth;
 
     @Override
@@ -41,24 +51,30 @@ public class SettingsActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
         email = (TextView) findViewById(R.id.useremail);
 
-        //get current user
-        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        user = FirebaseAuth.getInstance().getCurrentUser();
+        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(SettingsActivity.this);
 
-        // show the user email
-        setDataToView(user);
+        if (acct != null) {
+            DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
+            final String personId = acct.getId();
 
-        authListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-            FirebaseUser user = firebaseAuth.getCurrentUser();
-            if (user == null) {
-                // user auth state is changed - user is null
-                // launch login activity
-                startActivity(new Intent(SettingsActivity.this, LoginActivity.class));
-                finish();
-            }
-            }
-        };
+            mDatabaseRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    String tempEmail = (String) dataSnapshot.child(personId).child("email").getValue();
+                    email.setText(tempEmail);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+        } else if (user != null) {
+            email.setText(user.getEmail());
+        } else {
+            Toast.makeText(this, "Error in showing user email", Toast.LENGTH_SHORT).show();
+        }
 
         btnChangePassword = (Button) findViewById(R.id.change_password_button);
         btnRemoveUser = (Button) findViewById(R.id.remove_user_button);
@@ -170,46 +186,83 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
-    // Internationalization, can actually remove this
-    @SuppressLint("SetTextI18n")
-    private void setDataToView(FirebaseUser user) {
-        email.setText(user.getEmail());
-    }
-
     // this listener will be called when there is change in firebase user session
     FirebaseAuth.AuthStateListener authListener = new FirebaseAuth.AuthStateListener() {
         @SuppressLint("SetTextI18n")
         @Override
         public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-            FirebaseUser user = firebaseAuth.getCurrentUser();
-            if (user == null) {
-                // user auth state is changed - user is null
-                // launch login activity
-                startActivity(new Intent(SettingsActivity.this, LoginActivity.class));
-                finish();
+            GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(SettingsActivity.this);
+
+            if (acct != null) {
+                DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
+                final String personId = acct.getId();
+
+                mDatabaseRef.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        String tempEmail = (String) dataSnapshot.child(personId).child("email").getValue();
+                        email.setText(tempEmail);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
             } else {
-                setDataToView(user);
+                if (user != null) {
+                    email.setText(user.getEmail());
+                } else {
+                    // user auth state is changed - user is null
+                    // launch login activity
+                    Toast.makeText(SettingsActivity.this, "Error2", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(SettingsActivity.this, LoginActivity.class));
+                    finish();
+                }
             }
         }
     };
 
     //sign out method
     public void signOut() {
-        auth.signOut();
+        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(SettingsActivity.this);
 
-        // this listener will be called when there is change in firebase user session
-        FirebaseAuth.AuthStateListener authListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user == null) {
-                    // user auth state is changed - user is null
-                    // launch login activity
-                    startActivity(new Intent(SettingsActivity.this, LoginActivity.class));
-                    finish();
+        if (acct != null) {
+            GoogleSignInOptions signInOptions = new GoogleSignInOptions.Builder(
+                    GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestEmail()
+                    .requestId()
+                    .build();
+
+            GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(this, signInOptions);
+
+            mGoogleSignInClient.signOut()
+                    .addOnCompleteListener(this, new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            Toast.makeText(SettingsActivity.this, "Signed out successfully", Toast.LENGTH_SHORT).show();
+                            startActivity(new Intent(SettingsActivity.this, LoginActivity.class));
+                            finish();
+                        }
+                    });
+        } else {
+            auth.signOut();
+
+            // this listener will be called when there is change in firebase user session
+            FirebaseAuth.AuthStateListener authListener = new FirebaseAuth.AuthStateListener() {
+                @Override
+                public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+
+                    FirebaseUser user = firebaseAuth.getCurrentUser();
+                    if (user == null) {
+                        // user auth state is changed - user is null
+                        // launch login activity
+                        startActivity(new Intent(SettingsActivity.this, LoginActivity.class));
+                        finish();
+                    }
                 }
-            }
-        };
+            };
+        }
     }
 
     @Override

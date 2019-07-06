@@ -141,9 +141,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     tempUsername = (String) dataSnapshot.child(user.getUid()).child("username").getValue();
                 }
 
-                Log.v("NAMEE", tempName);
-                Log.v("USERNAMEE", tempUsername);
-
                 TextView tv = (TextView) hView.findViewById(R.id.profile_field);
                 tv.setText(tempName);
 

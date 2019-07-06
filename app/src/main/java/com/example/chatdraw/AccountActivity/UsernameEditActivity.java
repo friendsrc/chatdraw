@@ -11,6 +11,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.chatdraw.R;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -54,13 +56,26 @@ public class UsernameEditActivity extends AppCompatActivity {
                             // use "username" already exists
                             inputUsername.setError(getString(R.string.username_exists));
                             inputUsername.requestFocus();
-                            Toast.makeText(UsernameEditActivity.this , "username exists", Toast.LENGTH_SHORT).show();
                         } else {
                             // "username" does not exist yet.
-                            FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-                            if (currentFirebaseUser != null) {
-                                if (updateUser(currentFirebaseUser.getUid(), username)) {
+                            GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(UsernameEditActivity.this);
+
+                            if (acct != null) {
+                                String personId = acct.getId();
+
+                                if (updateUser(personId, username)) {
                                     finish();
+                                } else {
+                                    Toast.makeText(UsernameEditActivity.this, "Username update failed", Toast.LENGTH_SHORT).show();
+                                }
+                            } else {
+                                FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                                if (currentFirebaseUser != null) {
+                                    if (updateUser(currentFirebaseUser.getUid(), username)) {
+                                        finish();
+                                    }
+                                } else {
+                                    Toast.makeText(UsernameEditActivity.this, "Username update failed", Toast.LENGTH_SHORT).show();
                                 }
                             }
                         }

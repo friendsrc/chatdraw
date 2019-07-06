@@ -10,6 +10,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.chatdraw.R;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -42,11 +44,24 @@ public class NameEditActivity extends AppCompatActivity {
                 }
 
                 String profile = temp.substring(0, 1).toUpperCase() + temp.substring(1).toLowerCase();
-                FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(NameEditActivity.this);
 
-                if (currentFirebaseUser != null) {
-                    if (updateUser(currentFirebaseUser.getUid(), profile)) {
+                if (acct != null) {
+                    String personId = acct.getId();
+
+                    if (updateUser(personId, profile)) {
                         finish();
+                    } else {
+                        Toast.makeText(NameEditActivity.this, "Name update failed", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                    if (currentFirebaseUser != null) {
+                        if (updateUser(currentFirebaseUser.getUid(), profile)) {
+                            finish();
+                        }
+                    } else {
+                        Toast.makeText(NameEditActivity.this, "Name update failed", Toast.LENGTH_SHORT).show();
                     }
                 }
             }
