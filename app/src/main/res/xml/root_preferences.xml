@@ -95,10 +95,14 @@
 
     <PreferenceCategory android:title="Help and Support">
 
-        <EditTextPreference
-            android:key="happy"
-            android:title="If you happy and I know it clap your hand"
-            android:summary="yey" />
+        <PreferenceScreen
+            android:title="@string/rating_text"
+            android:summary="Send us your thoughts of Chatdraw">
 
+            <intent
+                android:targetPackage="com.example.chatdraw"
+                android:targetClass="com.example.chatdraw.AccountActivity.RatingActivity" />
+
+        </PreferenceScreen>
     </PreferenceCategory>
 </PreferenceScreen>

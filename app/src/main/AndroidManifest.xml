@@ -18,7 +18,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".CreateGroupActivities.GroupCreateActivity"></activity>
+        <activity android:name=".AccountActivity.RatingActivity" />
+        <activity android:name=".CreateGroupActivities.GroupCreateActivity" />
         <activity android:name=".AccountActivity.UsernameEditActivity" />
         <activity android:name=".AccountActivity.NameEditActivity" />
         <activity android:name=".AccountActivity.ProfileEditActivity" />

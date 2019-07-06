@@ -90,4 +90,9 @@
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
 
+    <string name="rating_text">Rate us</string>
+    <string name="rating_comment">Tell us what you think of this app</string>
+    <string name="rate_here">Type here ....</string>
+    <string name="submit_button">Submit</string>
+    <string name="thank_you_rating">Thank you for your rating! Please leave us a review in Google Play Store! Your rating will motivate us to improve our app better. </string>
 </resources>
