@@ -39,36 +39,43 @@
         android:textColor="@android:color/white"
         android:textColorHint="@android:color/white" />
 
+
     <LinearLayout
-        android:layout_marginTop="20sp"
+        android:gravity="center"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <com.google.android.gms.common.SignInButton
-            android:id="@+id/bn_login"
+        <!-- Login Button -->
+        <Button
+            android:id="@+id/btn_login"
+            android:layout_weight="4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="start">
+            android:layout_marginLeft="4sp"
+            android:layout_marginRight="4sp"
+            android:background="@color/colorAccent"
+            android:text="@string/btn_login"
+            android:textColor="@android:color/black" />
+
+        <com.google.android.gms.common.SignInButton
+            android:id="@+id/bn_login"
+            android:layout_weight="1"
+            android:layout_marginLeft="4sp"
+            android:layout_marginRight="4sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
 
         </com.google.android.gms.common.SignInButton>
 
     </LinearLayout>
 
-    <!-- Login Button -->
-    <Button
-        android:id="@+id/btn_login"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dip"
-        android:background="@color/colorAccent"
-        android:text="@string/btn_login"
-        android:textColor="@android:color/black" />
 
     <Button
         android:id="@+id/btn_reset_password"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dip"
+        android:layout_marginTop="40sp"
         android:background="@null"
         android:text="@string/btn_forgot_password"
         android:textAllCaps="false"
@@ -79,7 +86,7 @@
         android:id="@+id/btn_signup"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dip"
+        android:layout_marginTop="10sp"
         android:background="@null"
         android:text="@string/btn_link_to_register"
         android:textAllCaps="false"
