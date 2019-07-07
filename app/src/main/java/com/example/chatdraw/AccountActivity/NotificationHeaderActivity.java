@@ -3,6 +3,8 @@ package com.example.chatdraw.AccountActivity;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -33,6 +35,13 @@ public class NotificationHeaderActivity extends AppCompatActivity {
 
             addPreferencesFromResource(R.xml.notification_header);
         }
+    }
+
+    // create an action bar button
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.navbar_plain, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override

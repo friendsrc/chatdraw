@@ -164,13 +164,6 @@ public class FindFriendActivity extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
-    // handle button activities
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // can do sth here
-        return super.onOptionsItemSelected(item);
-    }
-
     public void findUserInDatabase(final NewFriendAdapter newFriendAdapter, String inputText) {
         // Check if the input start with @
         final String text;

@@ -2,11 +2,14 @@ package com.example.chatdraw.AccountActivity;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.content.Intent;
 import android.media.Rating;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -37,11 +40,11 @@ public class RatingActivity extends AppCompatActivity {
         commentSection.setVisibility(View.GONE);
         submitButton.setVisibility(View.GONE);
 
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setTitle("Help and Support");
-        }
+        Toolbar myToolbar = findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
+        getSupportActionBar().setTitle("Help and Support");
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
 
         RatingBar ratingBar = (RatingBar) findViewById(R.id.rating_bar);
         ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
@@ -99,6 +102,13 @@ public class RatingActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    // create an action bar button
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.navbar_plain, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override

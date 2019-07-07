@@ -4,7 +4,11 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -172,6 +176,8 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         // set the action bar title
+        Toolbar myToolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(myToolbar);
         getSupportActionBar().setTitle("Privacy and Security");
 
         // add a back button to the action bar
@@ -283,6 +289,13 @@ public class SettingsActivity extends AppCompatActivity {
         if (authListener != null) {
             auth.removeAuthStateListener(authListener);
         }
+    }
+
+    // create an action bar button
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.navbar_plain, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override

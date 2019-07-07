@@ -140,13 +140,6 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
         return super.onCreateOptionsMenu(menu);
     }
 
-    // handle button activities
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // can do sth here
-        return super.onOptionsItemSelected(item);
-    }
-
     @Override
     public boolean onSupportNavigateUp() {
         // destroy the activity

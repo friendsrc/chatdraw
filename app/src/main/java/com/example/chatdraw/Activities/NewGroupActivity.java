@@ -102,13 +102,6 @@ public class NewGroupActivity extends AppCompatActivity implements RecyclerViewC
         return super.onCreateOptionsMenu(menu);
     }
 
-    // handle button activities
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // can do sth here
-        return super.onOptionsItemSelected(item);
-    }
-
     @Override
     // if the back button is pressed, destroy the activity
     public boolean onSupportNavigateUp() {

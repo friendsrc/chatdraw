@@ -1,67 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center"
     tools:context=".AccountActivity.RatingActivity">
 
-    <TextView
-        android:text="@string/rating_text"
-        android:textSize="32sp"
-        android:textStyle="bold"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="12sp"/>
-
-    <RatingBar
-        android:id="@+id/rating_bar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:numStars="5"
-        android:rating="0"
-        android:stepSize="1" />
-
-    <TextView
-        android:id="@+id/rating_thankyou"
-        android:layout_marginTop="30sp"
-        android:layout_marginLeft="20sp"
-        android:layout_marginRight="20sp"
-        android:textSize="24sp"
-        android:text="@string/thank_you_rating"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <TextView
-        android:id="@+id/comment_header"
-        android:text="@string/rating_comment"
-        android:layout_marginTop="50sp"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:layout_gravity="center"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <EditText
-        android:id="@+id/comment_section"
-        android:textSize="14sp"
-        android:gravity="top"
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/my_toolbar"
         android:layout_width="match_parent"
-        android:layout_height="150sp"
-        android:inputType="text|textMultiLine"
-        android:textColorHint="@color/input_register"
-        android:hint="@string/rate_here"
-        android:layout_margin="10sp"
-        android:background="@color/btn_login_bg"/>
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
 
-    <Button
-        android:id="@+id/submit_button"
-        android:text="@string/submit_button"
-        android:layout_margin="10sp"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        tools:context=".AccountActivity.RatingActivity">
+
+
+
+        <TextView
+            android:text="@string/rating_text"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12sp"/>
+
+        <RatingBar
+            android:id="@+id/rating_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:numStars="5"
+            android:rating="0"
+            android:stepSize="1" />
+
+        <TextView
+            android:id="@+id/rating_thankyou"
+            android:layout_marginTop="30sp"
+            android:layout_marginLeft="20sp"
+            android:layout_marginRight="20sp"
+            android:textSize="24sp"
+            android:text="@string/thank_you_rating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/comment_header"
+            android:text="@string/rating_comment"
+            android:layout_marginTop="50sp"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <EditText
+            android:id="@+id/comment_section"
+            android:textSize="14sp"
+            android:gravity="top"
+            android:layout_width="match_parent"
+            android:layout_height="150sp"
+            android:inputType="text|textMultiLine"
+            android:textColorHint="@color/input_register"
+            android:hint="@string/rate_here"
+            android:layout_margin="10sp"
+            android:background="@color/btn_login_bg"/>
+
+        <Button
+            android:id="@+id/submit_button"
+            android:text="@string/submit_button"
+            android:layout_margin="10sp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
 
 </LinearLayout>
