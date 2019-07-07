@@ -1,33 +1,75 @@
 package com.example.chatdraw.Activities;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
+import com.example.chatdraw.AccountActivity.ProfileEditActivity;
+import com.example.chatdraw.AccountActivity.Upload;
 import com.example.chatdraw.Items.ChatItem;
 import com.example.chatdraw.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 public class GroupCreateActivity extends AppCompatActivity {
+
+    private static final String TAG = "GroupCreateAcitivity";
+
+    private static final int SELECT_FILE = 0;
+    private static final int REQUEST_CAMERA = 1;
+
+    private String userUID;
+    private Bitmap bmp;
+    private Uri selectedImageUri;
+    private String url;
+
+    ImageView groupPicture;
+    ImageView cameraLogo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +83,6 @@ public class GroupCreateActivity extends AppCompatActivity {
         for (String s : memberUIDs) members.add(s);
 
         // get this user's ID and add to array
-        final String userUID;
         GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(GroupCreateActivity.this);
         if (acct != null) {
             userUID = acct.getId();
@@ -57,7 +98,14 @@ public class GroupCreateActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // TODO: setup camera/gallery option
-        ImageView imageView = findViewById(R.id.group_create_imageview);
+        cameraLogo = findViewById(R.id.camera_logo);
+        groupPicture = findViewById(R.id.group_create_imageview);
+        groupPicture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SelectImage();
+            }
+        });
 
         // if 'create group' button is clicked, send information to firestore
         final EditText editText = findViewById(R.id.group_create_edittext);
@@ -97,7 +145,7 @@ public class GroupCreateActivity extends AppCompatActivity {
 
                     // create a placeholder chat item, TODO: set imageUrl
                     ChatItem chatItem = new ChatItem("", groupID, groupName,
-                            null, null, s,
+                            null, url, s,
                             null, null, null);
 
                     // Send to user's message preview collection
@@ -113,6 +161,7 @@ public class GroupCreateActivity extends AppCompatActivity {
                 Intent intent = new Intent();
                 intent.putExtra("groupID", groupID);
                 intent.putExtra("groupName", groupName);
+                intent.putExtra("groupImageUrl", url);
                 setResult(Activity.RESULT_OK, intent);
 
                 // destroy this activity
@@ -136,5 +185,179 @@ public class GroupCreateActivity extends AppCompatActivity {
     public boolean onSupportNavigateUp() {
         finish();
         return true;
+    }
+
+    private void SelectImage(){
+        final CharSequence[] items={"Camera","Gallery"};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(GroupCreateActivity.this);
+        builder.setTitle("Get image from");
+
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                if (items[i].equals("Camera")) {
+                    // ask for Camera permission
+                    if (ContextCompat.checkSelfPermission(GroupCreateActivity.this, Manifest.permission.CAMERA)
+                            == PackageManager.PERMISSION_DENIED) {
+                        ActivityCompat.requestPermissions(
+                                GroupCreateActivity.this, new String[] {Manifest.permission.CAMERA},
+                                REQUEST_CAMERA);
+                    }
+
+                    if (ContextCompat.checkSelfPermission(GroupCreateActivity.this, Manifest.permission.CAMERA)
+                            == PackageManager.PERMISSION_DENIED) {
+                        Toast.makeText(GroupCreateActivity.this, "Camera permission not granted", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                        startActivityForResult(intent, REQUEST_CAMERA);
+                    }
+                } else if (items[i].equals("Gallery")) {
+                    Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    intent.setType("image/*");
+                    startActivityForResult(intent, SELECT_FILE);
+                }
+            }
+        });
+        builder.show();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        super.onActivityResult(requestCode, resultCode,data);
+
+
+
+        if (resultCode == Activity.RESULT_OK){
+            cameraLogo.setVisibility(View.INVISIBLE);
+            if(requestCode == REQUEST_CAMERA){
+                Bundle bundle = data.getExtras();
+                bmp = (Bitmap) bundle.get("data");
+                groupPicture.setImageBitmap(bmp);
+            } else if (requestCode == SELECT_FILE){
+                selectedImageUri = data.getData();
+                groupPicture.setImageURI(selectedImageUri);
+            }
+
+            final String name = "profilePicture";
+            final StorageReference mStorageRef = FirebaseStorage.getInstance().getReference("Groups");
+            final ProgressDialog mProgressDialog = new ProgressDialog(GroupCreateActivity.this);
+            final DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference("Groups");
+
+
+
+            if (selectedImageUri != null) {
+                final StorageReference fileReference = mStorageRef.child(userUID).child("newGroupPic")
+                        .child("image.jpg");
+
+                InputStream imageStream = null;
+
+                try {
+                    imageStream = getContentResolver().openInputStream(selectedImageUri);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+
+                bmp = BitmapFactory.decodeStream(imageStream);
+
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                bmp.compress(Bitmap.CompressFormat.JPEG, 50, stream);
+                groupPicture.setImageBitmap(bmp);
+                byte[] byteArray = stream.toByteArray();
+
+                UploadTask uploadTask = fileReference.putBytes(byteArray);
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        // Handle unsuccessful uploads
+                        mProgressDialog.dismiss();
+                        Toast.makeText(GroupCreateActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        mProgressDialog.dismiss();
+                        Toast.makeText(GroupCreateActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
+                        fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                url = uri.toString();
+                                Toast.makeText(GroupCreateActivity.this, url, Toast.LENGTH_LONG).show();
+
+                                // Upload upload = new Upload(name, url);
+
+                                // update realtime
+//                                String uploadId = mDatabaseRef.push().getKey();
+//                                mDatabaseRef.child(userUID).child("imageUrl").setValue(url);
+
+                                // update firestore
+//                                Upload profileUpload = new Upload(url);
+//                                FirebaseFirestore.getInstance().collection("Users").document(userID).set(profileUpload, SetOptions.merge());
+                            }
+                        });
+                    }
+                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                        mProgressDialog.setMessage("Uploading Image...");
+                        mProgressDialog.show();
+                    }
+                });
+
+                selectedImageUri = null;
+            } else if (bmp != null) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                byte[] dataforbmp = baos.toByteArray();
+
+                StorageReference fileReference = FirebaseStorage.getInstance().getReference("Users");
+                final StorageReference imageRef = fileReference.child(userUID).child("newGroupPic")
+                        .child("image.jpg");
+
+                UploadTask uploadTask = imageRef.putBytes(dataforbmp);
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        // Handle unsuccessful uploads
+                        mProgressDialog.dismiss();
+                        Toast.makeText(GroupCreateActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        mProgressDialog.dismiss();
+                        Toast.makeText(GroupCreateActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
+                        imageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                url = uri.toString();
+                                Toast.makeText(GroupCreateActivity.this, url, Toast.LENGTH_LONG).show();
+
+                                // Upload upload = new Upload(name, url);
+
+                                // update realtime
+//                                String uploadId = mDatabaseRef.push().getKey();
+//                                mDatabaseRef.child(userUID).child("imageUrl").setValue(url);
+//
+//                                // update firestore
+//                                Upload profileUpload = new Upload(url);
+//                                FirebaseFirestore.getInstance().collection("Users").document(userUID).set(profileUpload, SetOptions.merge());
+                            }
+                        });
+                    }
+                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                        mProgressDialog.setMessage("Uploading Image...");
+                        mProgressDialog.show();
+                    }
+                });
+
+                bmp = null;
+            } else {
+                Toast.makeText(this, "No file selected or camera picture not configured yet", Toast.LENGTH_LONG).show();
+            }
+
+        }
     }
 }

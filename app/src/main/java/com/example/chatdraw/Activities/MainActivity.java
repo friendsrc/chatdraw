@@ -252,6 +252,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else if (requestCode == NEW_MESSAGE_REQUEST_CODE && resultCode == 55) {
 //            String groupID = data.getStringExtra("groupID");
 //            String groupName = data.getStringExtra("groupName");
+//            String groupImageUrl = data.getStringExtra("groupImageUrl");
         }
     }
 
