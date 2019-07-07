@@ -3,14 +3,22 @@
 
     <!-- "Mark Favorite", should appear as action button if possible -->
     <item
-        android:id="@+id/action_favorite"
-        android:icon="@drawable/add_person"
+        android:id="@+id/call"
+        android:icon="@drawable/phone"
         android:title="Call"
+        app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/draw"
+        android:icon="@drawable/brush"
+        android:title="Draw"
         app:showAsAction="ifRoom"/>
 
     <!-- Settings, should always be in the overflow -->
     <item android:id="@+id/action_settings"
-        android:title="Whatever"
+        android:title="Chat Settings"
+        app:showAsAction="never"/>
+    <item android:id="@+id/action_settings2"
+        android:title="Sth Else"
         app:showAsAction="never"/>
 
 </menu>

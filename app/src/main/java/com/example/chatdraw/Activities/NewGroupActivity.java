@@ -80,7 +80,6 @@ public class NewGroupActivity extends AppCompatActivity implements RecyclerViewC
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: add checker and add people list
                 Intent intent = new Intent(NewGroupActivity.this, GroupCreateActivity.class);
                 String[] memberList = new String[chosenContacts.size()];
                 int i = 0;

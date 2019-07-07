@@ -309,7 +309,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             // get the properties needed to make a new FriendListItem
                             String uId = chatItem.getSenderID();
                             String lastMessage = chatItem.getMessageBody();
-                            String name, imageUrl; //TODO: user image url
+                            String name, imageUrl;
 
                             // if the sender of this ChatItem is the current user, get the profile
                             // of the receiver instead
