@@ -246,8 +246,8 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                         ArrayList<String> arr = (ArrayList<String>) task.getResult().get("groups");
                         if (arr != null && !arr.isEmpty()) {
                             for (String s: arr) {
-                                Log.d("HEY", "adding group " + s);
-                                FirebaseFirestore.getInstance().collection("Groups").document(id)
+                                final String groupID = s;
+                                FirebaseFirestore.getInstance().collection("Groups").document(groupID)
                                         .get()
                                         .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                                             @Override
@@ -256,7 +256,7 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                                                 String name = (String) doc.get("groupName");
                                                 String imageURL = (String) doc.get("imageUrl");
 
-                                                NewFriendItem newFriendItem = new NewFriendItem(name, id, imageURL);
+                                                NewFriendItem newFriendItem = new NewFriendItem(name, groupID, imageURL);
                                                 adapter.addData(newFriendItem);
                                             }
                                         });

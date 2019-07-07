@@ -39,6 +39,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class LoginActivity extends AppCompatActivity
         implements GoogleApiClient.OnConnectionFailedListener,
@@ -134,49 +135,49 @@ public class LoginActivity extends AppCompatActivity
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            String email = inputEmail.getText().toString();
-            final String password = inputPassword.getText().toString();
+                String email = inputEmail.getText().toString();
+                final String password = inputPassword.getText().toString();
 
-            // text utility to check whether the email is empty -> if (email.equals(""))
-            if (TextUtils.isEmpty(email)) {
-                Toast.makeText(getApplicationContext(), "Enter email address!", Toast.LENGTH_SHORT).show();
-                return;
-            }
+                // text utility to check whether the email is empty -> if (email.equals(""))
+                if (TextUtils.isEmpty(email)) {
+                    Toast.makeText(getApplicationContext(), "Enter email address!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-            // text utility to check whether the password is empty -> if (password.equals(""))
-            if (TextUtils.isEmpty(password)) {
-                Toast.makeText(getApplicationContext(), "Enter password!", Toast.LENGTH_SHORT).show();
-                return;
-            }
+                // text utility to check whether the password is empty -> if (password.equals(""))
+                if (TextUtils.isEmpty(password)) {
+                    Toast.makeText(getApplicationContext(), "Enter password!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-            progressBar.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.VISIBLE);
 
-            //authenticate user to firebase
-            auth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
+                //authenticate user to firebase
+                auth.signInWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
                     /* If sign in fails, display a message to the user. If sign in succeeds
                        the auth state listener will be notified and logic to handle the
                        signed in user can be handled in the listener.
                     */
-                    progressBar.setVisibility(View.GONE);
+                                progressBar.setVisibility(View.GONE);
 
-                    // if everything has been input but didn't meet the criteria (email and password not match)
-                    if (!task.isSuccessful()) {
-                        // there was an error
-                        if (password.length() < 6) {
-                            inputPassword.setError(getString(R.string.minimum_password));
-                        } else {
-                            Toast.makeText(LoginActivity.this, getString(R.string.auth_failed), Toast.LENGTH_LONG).show();
-                        }
-                    } else {
-                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                        startActivity(intent);
-                        finish();
-                    }
-                    }
-                });
+                                // if everything has been input but didn't meet the criteria (email and password not match)
+                                if (!task.isSuccessful()) {
+                                    // there was an error
+                                    if (password.length() < 6) {
+                                        inputPassword.setError(getString(R.string.minimum_password));
+                                    } else {
+                                        Toast.makeText(LoginActivity.this, getString(R.string.auth_failed), Toast.LENGTH_LONG).show();
+                                    }
+                                } else {
+                                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                    startActivity(intent);
+                                    finish();
+                                }
+                            }
+                        });
             }
         });
     }
@@ -227,6 +228,12 @@ public class LoginActivity extends AppCompatActivity
                                 user = new User(email, name, username);
                             }
 
+                            // edit: add to firestore
+                            FirebaseFirestore.getInstance()
+                                    .collection("Users")
+                                    .document(personId)
+                                    .set(user);
+
                             final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users");
                             databaseReference
                                     .child(personId)
@@ -244,6 +251,7 @@ public class LoginActivity extends AppCompatActivity
                                     }
                                 }
                             });
+
                         }
                     }
 

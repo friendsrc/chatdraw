@@ -179,12 +179,11 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
 //            databaseReference.push().setValue(chatItem);
 
             FirebaseFirestore db = FirebaseFirestore.getInstance();
-            String userID = FirebaseAuth.getInstance().getUid();
 
             if (!isGroup) {
                 // Send to this user's message collection
                 db.collection("Messages")
-                        .document(userID)
+                        .document(userUID)
                         .collection("Friends")
                         .document(friendsUID)
                         .collection("ChatHistory")
@@ -194,7 +193,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                 db.collection("Messages")
                         .document(friendsUID)
                         .collection("Friends")
-                        .document(userID)
+                        .document(userUID)
                         .collection("ChatHistory")
                         .add(chatItem);
 
@@ -203,13 +202,13 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                 }
 
                 // Send to user's message preview collection
-                db.collection("Previews").document(userID)
+                db.collection("Previews").document(userUID)
                         .collection("ChatPreviews").document(friendsUID)
                         .set(chatItem);
 
                 // Send to the receiver's message preview collection
                 db.collection("Previews").document(friendsUID)
-                        .collection("ChatPreviews").document(userID)
+                        .collection("ChatPreviews").document(userUID)
                         .set(chatItem);
             } else {
                 // Send to group's message collection
@@ -246,7 +245,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         if (!isGroup) {
             db.collection("Messages")
-                    .document(FirebaseAuth.getInstance().getUid())
+                    .document(userUID)
                     .collection("Friends")
                     .document(friendsUID)
                     .collection("ChatHistory")

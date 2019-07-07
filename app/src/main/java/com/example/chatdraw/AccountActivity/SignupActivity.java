@@ -100,47 +100,47 @@ public class SignupActivity extends AppCompatActivity {
 
                 //create user to firebase
                 auth.createUserWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            Toast.makeText(SignupActivity.this, "createUserWithEmail:onComplete:" + task.isSuccessful(), Toast.LENGTH_SHORT).show();
-                            progressBar.setVisibility(View.GONE);
+                        .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                Toast.makeText(SignupActivity.this, "createUserWithEmail:onComplete:" + task.isSuccessful(), Toast.LENGTH_SHORT).show();
+                                progressBar.setVisibility(View.GONE);
 
                             /* If sign in fails, display a message to the user. If sign in succeeds
                                the auth state listener will be notified and logic to handle the
                                signed in user can be handled in the listener.
                             */
-                            if (!task.isSuccessful()) {
-                                Toast.makeText(SignupActivity.this, "Authentication failed." + task.getException(),
-                                        Toast.LENGTH_SHORT).show();
-                            } else {
-                                String name = null;
-                                String username = null;
-                                User user = new User(email, name, username);
+                                if (!task.isSuccessful()) {
+                                    Toast.makeText(SignupActivity.this, "Authentication failed." + task.getException(),
+                                            Toast.LENGTH_SHORT).show();
+                                } else {
+                                    String name = null;
+                                    String username = null;
+                                    User user = new User(email, name, username);
 
-                                FirebaseDatabase.getInstance().getReference("Users")
-                                        .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                        .setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        if (task.isSuccessful()) {
-                                            // startActivity(new Intent(SignupActivity.this, FriendListActivity.class));
-                                            startActivity(new Intent(SignupActivity.this, PersonalActivity.class));
-                                            finish();
-                                        } else {
-                                            Toast.makeText(SignupActivity.this, "error at signup activity", Toast.LENGTH_SHORT).show();
+                                    FirebaseDatabase.getInstance().getReference("Users")
+                                            .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                            .setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful()) {
+                                                // startActivity(new Intent(SignupActivity.this, FriendListActivity.class));
+                                                startActivity(new Intent(SignupActivity.this, PersonalActivity.class));
+                                                finish();
+                                            } else {
+                                                Toast.makeText(SignupActivity.this, "error at signup activity", Toast.LENGTH_SHORT).show();
+                                            }
                                         }
-                                    }
-                                });
+                                    });
 
-                                // also add user to firestore
-//                                    FirebaseFirestore.getInstance().collection("Users")
-//                                            .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
-//                                            .set(user);
+                                    // also add user to firestore
+                                    FirebaseFirestore.getInstance().collection("Users")
+                                            .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                            .set(user);
 
+                                }
                             }
-                        }
-                    });
+                        });
             }
         });
     }

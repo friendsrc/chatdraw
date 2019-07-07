@@ -14,10 +14,13 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import com.example.chatdraw.ChatActivites.NewMessageActivity;
 import com.example.chatdraw.Items.FriendListItem;
 import com.example.chatdraw.R;
 import com.example.chatdraw.Adapters.RecyclerViewAdapter;
 import com.example.chatdraw.Listeners.RecyclerViewClickListener;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -76,11 +79,6 @@ public class NewGroupActivity extends AppCompatActivity implements RecyclerViewC
             public void onClick(View v) {
                 // TODO: add checker and add people list
                 Intent intent = new Intent(NewGroupActivity.this, GroupCreateActivity.class);
-//                String memberList = "";
-//                for (FriendListItem f : chosenContacts.values()) {
-//                    memberList += f.getUID();
-//                    memberList += "\t";
-//                }
                 String[] memberList = new String[chosenContacts.size()];
                 int i = 0;
                 for (FriendListItem f: chosenContacts.values()) {
@@ -103,7 +101,13 @@ public class NewGroupActivity extends AppCompatActivity implements RecyclerViewC
 
     public void getContacts() {
         FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        String id = currentFirebaseUser.getUid();
+        String id;
+        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(NewGroupActivity.this);
+        if (acct != null) {
+            id = acct.getId();
+        } else {
+            id = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        }
         FirebaseFirestore.getInstance().collection("Users").document(id)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -150,8 +154,8 @@ public class NewGroupActivity extends AppCompatActivity implements RecyclerViewC
             chosenContacts.remove(position);
             v.setBackgroundColor(Color.TRANSPARENT);
         } else {
-           chosenContacts.put(position, friendListItem);
-           v.setBackgroundColor(getResources().getColor(R.color.bluegray100));
+            chosenContacts.put(position, friendListItem);
+            v.setBackgroundColor(getResources().getColor(R.color.bluegray100));
         }
     }
 

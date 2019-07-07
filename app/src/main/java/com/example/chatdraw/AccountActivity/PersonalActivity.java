@@ -24,6 +24,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class PersonalActivity extends AppCompatActivity {
     private ProgressBar progressBar;
@@ -128,16 +130,24 @@ public class PersonalActivity extends AppCompatActivity {
                                         .child(currentFirebaseUser.getUid());
                             }
 
+                            // edit: save to firestore
+                            DocumentReference firestoreRef = FirebaseFirestore.getInstance().collection("Users")
+                                    .document(acct.getId());
+
                             if (TextUtils.isEmpty(profile)) {
                                 databaseReference.child("name").setValue("Anonymous");
                             } else {
                                 databaseReference.child("name").setValue(profile);
+                                // edit:
+                                firestoreRef.update("name", profile);
                             }
 
                             if (TextUtils.isEmpty(username)) {
                                 databaseReference.child("username").setValue(null);
                             } else {
                                 databaseReference.child("username").setValue("@" + username);
+                                // edit:
+                                firestoreRef.update("username", "@" + username);
                             }
 
                             startActivity(new Intent(PersonalActivity.this, MainActivity.class));
