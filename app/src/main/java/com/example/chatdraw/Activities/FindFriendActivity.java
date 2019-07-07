@@ -1,15 +1,18 @@
-package com.example.chatdraw.ContactActivites;
+package com.example.chatdraw.Activities;
 
 import android.app.Activity;
 import android.content.Intent;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -17,7 +20,6 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.chatdraw.Adapters.NewFriendAdapter;
-import com.example.chatdraw.ChatActivites.NewMessageActivity;
 import com.example.chatdraw.R;
 import com.example.chatdraw.Items.NewFriendItem;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -124,10 +126,10 @@ public class FindFriendActivity extends AppCompatActivity {
         ListView listView = findViewById(R.id.find_friend_listview);
         listView.setOnItemClickListener(onItemClickListener);
 
-        // set the action bar title
+        // set the action bar
+        Toolbar myToolbar = findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
         getSupportActionBar().setTitle("Find Friends");
-
-        // add a back button to the action bar
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // add listener on the edit text
@@ -153,6 +155,20 @@ public class FindFriendActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    // create an action bar button
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.navbar_plain, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    // handle button activities
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // can do sth here
+        return super.onOptionsItemSelected(item);
     }
 
     public void findUserInDatabase(final NewFriendAdapter newFriendAdapter, String inputText) {

@@ -1,11 +1,10 @@
-package com.example.chatdraw.ChatActivites;
+package com.example.chatdraw.Activities;
 
 import android.app.Activity;
 import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.example.chatdraw.AccountActivity.PersonalActivity;
 import com.example.chatdraw.AccountActivity.ProfileEditActivity;
 import com.example.chatdraw.Items.ChatItem;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -33,7 +32,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.chatdraw.ContactActivites.FriendListActivity;
 import com.example.chatdraw.Adapters.FriendListAdapter;
 import com.example.chatdraw.Items.FriendListItem;
 import com.example.chatdraw.R;

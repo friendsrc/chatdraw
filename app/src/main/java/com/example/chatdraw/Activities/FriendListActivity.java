@@ -1,4 +1,4 @@
-package com.example.chatdraw.ContactActivites;
+package com.example.chatdraw.Activities;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -6,20 +6,18 @@ import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.media.Image;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.example.chatdraw.Adapters.GroupListRecyclerViewAdapter;
-import com.example.chatdraw.ChatActivites.ChatActivity;
-import com.example.chatdraw.ChatActivites.NewMessageActivity;
 import com.example.chatdraw.Items.NewFriendItem;
 import com.example.chatdraw.Listeners.RecyclerViewClickListener;
 import com.example.chatdraw.R;
@@ -30,7 +28,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -87,6 +84,8 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
         });
 
         // set the Action Bar title
+        Toolbar myToolbar = findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
         getSupportActionBar().setTitle("Contacts");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -132,6 +131,20 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                 isFriendsToggledOff = !isFriendsToggledOff;
             }
         });
+    }
+
+    // create an action bar button
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.navbar_plain, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    // handle button activities
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // can do sth here
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

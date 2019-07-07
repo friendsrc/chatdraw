@@ -19,7 +19,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".AccountActivity.RatingActivity" />
-        <activity android:name=".CreateGroupActivities.GroupCreateActivity" />
+        <activity android:name=".Activities.GroupCreateActivity" />
         <activity android:name=".AccountActivity.UsernameEditActivity" />
         <activity android:name=".AccountActivity.NameEditActivity" />
         <activity android:name=".AccountActivity.ProfileEditActivity" />
@@ -35,16 +35,16 @@
 
         <activity android:name=".AccountActivity.NotificationHeaderActivity" />
         <activity android:name=".AccountActivity.PersonalActivity" />
-        <activity android:name=".ChatActivites.ChatActivity" />
-        <activity android:name=".CreateGroupActivities.NewGroupActivity" />
-        <activity android:name=".ChatActivites.NewMessageActivity" />
+        <activity android:name=".Activities.ChatActivity" />
+        <activity android:name=".Activities.NewGroupActivity" />
+        <activity android:name=".Activities.NewMessageActivity" />
         <activity android:name=".AccountActivity.SettingsActivity" />
-        <activity android:name=".ContactActivites.FindFriendActivity" />
-        <activity android:name=".ContactActivites.FriendListActivity" />
+        <activity android:name=".Activities.FindFriendActivity" />
+        <activity android:name=".Activities.FriendListActivity" />
         <activity android:name=".AccountActivity.ResetPasswordActivity" />
         <activity android:name=".AccountActivity.SignupActivity" />
         <activity
-            android:name=".ChatActivites.MainActivity"
+            android:name=".Activities.MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".AccountActivity.LoginActivity">
             <intent-filter>
