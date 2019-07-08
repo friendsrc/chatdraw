@@ -260,7 +260,7 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                                             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                                                 DocumentSnapshot doc = task.getResult();
                                                 String name = (String) doc.get("groupName");
-                                                String imageURL = (String) doc.get("imageUrl");
+                                                String imageURL = (String) doc.get("groupImageUrl");
 
                                                 NewFriendItem newFriendItem = new NewFriendItem(name, groupID, imageURL);
                                                 adapter.addData(newFriendItem);

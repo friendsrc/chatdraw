@@ -99,7 +99,6 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAd
         TextView name = holder.view.findViewById(R.id.text_message_name);
         if (name != null) {
             String nameString = mDataset.get(position).getSenderName();
-            Log.d("HEY", "namestring = " + nameString);
             if (nameString == null) {
                 nameString = "Anonymous";
                 name.setTextColor(context.getResources().getColor(R.color.pLight));

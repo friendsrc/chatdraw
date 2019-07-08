@@ -89,28 +89,9 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
         mSwipeRefreshLayout = findViewById(R.id.chat_refresh_layout);
         mSwipeRefreshLayout.setOnRefreshListener(this);
 
-        Intent intent = getIntent();
-
         // get friend's UID
+        Intent intent = getIntent();
         friendsUID = intent.getStringExtra("uID");
-
-        if (friendsUID.startsWith("GROUP_")) {
-            isGroup = true;
-            groupID = friendsUID;
-            FirebaseFirestore.getInstance().collection("Groups")
-                    .document(groupID)
-                    .get()
-                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            DocumentSnapshot snapshot = task.getResult();
-                            membersID = (ArrayList<String>) snapshot.get("members");
-                            groupName = snapshot.getString("groupName");
-                            //TODO: set group image url
-                            groupImageUrl = snapshot.getString("groupImageUrl");
-                        }
-                    });
-        }
 
         // get user's UID
         GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(ChatActivity.this);
@@ -134,20 +115,6 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                 });
 
 
-        // get friends's display name and profile picture
-        FirebaseFirestore.getInstance().collection("Users")
-                .document(friendsUID)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        friendName[0] = task.getResult().getString("name");
-                        friendUsername[0] = task.getResult().getString("username");
-                        friendImageUrl[0] = task.getResult().getString("imageUrl");
-                        getMessages();
-                    }
-                });
-
         // set the action bar title
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
@@ -160,19 +127,50 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
         sendImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // find the EditText for message input
-                EditText editText = findViewById(R.id.chat_edittext);
-
                 // get  the inputted  message
+                EditText editText = findViewById(R.id.chat_edittext);
                 String message = editText.getText().toString();
-
                 // create a new ChatItem
-                ChatItem newChatItem = updateListView(message);
-
+                ChatItem newChatItem = addMessageToAdapter(message);
                 sendMessage(newChatItem); // send the ChatItem to Firebase
                 editText.setText(""); // erase the content of the EditText
             }
         });
+
+        if (friendsUID.startsWith("GROUP_")) {
+            Log.d("HEY", "is a group");
+            isGroup = true;
+            groupID = friendsUID;
+            FirebaseFirestore.getInstance().collection("Groups")
+                    .document(groupID)
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            DocumentSnapshot snapshot = task.getResult();
+                            membersID = (ArrayList<String>) snapshot.get("members");
+                            groupName = snapshot.getString("groupName");
+                            groupImageUrl = snapshot.getString("groupImageUrl");
+                            getMessages();
+                        }
+                    });
+        } else {
+            Log.d("HEY", "is not a group");
+            isGroup = false;
+            // get friends's display name and profile picture
+            FirebaseFirestore.getInstance().collection("Users")
+                    .document(friendsUID)
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            friendName[0] = task.getResult().getString("name");
+                            friendUsername[0] = task.getResult().getString("username");
+                            friendImageUrl[0] = task.getResult().getString("imageUrl");
+                            getMessages();
+                        }
+                    });
+        }
     }
 
     // create an action bar button
@@ -186,10 +184,6 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 //        int id = item.getItemId();
-//
-//        if (id == R.id.mybutton) {
-//            // do something here
-//        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -198,11 +192,6 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
     private void sendMessage(ChatItem chatItem) {
         Log.d(TAG, "sending Message");
         if (!chatItem.getMessageBody().equals("")) {
-
-//            // Send to Realtime Database
-//            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Messages");
-//            databaseReference.push().setValue(chatItem);
-
             FirebaseFirestore db = FirebaseFirestore.getInstance();
 
             if (!isGroup) {
@@ -235,6 +224,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                 db.collection("Previews").document(friendsUID)
                         .collection("ChatPreviews").document(userUID)
                         .set(chatItem);
+
             } else {
                 // Send to group's message collection
                 chatItem.setReceiverName(groupName);
@@ -249,6 +239,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                     chatItem.setSenderID(groupID);
                     chatItem.setSenderName(groupName);
                     chatItem.setSenderImageUrl(groupImageUrl);
+                    chatItem.setReceiverImageUrl(groupImageUrl);
                 }
                 if (membersPreview == null) {
                     membersPreview = new ArrayList<>();
@@ -261,7 +252,6 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                     d.set(chatItem);
                 }
             }
-
 
         }
     }
@@ -323,9 +313,15 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
         return true;
     }
 
-    public ChatItem updateListView(String messageBody) {
-        // create a new ChatItem
-        ChatItem chatItem = new ChatItem(messageBody, userUID, userName[0], userUsername[0], userImageUrl[0], friendsUID, friendName[0], friendUsername[0], friendImageUrl[0]);
+    public ChatItem addMessageToAdapter(String messageBody) {
+        ChatItem chatItem;
+        if (isGroup) {
+            chatItem = new ChatItem(messageBody, userUID, userName[0], userUsername[0],
+                    userImageUrl[0], groupID, groupName, null, groupImageUrl);
+        } else {
+            chatItem = new ChatItem(messageBody, userUID, userName[0], userUsername[0],
+                    userImageUrl[0], friendsUID, friendName[0], friendUsername[0], friendImageUrl[0]);
+        }
 
         // add the new ChatItem to the ChatAdapter
         mAdapter.addData(chatItem);

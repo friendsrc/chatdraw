@@ -68,6 +68,7 @@ public class GroupCreateActivity extends AppCompatActivity {
     private Uri selectedImageUri;
     private String url;
 
+    private String groupID;
     ImageView groupPicture;
     ImageView cameraLogo;
 
@@ -114,7 +115,7 @@ public class GroupCreateActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // create a group id
-                String groupID = "GROUP_" + userUID + "_" + UUID.randomUUID();
+                groupID = "GROUP_" + userUID + "_" + UUID.randomUUID();
 
                 // get group name from EditText
                 String groupName = editText.getText().toString();
@@ -129,6 +130,7 @@ public class GroupCreateActivity extends AppCompatActivity {
                 Map<String, Object> docData = new HashMap<>();
                 docData.put("groupName", groupName);
                 docData.put("groupID", groupID);
+                docData.put("groupImageUrl", url);
                 reference.set(docData);
 
                 // add each member's id to group document and add group id to each
@@ -292,7 +294,9 @@ public class GroupCreateActivity extends AppCompatActivity {
 
                                 // update firestore
 //                                Upload profileUpload = new Upload(url);
-//                                FirebaseFirestore.getInstance().collection("Users").document(userID).set(profileUpload, SetOptions.merge());
+//                                Map<String, Object> map = new HashMap<>();
+//                                map.put("GroupImageUrl", url);
+//                                FirebaseFirestore.getInstance().collection("Groups").document(groupID).update(map);
                             }
                         });
                     }
@@ -341,7 +345,9 @@ public class GroupCreateActivity extends AppCompatActivity {
 //
 //                                // update firestore
 //                                Upload profileUpload = new Upload(url);
-//                                FirebaseFirestore.getInstance().collection("Users").document(userUID).set(profileUpload, SetOptions.merge());
+//                                Map<String, Object> map = new HashMap<>();
+//                                map.put("GroupImageUrl", url);
+//                                FirebaseFirestore.getInstance().collection("Groups").document(groupID).update(map);
                             }
                         });
                     }
