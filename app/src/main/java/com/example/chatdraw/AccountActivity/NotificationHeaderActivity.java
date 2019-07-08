@@ -1,10 +1,8 @@
 package com.example.chatdraw.AccountActivity;
 
 import android.os.Bundle;
-import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.view.Menu;
-import android.view.MenuItem;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;

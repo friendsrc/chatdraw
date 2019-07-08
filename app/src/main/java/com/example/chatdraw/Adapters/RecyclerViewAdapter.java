@@ -58,8 +58,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         // create a new view
         View friendListItem = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.friend_list_item, parent, false);
-        MyViewHolder vh = new MyViewHolder(friendListItem);
-        return vh;
+        return new MyViewHolder(friendListItem);
     }
 
     // Replace the contents of a view (invoked by the layout manager)
@@ -98,5 +97,5 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         return mDataset.size();
     }
 
-    public FriendListItem getItem(int position) { return  mDataset.get(position); };
+    public FriendListItem getItem(int position) { return  mDataset.get(position); }
 }

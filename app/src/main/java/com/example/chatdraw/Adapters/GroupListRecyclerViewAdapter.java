@@ -1,7 +1,6 @@
 package com.example.chatdraw.Adapters;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,14 +9,9 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.chatdraw.AccountActivity.LoginActivity;
-import com.example.chatdraw.Items.ChatItem;
 import com.example.chatdraw.Items.NewFriendItem;
 import com.example.chatdraw.R;
 import com.example.chatdraw.Listeners.RecyclerViewClickListener;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.firebase.auth.FirebaseAuth;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -26,7 +20,6 @@ public class GroupListRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerV
     private ArrayList<NewFriendItem> mDataset;
     private Context context;
     private static RecyclerViewClickListener itemListener;
-    private String userId;
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
@@ -55,12 +48,6 @@ public class GroupListRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerV
         mDataset = myDataset;
         this.context = context;
         itemListener = listener;
-        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(context);
-        if (acct != null) {
-            this.userId = acct.getId();
-        } else {
-            this.userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        }
     }
 
     // Create new views (invoked by the layout manager)
@@ -71,19 +58,16 @@ public class GroupListRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerV
         View friendListItem = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.find_friend_item, parent, false);
 
-        RecyclerViewAdapter.MyViewHolder vh = new RecyclerViewAdapter.MyViewHolder(friendListItem);
-        return vh;
+        return new RecyclerViewAdapter.MyViewHolder(friendListItem);
     }
 
     // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(RecyclerViewAdapter.MyViewHolder holder, int position) {
-        // - get element from your dataset at this position
-        // - replace the contents of the view with that element
         NewFriendItem newFriendItem = mDataset.get(position);
 
         TextView name = holder.view.findViewById(R.id.find_friend_edittext);
-        String nameString = mDataset.get(position).getName();
+        String nameString = newFriendItem.getName();
         if (nameString == null) {
             nameString = "Anonymous";
             name.setTextColor(context.getResources().getColor(R.color.pLight));
@@ -91,7 +75,7 @@ public class GroupListRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerV
         name.setText(nameString);
 
         ImageView profilePicture = holder.view.findViewById(R.id.find_friend_imageview);
-        String imageUrl = mDataset.get(position).getImageUrl();
+        String imageUrl = newFriendItem.getImageUrl();
         if (profilePicture != null && imageUrl != null) {
             Picasso.get()
                     .load(imageUrl)
@@ -101,7 +85,7 @@ public class GroupListRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerV
 
     }
 
-    // Return the size of your dataset (invoked by the layout manager)
+    // Return the size of dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
         return mDataset.size();
@@ -117,5 +101,5 @@ public class GroupListRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerV
         notifyDataSetChanged();
     }
 
-    public NewFriendItem getItem(int position) { return  mDataset.get(position); };
+    public NewFriendItem getItem(int position) { return  mDataset.get(position); }
 }

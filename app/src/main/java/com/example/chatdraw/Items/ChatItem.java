@@ -1,10 +1,5 @@
 package com.example.chatdraw.Items;
 
-import com.example.chatdraw.R;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -40,13 +35,10 @@ public class ChatItem {
         this.messageBody = messageBody;
 
         // get the current time
-        Calendar cal = Calendar.getInstance();
-        this.timestamp=cal.getTime();
+        this.timestamp= Calendar.getInstance().getTime();
 
         // format the time into hour:minute
-        DateFormat dateFormat = new SimpleDateFormat("HH:mm");
-        String hour_and_minutes = dateFormat.format(timestamp);
-        this.timeSent = hour_and_minutes;
+        this.timeSent = new SimpleDateFormat("HH:mm").format(timestamp);
     }
 
     public String getSenderID() {

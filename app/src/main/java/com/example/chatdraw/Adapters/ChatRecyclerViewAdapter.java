@@ -1,7 +1,6 @@
 package com.example.chatdraw.Adapters;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,7 +9,6 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.chatdraw.AccountActivity.LoginActivity;
 import com.example.chatdraw.Items.ChatItem;
 import com.example.chatdraw.R;
 import com.example.chatdraw.Listeners.RecyclerViewClickListener;
@@ -85,8 +83,7 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAd
                     .inflate(R.layout.left_chat_bubble, parent, false);
         }
 
-        RecyclerViewAdapter.MyViewHolder vh = new RecyclerViewAdapter.MyViewHolder(friendListItem);
-        return vh;
+        return new RecyclerViewAdapter.MyViewHolder(friendListItem);
     }
 
     // Replace the contents of a view (invoked by the layout manager)
@@ -142,5 +139,5 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAd
         notifyDataSetChanged();
     }
 
-    public ChatItem getItem(int position) { return  mDataset.get(position); };
+    public ChatItem getItem(int position) { return  mDataset.get(position); }
 }

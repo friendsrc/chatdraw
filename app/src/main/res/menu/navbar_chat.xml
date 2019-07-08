@@ -15,10 +15,10 @@
 
     <!-- Settings, should always be in the overflow -->
     <item android:id="@+id/action_settings"
-        android:title="Chat Settings"
+        android:title="Chat Settings 1"
         app:showAsAction="never"/>
     <item android:id="@+id/action_settings2"
-        android:title="Sth Else"
+        android:title="Chat Settings 2"
         app:showAsAction="never"/>
 
 </menu>

@@ -1,7 +1,5 @@
 package com.example.chatdraw.Items;
 
-import com.example.chatdraw.R;
-
 public class NewFriendItem {
     private String name;
     private String username;

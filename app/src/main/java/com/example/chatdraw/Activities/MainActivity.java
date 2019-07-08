@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(MainActivity.this);
 
-                String imgurl = "";
+                String imgurl;
 
                 if (acct != null) {
                     imgurl = (String) dataSnapshot.child(acct.getId()).child("imageUrl").getValue();

@@ -138,7 +138,6 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
         });
 
         if (friendsUID.startsWith("GROUP_")) {
-            Log.d("HEY", "is a group");
             isGroup = true;
             groupID = friendsUID;
             FirebaseFirestore.getInstance().collection("Groups")
@@ -155,7 +154,6 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                         }
                     });
         } else {
-            Log.d("HEY", "is not a group");
             isGroup = false;
             // get friends's display name and profile picture
             FirebaseFirestore.getInstance().collection("Users")
@@ -211,6 +209,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                         .collection("ChatHistory")
                         .add(chatItem);
 
+                // Limit the length of chat preview
                 if (chatItem.getMessageBody().length() > 43) {
                     chatItem.setMessageBody(chatItem.getMessageBody().substring(0, 40) + "...");
                 }
@@ -241,18 +240,23 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                     chatItem.setSenderImageUrl(groupImageUrl);
                     chatItem.setReceiverImageUrl(groupImageUrl);
                 }
+
+                //  If not yet done, add the document reference of each member's preview to
+                //  membersPreview ArrayList
                 if (membersPreview == null) {
                     membersPreview = new ArrayList<>();
                     CollectionReference previews = db.collection("Previews");
                     for (String s: membersID) {
-                        membersPreview.add(previews.document(s).collection("ChatPreviews").document(groupID));
+                        membersPreview.add(previews.document(s)
+                                .collection("ChatPreviews").document(groupID));
                     }
                 }
+
+                // Set the chat preview of each member to be the newest ChatItem
                 for (DocumentReference d: membersPreview) {
                     d.set(chatItem);
                 }
             }
-
         }
     }
 
@@ -268,8 +272,10 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                     .addSnapshotListener(new EventListener<QuerySnapshot>() {
                         @Override
                         public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                            // remove previous data
                             mAdapter.clearData();
                             for (DocumentSnapshot q: queryDocumentSnapshots) {
+                                // turn each DocumentSnapshot into a ChatItem
                                 ChatItem chatItem = q.toObject(ChatItem.class);
 
                                 if (chatItem != null && !chatItem.getSenderID().equals(userUID)) {
@@ -281,7 +287,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                             }
                         }
                     });
-        } else {
+        } else { // if its not a group
             db.collection("GroupMessages")
                     .document(groupID)
                     .collection("ChatHistory")
@@ -331,8 +337,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
     @Override
     public void onRefresh() {
         //TODO: paginate data
-//        Toast.makeText(this, "Getting older messages", Toast.LENGTH_SHORT).show();
-        Toast.makeText(this, "Not yet configured", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Refresh not yet configured", Toast.LENGTH_SHORT).show();
         mSwipeRefreshLayout.setRefreshing(false);
     }
 

@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -103,13 +102,13 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                 ImageView arrow = findViewById(R.id.group_arrow);
                 if (isGroupToggledOff) {
                     recyclerView.setAdapter(mGroupAdapter);
-//                    arrow.setImageResource(R.drawable.arrow_drop_down);
+                    arrow.setImageResource(R.drawable.arrow_drop_up);
                 } else {
                     ArrayList<NewFriendItem> emptyDataset = new ArrayList<>();
                     final GroupListRecyclerViewAdapter adapter
                             = new GroupListRecyclerViewAdapter(emptyDataset);
                     recyclerView.setAdapter(adapter);
-//                    arrow.setImageResource(R.drawable.arrow_drop_up);
+                    arrow.setImageResource(R.drawable.arrow_drop_down);
                 }
                 isGroupToggledOff = !isGroupToggledOff;
             }
@@ -120,13 +119,16 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
             @Override
             public void onClick(View v) {
                 RecyclerView recyclerView = findViewById(R.id.friend_list_recycler_view);
+                ImageView arrow = findViewById(R.id.friend_arrow);
                 if (isFriendsToggledOff) {
                     recyclerView.setAdapter(mAdapter);
+                    arrow.setImageResource(R.drawable.arrow_drop_up);
                 } else {
                     ArrayList<FriendListItem> emptyDataset = new ArrayList<>();
                     final RecyclerViewAdapter adapter
                             = new RecyclerViewAdapter(emptyDataset);
                     recyclerView.setAdapter(adapter);
+                    arrow.setImageResource(R.drawable.arrow_drop_down);
                 }
                 isFriendsToggledOff = !isFriendsToggledOff;
             }

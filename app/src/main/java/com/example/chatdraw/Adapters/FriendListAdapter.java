@@ -1,7 +1,6 @@
 package com.example.chatdraw.Adapters;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,9 +52,6 @@ public class FriendListAdapter extends BaseAdapter {
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.friend_list_item, parent, false);
-
-        Log.d ("HEY", "adapter adding " + items.get(position).getName());
-
 
         // set the name
         TextView nameTextView = view.findViewById(R.id.friend_list_name);
