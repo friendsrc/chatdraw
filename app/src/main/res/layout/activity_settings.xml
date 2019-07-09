@@ -33,9 +33,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="30sp"
+            android:layout_marginLeft="15sp"
+            android:layout_marginRight="15sp"
             android:hint="@string/email_id"
             android:gravity="center"
-            android:textSize="30sp"
+            android:textSize="24sp"
             android:textStyle="bold|italic" />
 
         <EditText
@@ -66,12 +68,11 @@
 
         <Button
             android:id="@+id/changePass"
-            android:layout_width="200dp"
+            android:layout_width="250dp"
             android:layout_height="wrap_content"
-            android:background="@color/colorPrimaryDark"
+            android:background="@color/btn_login"
             android:layout_margin="20sp"
             android:text="@string/btn_change"
-            android:textColor="@android:color/white"
             android:textStyle="bold" />
 
         <ProgressBar
@@ -84,8 +85,9 @@
 
         <Button
             android:id="@+id/change_password_button"
-            android:layout_width="300dp"
+            android:layout_width="250dp"
             android:layout_height="wrap_content"
+            android:background="@color/btn_login"
             android:text="@string/change_password"
             android:textStyle="bold" />
 
@@ -94,8 +96,9 @@
             android:layout_width="300dp"
             android:layout_height="wrap_content"
             android:text="@string/remove_user"
+            android:background="@color/orange_red"
             android:layout_marginTop="20sp"
-            android:layout_marginBottom="5sp"
+            android:layout_marginBottom="10sp"
             android:textStyle="bold" />
 
         <Button

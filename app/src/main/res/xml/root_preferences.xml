@@ -104,5 +104,19 @@
                 android:targetClass="com.example.chatdraw.AccountActivity.RatingActivity" />
 
         </PreferenceScreen>
+        <PreferenceScreen
+            android:title="@string/faq_header"
+            android:summary="Details on Chatdraw">
+
+
+        </PreferenceScreen>
+        <PreferenceScreen
+            android:title="@string/contact_us_header">
+
+            <intent
+                android:targetPackage="com.example.chatdraw"
+                android:targetClass="com.example.chatdraw.AccountActivity.RatingActivity" />
+
+        </PreferenceScreen>
     </PreferenceCategory>
 </PreferenceScreen>

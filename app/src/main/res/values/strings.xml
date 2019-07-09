@@ -1,5 +1,8 @@
 <resources>
+    <!-- Android app name -->
     <string name="app_name">Chatdraw</string>
+
+    <!-- Settings -->
     <string name="action_sign_in_short">Register</string>
     <string name="email">Email</string>
     <string name="minimum_password">Password too short, enter minimum 6 characters!</string>
@@ -29,21 +32,29 @@
     <string name="lbl_forgot_password">Forgot password?</string>
     <string name="forgot_password_msg">We need your registered Email Address to sent you password reset instructions.</string>
     <string name="email_id">Email ID</string>
+
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
+
     <string name="new_group">New Group</string>
-    <string name="add_friend">Add friend</string>
     <string name="group_name">Group name</string>
+    <string name="add_friend">Add friend</string>
+
     <string name="profile_name">Profile name:</string>
+
     <string name="username">Username:</string>
+
     <string name="finish">Finish</string>
     <string name="later">Later</string>
+
     <string name="invalid_password">Password too short</string>
     <string name="invalid_email">Email Invalid</string>
+
     <string name="congrats_text">You are one more step to go!</string>
     <string name="chat_hint">Start typing...</string>
     <string name="addUsername">@username</string>
     <string name="settings_butt">Account</string>
+
     <string name="notification_butt">Notification</string>
     <string name="sound_butt">Sound</string>
     <string name="settings_pref">Settings Preference</string>
@@ -51,14 +62,15 @@
     <string name="name_hint">Your Profile Name</string>
     <string name="username_hint">Your Username</string>
 
-    <string name="short_username">Username too short</string>
-    <string name="long_username">Username too long</string>
+    <!-- Profile Settings -->
     <string name="long_name">Name too long</string>
     <string name="short_name">Name too short</string>
-
     <string name="profiledetails">Your profile name will be visible to the people who are using this app. In order to be added by your friends or shares your contact to others, you might want to set up your username. </string>
     <string name="profile_requirement">Your name can contains any characters. The minimum characters of your profile name should be 3 and the maximum is 20.</string>
 
+    <!-- Username Settings -->
+    <string name="short_username">Username too short</string>
+    <string name="long_username">Username too long</string>
     <string name="username_symbol">@</string>
     <string name="usernamedetails">Your user name will be used by your friends or others to add you and to share your contact to others.</string>
     <string name="username_requirement">Your username shall be unique. Your name can only contains characters from a&#8211;z, 0&#8211;9 and underscores. The minimum characters of your profile name should be 3 and the maximum is 20.</string>
@@ -73,6 +85,8 @@
     <string name="settings_header">Settings</string>
     <string name="messages_header">Messages</string>
     <string name="sync_header">Sync</string>
+    <string name="faq_header"><![CDATA[About & FAQ]]></string>
+    <string name="contact_us_header">Contact us</string>
 
     <!-- Bio Preferences -->
     <string name="profile_name_title">Profile Name</string>
@@ -90,9 +104,33 @@
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
 
+    <!-- Rating Preferences -->
     <string name="rating_text">Rate us</string>
     <string name="rating_comment">Tell us what you think of this app</string>
     <string name="rate_here">Type here ....</string>
     <string name="submit_button">Submit</string>
     <string name="thank_you_rating">Thank you for your rating! Please leave us a review in Google Play Store! Your rating will motivate us to improve our app better. </string>
+
+    <!-- Content Description for XML -->
+    <string name="add_message_content">Add message button</string>
+    <string name="launch_content">Icon for launch</string>
+    <string name="main_logo_content">Application Logo</string>
+
+    <!-- Contact us -->
+    <string name="contact_us_title">How to contact us:</string>
+    <string name="contact_us_step_one">1. To give feedback or to support us, please go to [Settings] -> [Rate us] button on [Help and Support] tab</string>
+    <string name="contact_us_step_two">2. Inform us through email at "chatdrawapp@gmail.com" for the following problems/suggestions</string>
+    <string name="contact_us_step_two_one">a. To ask for <strong>QUESTIONS</strong> related to Chatdraw, please set the email title with prefix: [QUESTIONS]</string>
+    <string name="contact_us_step_two_one_example">Example: Email subject or title: [QUESTIONS] What does Chatdraw different from another app?</string>
+    <string name="contact_us_step_two_two">b. To report for <strong>BUGS/PROBLEMS</strong> related to Chatdraw, please set the email title with prefix: [BUGS]</string>
+    <string name="contact_us_step_two_two_example">Example: Email subject or title: [BUGS] Why does the app force shut down when I try to invite a friend?</string>
+    <string name="contact_us_step_two_three">a. To give <strong>SUGGESTIONS</strong> related to Chatdraw, please set the email title with prefix: [SUGGESTS]</string>
+    <string name="contact_us_step_two_three_example">Example: Email subject or title: [SUGGESTS] I recommend Chatdraw to enable login using username instead.</string>
+    <string name="contact_us_step_three">3. If your queries are not listed in the above cases, please email us at "chatdrawapp@gmail.com" with email title starts with: [OTHERS]</string>
+    <string name="contact_us_step_three_example">Example: Email subject or title: [OTHERS] ....your..message..here.... </string>
+
+    <!-- About -->
+    <string name="chatdraw_version">1.0</string>
+    <string name="copyright">&#169; 2019 Chatdraw app</string>
+
 </resources>

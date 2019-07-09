@@ -112,12 +112,17 @@ public class ProfileEditActivity extends AppCompatActivity {
                         Toast.makeText(ProfileEditActivity.this, "Error on user validation", Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    userUID = user.getUid();
-                    tempName = (String) dataSnapshot.child(userUID).child("name").getValue();
-                    tempUsername = (String) dataSnapshot.child(userUID).child("username").getValue();
-                    imgurl = (String) dataSnapshot.child(userUID).child("imageUrl").getValue();
+                    if (user != null) {
+                        userUID = user.getUid();
+                        tempName = (String) dataSnapshot.child(userUID).child("name").getValue();
+                        tempUsername = (String) dataSnapshot.child(userUID).child("username").getValue();
+                        imgurl = (String) dataSnapshot.child(userUID).child("imageUrl").getValue();
+                    } else {
+                        Toast.makeText(ProfileEditActivity.this, "User is not validated!", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(ProfileEditActivity.this, LoginActivity.class));
+                        finish();
+                    }
                 }
-
 
                 CircleImageView imgview = (CircleImageView) findViewById(R.id.new_profile_picture_image_view);
 

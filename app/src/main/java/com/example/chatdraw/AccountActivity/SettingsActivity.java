@@ -1,6 +1,8 @@
 package com.example.chatdraw.AccountActivity;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -54,10 +56,22 @@ public class SettingsActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
         email = (TextView) findViewById(R.id.useremail);
 
+        btnChangePassword = (Button) findViewById(R.id.change_password_button);
+        btnRemoveUser = (Button) findViewById(R.id.remove_user_button);
+
+        changePassword = (Button) findViewById(R.id.changePass);
+        signOut = (Button) findViewById(R.id.sign_out);
+
+        newPassword = (EditText) findViewById(R.id.newPassword);
+        password = (EditText) findViewById(R.id.password);
+
         user = FirebaseAuth.getInstance().getCurrentUser();
         GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(SettingsActivity.this);
 
         if (acct != null) {
+            btnChangePassword.setVisibility(View.GONE);
+            btnRemoveUser.setVisibility(View.GONE);
+
             DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
             final String personId = acct.getId();
 
@@ -78,15 +92,6 @@ public class SettingsActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "Error in showing user email", Toast.LENGTH_SHORT).show();
         }
-
-        btnChangePassword = (Button) findViewById(R.id.change_password_button);
-        btnRemoveUser = (Button) findViewById(R.id.remove_user_button);
-
-        changePassword = (Button) findViewById(R.id.changePass);
-        signOut = (Button) findViewById(R.id.sign_out);
-
-        newPassword = (EditText) findViewById(R.id.newPassword);
-        password = (EditText) findViewById(R.id.password);
 
         newPassword.setVisibility(View.GONE);
         password.setVisibility(View.GONE);
@@ -153,24 +158,37 @@ public class SettingsActivity extends AppCompatActivity {
         btnRemoveUser.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            progressBar.setVisibility(View.VISIBLE);
-            if (user != null) {
-                user.delete()
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(SettingsActivity.this, "Your profile is deleted:( Create a account now!", Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(SettingsActivity.this, SignupActivity.class));
-                            finish();
-                            progressBar.setVisibility(View.GONE);
-                        } else {
-                            Toast.makeText(SettingsActivity.this, "Failed to delete your account!", Toast.LENGTH_SHORT).show();
-                            progressBar.setVisibility(View.GONE);
-                        }
-                        }
-                    });
-            }
+                new AlertDialog.Builder(SettingsActivity.this)
+                        .setTitle("Confirm")
+                        .setMessage("Do you really want to delete your account?")
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                if (user != null) {
+                                    user.delete()
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if (task.isSuccessful()) {
+                                                    Toast.makeText(SettingsActivity.this, "Your profile is deleted. Create an account now!", Toast.LENGTH_SHORT).show();
+
+                                                    Intent intent = new Intent(SettingsActivity.this, SignupActivity.class);
+                                                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                                                            Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                                                            Intent.FLAG_ACTIVITY_NEW_TASK);
+                                                    startActivity(intent);
+                                                    finish();
+                                                    progressBar.setVisibility(View.GONE);
+                                                } else {
+                                                    Toast.makeText(SettingsActivity.this, "Failed to delete your account!", Toast.LENGTH_SHORT).show();
+                                                    progressBar.setVisibility(View.GONE);
+                                                }
+                                            }
+                                        });
+                                }
+                            }})
+                        .setNegativeButton(android.R.string.no, null).show();
+
             }
         });
 
@@ -253,20 +271,21 @@ public class SettingsActivity extends AppCompatActivity {
         } else {
             auth.signOut();
 
+            startActivity(new Intent(SettingsActivity.this, LoginActivity.class));
+            finish();
             // this listener will be called when there is change in firebase user session
-            FirebaseAuth.AuthStateListener authListener = new FirebaseAuth.AuthStateListener() {
-                @Override
-                public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-
-                    FirebaseUser user = firebaseAuth.getCurrentUser();
-                    if (user == null) {
-                        // user auth state is changed - user is null
-                        // launch login activity
-                        startActivity(new Intent(SettingsActivity.this, LoginActivity.class));
-                        finish();
-                    }
-                }
-            };
+//            FirebaseAuth.AuthStateListener authListener = new FirebaseAuth.AuthStateListener() {
+//                @Override
+//                public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+//                    FirebaseUser user = firebaseAuth.getCurrentUser();
+//                    if (user == null) {
+//                        // user auth state is changed - user is null
+//                        // launch login activity
+//                            startActivity(new Intent(SettingsActivity.this, LoginActivity.class));
+//                            finish();
+//                    }
+//                }
+//            };
         }
     }
 

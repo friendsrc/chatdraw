@@ -27,6 +27,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import org.w3c.dom.Document;
+
 public class PersonalActivity extends AppCompatActivity {
     private ProgressBar progressBar;
 
@@ -73,7 +75,7 @@ public class PersonalActivity extends AppCompatActivity {
                     return;
                 }
 
-                final String profile = temp.substring(0, 1).toUpperCase() + temp.substring(1).toLowerCase();
+                final String profile = temp.substring(0, 1).toUpperCase() + temp.substring(1);
                 final String username = inputUsername.getText().toString().trim();
 
                 if (username.length() < 3 && username.length() != 0) {
@@ -111,12 +113,17 @@ public class PersonalActivity extends AppCompatActivity {
                             progressBar.setVisibility(View.VISIBLE);
 
                             DatabaseReference databaseReference;
+                            DocumentReference firestoreRef;
+
                             GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(PersonalActivity.this);
                             if (acct != null) {
                                 String personId = acct.getId();
 
                                 if (personId != null) {
                                     databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(personId);
+
+                                    // edit: save to firestore
+                                    firestoreRef = FirebaseFirestore.getInstance().collection("Users").document(acct.getId());
                                 } else {
                                     Toast.makeText(PersonalActivity.this, "Unable to get google profile ID", Toast.LENGTH_SHORT).show();
                                     startActivity(new Intent(PersonalActivity.this, LoginActivity.class));
@@ -128,11 +135,9 @@ public class PersonalActivity extends AppCompatActivity {
                                         .getInstance()
                                         .getReference("Users")
                                         .child(currentFirebaseUser.getUid());
+                                // edit: save to firestore
+                                firestoreRef = FirebaseFirestore.getInstance().collection("Users").document(currentFirebaseUser.getUid());
                             }
-
-                            // edit: save to firestore
-                            DocumentReference firestoreRef = FirebaseFirestore.getInstance().collection("Users")
-                                    .document(acct.getId());
 
                             if (TextUtils.isEmpty(profile)) {
                                 databaseReference.child("name").setValue("Anonymous");

@@ -27,7 +27,7 @@
         android:hint="@string/hint_email"
         android:inputType="textEmailAddress"
         android:textColor="@android:color/white"
-        android:textColorHint="@android:color/white" />
+        android:textColorHint="@color/bluegray600" />
 
     <EditText
         android:id="@+id/password"
@@ -37,8 +37,7 @@
         android:hint="@string/hint_password"
         android:inputType="textPassword"
         android:textColor="@android:color/white"
-        android:textColorHint="@android:color/white" />
-
+        android:textColorHint="@color/bluegray600" />
 
     <LinearLayout
         android:gravity="center"
@@ -80,7 +79,7 @@
         android:background="@null"
         android:text="@string/btn_forgot_password"
         android:textAllCaps="false"
-        android:textColor="@color/colorAccent" />
+        android:textColor="@color/sLight" />
 
     <!-- Link to Login Screen -->
     <Button

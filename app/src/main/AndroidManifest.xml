@@ -18,12 +18,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".AccountActivity.ContactUsActivity"></activity>
         <activity android:name=".AccountActivity.RatingActivity" />
         <activity android:name=".Activities.GroupCreateActivity" />
         <activity android:name=".AccountActivity.UsernameEditActivity" />
         <activity android:name=".AccountActivity.NameEditActivity" />
-        <activity android:name=".AccountActivity.ProfileEditActivity"
-            android:theme="@style/AppThemeWithActionBar"/>
+        <activity
+            android:name=".AccountActivity.ProfileEditActivity"
+            android:theme="@style/AppThemeWithActionBar" />
 
         <service
             android:name=".Services.MyFirebaseMessagingService"
@@ -34,9 +36,9 @@
             </intent-filter>
         </service>
 
-        <activity android:name=".AccountActivity.NotificationHeaderActivity"
-            android:theme="@style/AppThemeWithActionBar"
-        />
+        <activity
+            android:name=".AccountActivity.NotificationHeaderActivity"
+            android:theme="@style/AppThemeWithActionBar" />
         <activity android:name=".AccountActivity.PersonalActivity" />
         <activity android:name=".Activities.ChatActivity" />
         <activity android:name=".Activities.NewGroupActivity" />
@@ -49,7 +51,9 @@
         <activity
             android:name=".Activities.MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".AccountActivity.LoginActivity">
+        <activity
+            android:name=".AccountActivity.LoginActivity"
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

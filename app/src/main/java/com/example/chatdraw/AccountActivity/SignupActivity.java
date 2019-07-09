@@ -133,7 +133,6 @@ public class SignupActivity extends AppCompatActivity {
                                     FirebaseFirestore.getInstance().collection("Users")
                                             .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
                                             .set(user);
-
                                 }
                             }
                         });

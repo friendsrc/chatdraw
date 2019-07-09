@@ -5,7 +5,9 @@ import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.chatdraw.AccountActivity.LoginActivity;
 import com.example.chatdraw.AccountActivity.ProfileEditActivity;
+import com.example.chatdraw.AccountActivity.SettingsActivity;
 import com.example.chatdraw.Items.ChatItem;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -289,7 +291,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             if (userUID == null) {
                 userUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
             } else {
-                Toast.makeText(MainActivity.this, "User not validated", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "User not validated!", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                        Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                        Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                finish();
             }
         }
 

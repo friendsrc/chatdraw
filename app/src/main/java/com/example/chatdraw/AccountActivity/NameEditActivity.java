@@ -62,7 +62,7 @@ public class NameEditActivity extends AppCompatActivity {
                             finish();
                         }
                     } else {
-                        Toast.makeText(NameEditActivity.this, "Name update failed", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(NameEditActivity.this, "Name update failed. User is not validated!", Toast.LENGTH_SHORT).show();
                     }
                 }
             }
