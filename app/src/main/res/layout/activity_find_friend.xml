@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:gravity="center_horizontal"
     android:orientation="vertical"
     tools:context=".Activities.FindFriendActivity">
 
@@ -38,15 +39,40 @@
             android:src="@drawable/search"/>
     </LinearLayout>
 
-
-
-    <ListView
-        android:id="@+id/find_friend_listview"
-        app:layout_constraintTop_toBottomOf="@id/find_friend_edittext"
+    <View
         android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3"/>
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/find_friend_newImageView"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:src="@drawable/blank_account"
+        app:civ_border_width="0dp"
+        app:civ_border_color="@color/colorPrimaryDark"/>
+
+    <TextView
+        android:id="@+id/find_friend_newTextView"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:divider="@null"
-        android:dividerHeight="0dp"/>
+        android:layout_marginTop="8dp"
+        android:textSize="18sp"
+        android:text="Placeholder Name"/>
+
+    <Button
+        android:id="@+id/find_friend_newButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/chat_bubble"
+        android:textColor="@color/white"
+        android:text="Add to Contacts"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="5"/>
 </LinearLayout>
