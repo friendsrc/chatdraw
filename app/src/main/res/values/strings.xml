@@ -132,7 +132,7 @@
     <string name="contact_us_step_two_three_example"><![CDATA[Email subject or Question code: [SUGGESTS]
     I recommend Chatdraw to enable login
     using username instead.]]></string>
-    <string name="contact_us_step_three">If your queries are not listed in the above cases, please email us at "chatdrawapp@gmail.com" or fill the form with "Question code" or email title starts with: [OTHERS]</string>
+    <string name="contact_us_step_three">If your queries are not listed in the above cases, please email us at "chatdrawfeedback@gmail.com" or fill the form with "Question code" or email title starts with: [OTHERS]</string>
     <string name="contact_us_step_three_example"><![CDATA[Email subject or Question code: [OTHERS]
     ....your..message..here.... ]]></string>
     <string name="contact_us_message">Type your message below:</string>
