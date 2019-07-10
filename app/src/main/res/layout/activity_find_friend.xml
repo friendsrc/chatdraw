@@ -23,6 +23,11 @@
         android:layout_margin="20dp"
         android:orientation="horizontal">
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/username_symbol"/>
+
         <EditText
             android:id="@+id/find_friend_edittext"
             android:layout_width="0dp"

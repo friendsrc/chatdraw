@@ -52,7 +52,7 @@
 
     <string name="congrats_text">You are one more step to go!</string>
     <string name="chat_hint">Start typing...</string>
-    <string name="addUsername">@username</string>
+    <string name="add"></string>
     <string name="settings_butt">Account</string>
 
     <string name="notification_butt">Notification</string>
