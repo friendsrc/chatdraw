@@ -11,9 +11,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.example.chatdraw.Items.FriendListItem;
 import com.example.chatdraw.R;
@@ -37,6 +39,7 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
     public static final String TAG = "NewMessageActivity";
     private RecyclerViewAdapter mAdapter;
     private ArrayList<FriendListItem> myDataset;
+    private String userUID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +70,8 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
         } else {
             id = FirebaseAuth.getInstance().getCurrentUser().getUid();
         }
+        userUID = id;
+
 
         FirebaseFirestore.getInstance().collection("Users").document(id)
                 .get()
@@ -124,7 +129,7 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
                         String imageURL = (String) doc.get("imageUrl");
 
                         // check if the user doesn't have name/status
-                        if (status == null) status = "[status]";
+                        if (status == null) status = "";
 
                         FriendListItem friendListItem = new FriendListItem(name, status, uID, imageURL);
 
@@ -136,11 +141,31 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
 
     @Override
     public void recyclerViewListClicked(View v, int position){
-        Intent intent = new Intent();
-        FriendListItem friendListItem = mAdapter.getItem(position);
-        intent.putExtra("uID", friendListItem.getUID());
-        setResult(Activity.RESULT_OK, intent);
-        finish();
+        final FriendListItem friendListItem = mAdapter.getItem(position);
+
+        FirebaseFirestore.getInstance().collection("Previews").document(userUID)
+                .collection("ChatPreviews")
+                .document(friendListItem.getUID())
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            DocumentSnapshot document = task.getResult();
+                            if (document.exists()) {
+                                Toast.makeText(NewMessageActivity.this,
+                                        "Chat already exists.", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Intent intent = new Intent();
+                                intent.putExtra("uID", friendListItem.getUID());
+                                setResult(Activity.RESULT_OK, intent);
+                                finish();
+                            }
+                        } else {
+                            Log.d(TAG, "Failed with: ", task.getException());
+                        }
+                    }
+                });
     }
 
     @Override

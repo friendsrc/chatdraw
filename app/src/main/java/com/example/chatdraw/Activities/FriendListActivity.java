@@ -149,7 +149,7 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                         String imageURL = (String) doc.get("imageUrl");
 
                         // check if the user doesn't have name/status/imageURL
-                        if (status == null) status = "[status]";
+                        if (status == null) status = "";
 
                         FriendListItem newFriend = new FriendListItem(name, status, uID ,imageURL);
                         myDataset.add(newFriend);
