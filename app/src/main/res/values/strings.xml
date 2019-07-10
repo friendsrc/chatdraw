@@ -3,7 +3,7 @@
     <string name="app_name">Chatdraw</string>
 
     <!-- Settings -->
-    <string name="action_sign_in_short">Register</string>
+    <string name="action_sign_in_short" translatable="false">Register</string>
     <string name="email">Email</string>
     <string name="minimum_password">Password too short, enter minimum 6 characters!</string>
     <string name="auth_failed">Authentication failed, check your email and password or sign up</string>
@@ -38,7 +38,7 @@
 
     <string name="new_group">New Group</string>
     <string name="group_name">Group name</string>
-    <string name="add_friend">Add friend</string>
+    <string name="add_friend" translatable="false">Add friend</string>
 
     <string name="profile_name">Profile name:</string>
 
@@ -52,7 +52,7 @@
 
     <string name="congrats_text">You are one more step to go!</string>
     <string name="chat_hint">Start typing...</string>
-    <string name="add"></string>
+    <string name="add" translatable="false"></string>
     <string name="settings_butt">Account</string>
 
     <string name="notification_butt">Notification</string>
@@ -118,16 +118,39 @@
 
     <!-- Contact us -->
     <string name="contact_us_title">How to contact us:</string>
-    <string name="contact_us_step_one">1. To give feedback or to support us, please go to [Settings] -> [Rate us] button on [Help and Support] tab</string>
-    <string name="contact_us_step_two">2. Inform us through email at "chatdrawapp@gmail.com" for the following problems/suggestions</string>
-    <string name="contact_us_step_two_one">a. To ask for <strong>QUESTIONS</strong> related to Chatdraw, please set the email title with prefix: [QUESTIONS]</string>
-    <string name="contact_us_step_two_one_example">Example: Email subject or title: [QUESTIONS] What does Chatdraw different from another app?</string>
-    <string name="contact_us_step_two_two">b. To report for <strong>BUGS/PROBLEMS</strong> related to Chatdraw, please set the email title with prefix: [BUGS]</string>
-    <string name="contact_us_step_two_two_example">Example: Email subject or title: [BUGS] Why does the app force shut down when I try to invite a friend?</string>
-    <string name="contact_us_step_two_three">a. To give <strong>SUGGESTIONS</strong> related to Chatdraw, please set the email title with prefix: [SUGGESTS]</string>
-    <string name="contact_us_step_two_three_example">Example: Email subject or title: [SUGGESTS] I recommend Chatdraw to enable login using username instead.</string>
-    <string name="contact_us_step_three">3. If your queries are not listed in the above cases, please email us at "chatdrawapp@gmail.com" with email title starts with: [OTHERS]</string>
-    <string name="contact_us_step_three_example">Example: Email subject or title: [OTHERS] ....your..message..here.... </string>
+    <string name="contact_us_step_one">To give feedback or to support us, please go to [Settings] -> [Rate us] button on [Help and Support] tab</string>
+    <string name="contact_us_step_two">You can inform/contact us through email at "chatdrawfeedback@gmail.com" or fill in the below form with following criteria: </string>
+    <string name="contact_us_step_two_one">To ask for QUESTIONS related to Chatdraw, please set the form "Question code" or email title with prefix: [QUESTIONS]</string>
+    <string name="contact_us_step_two_one_example"><![CDATA[Email subject or Question code: [QUESTIONS]
+    What does Chatdraw different from
+    another app?]]></string>
+    <string name="contact_us_step_two_two">To report for BUGS/PROBLEMS related to Chatdraw, please set the form "Question code" or email title with prefix: [BUGS]</string>
+    <string name="contact_us_step_two_two_example"><![CDATA[Email subject or Question code: [BUGS]
+    Why does the app force shut down when
+    I try to invite a friend?]]></string>
+    <string name="contact_us_step_two_three">To give SUGGESTIONS related to Chatdraw, please set the form "Question code" or email title with prefix: [SUGGESTS]</string>
+    <string name="contact_us_step_two_three_example"><![CDATA[Email subject or Question code: [SUGGESTS]
+    I recommend Chatdraw to enable login
+    using username instead.]]></string>
+    <string name="contact_us_step_three">If your queries are not listed in the above cases, please email us at "chatdrawapp@gmail.com" or fill the form with "Question code" or email title starts with: [OTHERS]</string>
+    <string name="contact_us_step_three_example"><![CDATA[Email subject or Question code: [OTHERS]
+    ....your..message..here.... ]]></string>
+    <string name="contact_us_message">Type your message below:</string>
+    <string name="contact_us_question">Type your questions below:</string>
+    <string name="contact_us_code">Question code:</string>
+    <string name="contact_click_me">Click me</string>
+    <string name="contact_example">Example:</string>
+
+    <string name="bullet_point">•</string>
+    <string name="point_a">a)</string>
+    <string name="point_b">b)</string>
+    <string name="point_c">c)</string>
+    <string-array name="contact_question_code">
+        <item>QUESTIONS</item>
+        <item>BUGS</item>
+        <item>SUGGESTS</item>
+        <item>OTHERS</item>
+    </string-array>
 
     <!-- About -->
     <string name="chatdraw_version">1.0</string>

@@ -301,14 +301,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else {
             if (userUID == null) {
                 userUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            } else {
-                Toast.makeText(MainActivity.this, "User not validated!", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK |
-                        Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-                finish();
             }
         }
 
