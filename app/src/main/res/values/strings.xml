@@ -120,24 +120,24 @@
     <string name="contact_us_title">How to contact us:</string>
     <string name="contact_us_step_one">To give feedback or to support us, please go to [Settings] -> [Rate us] button on [Help and Support] tab</string>
     <string name="contact_us_step_two">You can inform/contact us through email at "chatdrawfeedback@gmail.com" or fill in the below form with following criteria: </string>
-    <string name="contact_us_step_two_one">To ask for QUESTIONS related to Chatdraw, please set the form "Question code" or email title with prefix: [QUESTIONS]</string>
-    <string name="contact_us_step_two_one_example"><![CDATA[Email subject or Question code: [QUESTIONS]
+    <string name="contact_us_step_two_one">To ask for QUESTIONS related to Chatdraw, please set the form "Feedback code" or email title with prefix: [QUESTIONS]</string>
+    <string name="contact_us_step_two_one_example"><![CDATA[Email subject or Feedback code: [QUESTIONS]
     What does Chatdraw different from
     another app?]]></string>
-    <string name="contact_us_step_two_two">To report for BUGS/PROBLEMS related to Chatdraw, please set the form "Question code" or email title with prefix: [BUGS]</string>
-    <string name="contact_us_step_two_two_example"><![CDATA[Email subject or Question code: [BUGS]
+    <string name="contact_us_step_two_two">To report for BUGS/PROBLEMS related to Chatdraw, please set the form "Feedback code" or email title with prefix: [BUGS]</string>
+    <string name="contact_us_step_two_two_example"><![CDATA[Email subject or Feedback code: [BUGS]
     Why does the app force shut down when
     I try to invite a friend?]]></string>
-    <string name="contact_us_step_two_three">To give SUGGESTIONS related to Chatdraw, please set the form "Question code" or email title with prefix: [SUGGESTS]</string>
-    <string name="contact_us_step_two_three_example"><![CDATA[Email subject or Question code: [SUGGESTS]
+    <string name="contact_us_step_two_three">To give SUGGESTIONS related to Chatdraw, please set the form "Feedback code" or email title with prefix: [SUGGESTS]</string>
+    <string name="contact_us_step_two_three_example"><![CDATA[Email subject or Feedback code: [SUGGESTS]
     I recommend Chatdraw to enable login
     using username instead.]]></string>
-    <string name="contact_us_step_three">If your queries are not listed in the above cases, please email us at "chatdrawfeedback@gmail.com" or fill the form with "Question code" or email title starts with: [OTHERS]</string>
-    <string name="contact_us_step_three_example"><![CDATA[Email subject or Question code: [OTHERS]
+    <string name="contact_us_step_three">If your queries are not listed in the above cases, please email us at "chatdrawfeedback@gmail.com" or fill the form with "Feedback code" or email title starts with: [OTHERS]</string>
+    <string name="contact_us_step_three_example"><![CDATA[Email subject or Feedback code: [OTHERS]
     ....your..message..here.... ]]></string>
-    <string name="contact_us_message">Type your message below:</string>
-    <string name="contact_us_question">Type your questions below:</string>
-    <string name="contact_us_code">Question code:</string>
+    <string name="contact_us_message">Message body:</string>
+    <string name="contact_us_question">Title:</string>
+    <string name="contact_us_code">Feedback code:</string>
     <string name="contact_click_me">Click me</string>
     <string name="contact_example">Example:</string>
 
