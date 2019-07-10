@@ -93,7 +93,6 @@ public class GroupCreateActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("Create Group");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        // TODO: setup camera/gallery option
         cameraLogo = findViewById(R.id.camera_logo);
         groupPicture = findViewById(R.id.group_create_imageview);
         groupPicture.setOnClickListener(new View.OnClickListener() {
@@ -109,61 +108,66 @@ public class GroupCreateActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // create a group id
-                groupID = "GROUP_" + userUID + "_" + UUID.randomUUID();
 
                 // get group name from EditText
-                String groupName = editText.getText().toString();
+                String groupName = editText.getText().toString().trim();
 
-                // get firestore
-                FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-                DocumentReference reference = firestore
-                        .collection("Groups")
-                        .document(groupID);
+                if (!groupName.equals("")) {
+                    // create a group id
+                    groupID = "GROUP_" + userUID + "_" + UUID.randomUUID();
 
-                // add group name to group document
-                Map<String, Object> docData = new HashMap<>();
-                docData.put("groupName", groupName);
-                docData.put("groupID", groupID);
-                docData.put("groupImageUrl", url);
-                reference.set(docData);
+                    // get firestore
+                    FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+                    DocumentReference reference = firestore
+                            .collection("Groups")
+                            .document(groupID);
 
-                // add each member's id to group document and add group id to each
-                // member's document
-                for (String s: members) {
-                    // add member id to group
-                    reference.update("members", FieldValue.arrayUnion(s));
+                    // add group name to group document
+                    Map<String, Object> docData = new HashMap<>();
+                    docData.put("groupName", groupName);
+                    docData.put("groupID", groupID);
+                    docData.put("groupImageUrl", url);
+                    reference.set(docData);
 
-                    // add group id to member
-                    FirebaseFirestore.getInstance()
-                            .collection("Users")
-                            .document(s)
-                            .update("groups", FieldValue.arrayUnion(groupID));
+                    // add each member's id to group document and add group id to each
+                    // member's document
+                    for (String s: members) {
+                        // add member id to group
+                        reference.update("members", FieldValue.arrayUnion(s));
 
-                    // create a placeholder chat item, TODO: set imageUrl
-                    ChatItem chatItem = new ChatItem("", groupID, groupName,
-                            null, url, s,
-                            null, null, null);
+                        // add group id to member
+                        FirebaseFirestore.getInstance()
+                                .collection("Users")
+                                .document(s)
+                                .update("groups", FieldValue.arrayUnion(groupID));
 
-                    // Send to user's message preview collection
-                    FirebaseFirestore.getInstance()
-                            .collection("Previews")
-                            .document(s)
-                            .collection("ChatPreviews")
-                            .document(groupID)
-                            .set(chatItem);
+                        // create a placeholder chat item, TODO: set imageUrl
+                        ChatItem chatItem = new ChatItem("", groupID, groupName,
+                                null, url, s,
+                                null, null, null);
+
+                        // Send to user's message preview collection
+                        FirebaseFirestore.getInstance()
+                                .collection("Previews")
+                                .document(s)
+                                .collection("ChatPreviews")
+                                .document(groupID)
+                                .set(chatItem);
+                    }
+
+                    // set the result as successful
+                    Intent intent = new Intent();
+                    intent.putExtra("groupID", groupID);
+                    intent.putExtra("groupName", groupName);
+                    intent.putExtra("groupImageUrl", url);
+                    setResult(Activity.RESULT_OK, intent);
+
+                    // destroy this activity
+                    finish();
+                } else {
+                    Toast.makeText(GroupCreateActivity.this,
+                            "Group name shouldn't be empty", Toast.LENGTH_SHORT).show();
                 }
-
-                // set the result as successful
-                Intent intent = new Intent();
-                intent.putExtra("groupID", groupID);
-                intent.putExtra("groupName", groupName);
-                intent.putExtra("groupImageUrl", url);
-                setResult(Activity.RESULT_OK, intent);
-
-                // destroy this activity
-                finish();
-
             }
         });
 

@@ -15,6 +15,7 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -131,23 +132,13 @@ public class FindFriendActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("Find Friends");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        // add listener on the edit text
         final EditText editText = findViewById(R.id.find_friend_edittext);
-        editText.addTextChangedListener(new TextWatcher() {
+        ImageView searchButton = findViewById(R.id.find_friend_search_button);
+        searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
+            public void onClick(View v) {
                 newFriendAdapter.clearData();
-                String str = s.toString();
+                String str = editText.getText().toString();
                 if (!str.trim().equals("")) {
                     // find user and update listview
                     findUserInDatabase(newFriendAdapter, str.trim());
@@ -179,9 +170,7 @@ public class FindFriendActivity extends AppCompatActivity {
         char nextChar = ++firstChar;
 
         FirebaseFirestore.getInstance().collection("Users")
-                .orderBy("username")
-                .startAt(text)
-                .endBefore("@" + nextChar)
+                .whereEqualTo("username", text)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override

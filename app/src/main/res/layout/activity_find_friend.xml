@@ -16,15 +16,29 @@
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
 
-    <EditText
-        android:id="@+id/find_friend_edittext"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="20dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginRight="20dp"
-        android:textColorHint="@color/bluegray100"
-        android:hint="@string/addUsername" />
+        android:layout_margin="20dp"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/find_friend_edittext"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="0dp"
+            android:textColorHint="@color/bluegray100"
+            android:hint="username" />
+
+        <ImageView
+            android:id="@+id/find_friend_search_button"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@drawable/search"/>
+    </LinearLayout>
+
+
 
     <ListView
         android:id="@+id/find_friend_listview"

@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.example.chatdraw.Items.FriendListItem;
 import com.example.chatdraw.R;
@@ -79,15 +80,20 @@ public class NewGroupActivity extends AppCompatActivity implements RecyclerViewC
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(NewGroupActivity.this, GroupCreateActivity.class);
-                String[] memberList = new String[chosenContacts.size()];
-                int i = 0;
-                for (FriendListItem f: chosenContacts.values()) {
-                    memberList[i] = f.getUID();
-                    i++;
+                if (chosenContacts.size() > 0) {
+                    Intent intent = new Intent(NewGroupActivity.this, GroupCreateActivity.class);
+                    String[] memberList = new String[chosenContacts.size()];
+                    int i = 0;
+                    for (FriendListItem f: chosenContacts.values()) {
+                        memberList[i] = f.getUID();
+                        i++;
+                    }
+                    intent.putExtra("memberList", memberList);
+                    startActivityForResult(intent, GROUP_CREATE_REQUEST_CODE);
+                } else {
+                    Toast.makeText(NewGroupActivity.this,
+                            "Select at least one group member", Toast.LENGTH_SHORT).show();
                 }
-                intent.putExtra("memberList", memberList);
-                startActivityForResult(intent, GROUP_CREATE_REQUEST_CODE);
             }
         });
 
