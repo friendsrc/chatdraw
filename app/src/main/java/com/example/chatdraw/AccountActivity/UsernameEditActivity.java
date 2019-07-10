@@ -21,6 +21,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class UsernameEditActivity extends AppCompatActivity {
 
@@ -101,6 +102,9 @@ public class UsernameEditActivity extends AppCompatActivity {
     private boolean updateUser(String Uid, String username) {
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(Uid).child("username");
         databaseReference.setValue("@" + username);
+
+        FirebaseFirestore.getInstance().collection("Users").document(Uid).update("username", "@" + username);
+
 
         Toast.makeText(this, "Update Successfully", Toast.LENGTH_SHORT).show();
 

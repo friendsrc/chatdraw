@@ -17,6 +17,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class NameEditActivity extends AppCompatActivity {
 
@@ -85,6 +86,8 @@ public class NameEditActivity extends AppCompatActivity {
     private boolean updateUser(String Uid, String name) {
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(Uid).child("name");
         databaseReference.setValue(name);
+
+        FirebaseFirestore.getInstance().collection("Users").document(Uid).update("name", name);
 
         Toast.makeText(this, "Update Successfully", Toast.LENGTH_SHORT).show();
 

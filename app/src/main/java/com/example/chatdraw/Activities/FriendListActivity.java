@@ -30,6 +30,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.llollox.androidtoggleswitch.widgets.ToggleSwitch;
 
 import java.util.ArrayList;
 
@@ -40,11 +41,11 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
     private static final int FIND_FRIEND_REQUEST_CODE = 101;
 
     private RecyclerView recyclerView;
-    private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager layoutManager;
     private ArrayList<FriendListItem> myDataset;
-    private boolean isFriendsToggledOff = false;
-    private boolean isGroupToggledOff = false;
+
+    // Adapters for RecyclerView
+    private RecyclerView.Adapter mAdapter;
     private GroupListRecyclerViewAdapter mGroupAdapter;
 
     @Override
@@ -52,17 +53,18 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friend_list);
 
+        // set the RecyclerView
         recyclerView = findViewById(R.id.friend_list_recycler_view);
 
-        // use this setting to improve performance if you know that changes
-        // in content do not change the layout size of the RecyclerView
+        // use this setting to improve performance if changes in content do not change
+        // the layout size of the RecyclerView
         recyclerView.setHasFixedSize(true);
 
         // use a linear layout manager
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
-        // specify an adapter (see also next example)
+        // specify an adapter
         myDataset = new ArrayList<>();
         mAdapter = new RecyclerViewAdapter(myDataset, this, new RecyclerViewClickListener() {
             @Override
@@ -72,7 +74,7 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
         });
         recyclerView.setAdapter(mAdapter);
 
-        // Set the "add" button to go to the FindFriendActivity
+        // set the "add" button to go to the FindFriendActivity
         ImageView imageView = findViewById(R.id.add_friend_imageview);
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -94,48 +96,24 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
         // get Contacts list from Firebase
         getContacts();
 
-        LinearLayout groupToggle = findViewById(R.id.group_toggle);
-        groupToggle.setOnClickListener(new View.OnClickListener() {
+        // set toggle switch
+        ToggleSwitch toggleSwitch = findViewById(R.id.friend_list_toggleswitch);
+        final RecyclerView recyclerView = findViewById(R.id.friend_list_recycler_view);
+        toggleSwitch.setCheckedPosition(0);
+        toggleSwitch.setOnChangeListener(new ToggleSwitch.OnChangeListener() {
             @Override
-            public void onClick(View v) {
-                RecyclerView recyclerView = findViewById(R.id.friend_list_group_recycler_view);
-                ImageView arrow = findViewById(R.id.group_arrow);
-                if (isGroupToggledOff) {
+            public void onToggleSwitchChanged(int i) {
+                if (i == 1) {
                     recyclerView.setAdapter(mGroupAdapter);
-                    arrow.setImageResource(R.drawable.arrow_drop_up);
                 } else {
-                    ArrayList<NewFriendItem> emptyDataset = new ArrayList<>();
-                    final GroupListRecyclerViewAdapter adapter
-                            = new GroupListRecyclerViewAdapter(emptyDataset);
-                    recyclerView.setAdapter(adapter);
-                    arrow.setImageResource(R.drawable.arrow_drop_down);
+                    recyclerView.setAdapter(mAdapter);
                 }
-                isGroupToggledOff = !isGroupToggledOff;
             }
         });
 
-        LinearLayout friendToggle = findViewById(R.id.friend_toggle);
-        friendToggle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                RecyclerView recyclerView = findViewById(R.id.friend_list_recycler_view);
-                ImageView arrow = findViewById(R.id.friend_arrow);
-                if (isFriendsToggledOff) {
-                    recyclerView.setAdapter(mAdapter);
-                    arrow.setImageResource(R.drawable.arrow_drop_up);
-                } else {
-                    ArrayList<FriendListItem> emptyDataset = new ArrayList<>();
-                    final RecyclerViewAdapter adapter
-                            = new RecyclerViewAdapter(emptyDataset);
-                    recyclerView.setAdapter(adapter);
-                    arrow.setImageResource(R.drawable.arrow_drop_down);
-                }
-                isFriendsToggledOff = !isFriendsToggledOff;
-            }
-        });
+
     }
 
-    // create an action bar button
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.navbar_plain, menu);
@@ -149,14 +127,13 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
         return true;
     }
 
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FIND_FRIEND_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             final String uID = data.getStringExtra("uID");
+            recyclerView.setAdapter(mAdapter);
             addUserWithID(uID);
-
         }
     }
 
@@ -227,23 +204,11 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
             id = FirebaseAuth.getInstance().getCurrentUser().getUid();
         }
 
-        RecyclerView recyclerView = findViewById(R.id.friend_list_group_recycler_view);
-
-        // use this setting to improve performance if you know that changes
-        // in content do not change the layout size of the RecyclerView
-        recyclerView.setHasFixedSize(true);
-
-        // use a linear layout manager
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(layoutManager);
-
         // specify an adapter
         ArrayList<NewFriendItem> myDataset = new ArrayList<>();
         final GroupListRecyclerViewAdapter adapter
                 = new GroupListRecyclerViewAdapter(myDataset, FriendListActivity.this, this);
         mGroupAdapter = adapter;
-        recyclerView.setAdapter(adapter);
-
 
         FirebaseFirestore.getInstance().collection("Users").document(id)
                 .get()

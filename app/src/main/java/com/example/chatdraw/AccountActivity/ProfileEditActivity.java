@@ -60,6 +60,8 @@ import com.squareup.picasso.Picasso;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -202,13 +204,21 @@ public class ProfileEditActivity extends AppCompatActivity {
                     Activity activity = (Activity) preference.getContext();
                     GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(activity);
 
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("status", stringValue);
+
                     if (acct != null) {
                         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(acct.getId()).child("status");
                         databaseReference.setValue(stringValue);
+
+                        FirebaseFirestore.getInstance().collection("Users").document(acct.getId()).set(map);
+
                     } else {
                         final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(user.getUid()).child("status");
                         databaseReference.setValue(stringValue);
+
+                        FirebaseFirestore.getInstance().collection("Users").document(user.getUid()).set(map);
                     }
 
                 } else {

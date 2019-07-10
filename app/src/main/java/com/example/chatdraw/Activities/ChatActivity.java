@@ -42,28 +42,38 @@ import javax.annotation.Nullable;
 public class ChatActivity extends AppCompatActivity implements RecyclerViewClickListener, SwipeRefreshLayout.OnRefreshListener {
 
     private static String TAG = "ChatActivity";
-    private String friendsUID;
-    final String[] friendName = new String[1];
-    final String[] friendUsername = new String[1];
-    final String[] friendImageUrl = new String[1];
 
+    // this user's information
     private String userUID;
     final String[] userName = new String[1];
     final String[] userUsername = new String[1];
     final String[] userImageUrl = new String[1];
 
-    private RecyclerView mRecyclerView;
-    private ChatRecyclerViewAdapter mAdapter;
-    private ArrayList<ChatItem> myDataset;
-
-    SwipeRefreshLayout mSwipeRefreshLayout;
-
+    // to check if its a one-on-one or group chat
     private boolean isGroup = false;
+
+    // friend's information (if isGroup == false)
+    private String friendsUID;
+    final String[] friendName = new String[1];
+    final String[] friendUsername = new String[1];
+    final String[] friendImageUrl = new String[1];
+
+    // group's information (if isGroup == true)
     private String groupID;
     private String groupName;
     private String groupImageUrl;
     private ArrayList<String> membersID;
     private ArrayList<DocumentReference> membersPreview;
+
+    // RecyclerView
+    private RecyclerView mRecyclerView;
+    private ChatRecyclerViewAdapter mAdapter;
+    private ArrayList<ChatItem> myDataset;
+
+    // SwipeRefreshLayout
+    SwipeRefreshLayout mSwipeRefreshLayout;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
