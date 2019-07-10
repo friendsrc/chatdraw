@@ -52,6 +52,9 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = "MainActivity";
@@ -247,8 +250,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             DocumentSnapshot snapshot = task.getResult();
                             String uID = snapshot.getId();
                             String name = snapshot.getString("name");
+                            String username = snapshot.getString("username");
                             String imageUrl = snapshot.getString("imageUrl");
-                            updateListView(mFriendListAdapter, uID, name, "No messages yet.", imageUrl);
+
+                            ChatItem chatItem = new ChatItem("No messages yet.",
+                                    uID, name, username, imageUrl,
+                                    userUID, null, null, null);
+
+                            FirebaseFirestore.getInstance().collection("Previews")
+                                    .document(userUID).collection("ChatPreviews")
+                                    .document(uID).set(chatItem);
                         }
                     });
         } else if (requestCode == NEW_MESSAGE_REQUEST_CODE && resultCode == 55) {
