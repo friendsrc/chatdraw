@@ -52,6 +52,7 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -91,6 +92,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
         final View hView = navigationView.getHeaderView(0);
+
+        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(MainActivity.this);
+        if (acct != null) {
+            userUID = acct.getId();
+        } else {
+            if (userUID == null) {
+                userUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            }
+        }
 
         reference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -191,9 +201,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void onResume() {
         super.onResume();
-
-        // get Messages Previews from Firestore
-        getMessageList(mFriendListAdapter);
+        FirebaseFirestore.getInstance().collection("Users")
+                .document(userUID)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        ArrayList<String> groups = (ArrayList<String>) task.getResult().get("groups");
+                        // add change listener for groups
+                        for (String s : groups) {
+                            addListener(s);
+                        }
+                        // add the message previews to RecyclerView
+                        getMessageList(mFriendListAdapter);
+                    }
+                });
 
         // set on click listener to the ListView
         ListView listView = findViewById(R.id.main_chat_listview);
@@ -263,23 +285,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         }
                     });
         } else if (requestCode == NEW_MESSAGE_REQUEST_CODE && resultCode == 55) {
-//            String groupID = data.getStringExtra("groupID");
-//            String groupName = data.getStringExtra("groupName");
-//            String groupImageUrl = data.getStringExtra("groupImageUrl");
+            // has intent with string extras: groupID, groupName, and groupImageUrl
         }
-    }
-
-    public void updateListView(FriendListAdapter friendListAdapter, String uID, String name, String messagePreview, String imageUrl) {
-        Log.d("HEY", "updating with id = " + uID);
-        // find the friend list ListView
-        ListView listView = findViewById(R.id.main_chat_listview);
-
-        // Instantiate a new FriendListItem and add it to the custom adapter
-        FriendListItem newFriend = new FriendListItem(name, messagePreview, uID, imageUrl);
-        friendListAdapter.addAdapterItem(newFriend);
-
-        // set the adapter to the ListView
-        listView.setAdapter(friendListAdapter);
     }
 
     @Override
@@ -294,15 +301,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void getMessageList(final FriendListAdapter friendListAdapter) {
         // clear previous data from ListView Adapter
         mFriendListAdapter.clearData();
-
-        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(MainActivity.this);
-        if (acct != null) {
-            userUID = acct.getId();
-        } else {
-            if (userUID == null) {
-                userUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            }
-        }
 
         // get list of message previews from Firestore and update ListView
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -339,6 +337,34 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             FriendListItem friendListItem = new FriendListItem(name, lastMessage, uId, imageUrl);
                             friendListAdapter.addAdapterItem(friendListItem);
                             friendListAdapter.notifyDataSetChanged();
+                        }
+                    }
+                });
+    }
+
+    public void addListener(final String groupID) {
+        final ChatItem[] chatItem = new ChatItem[1];
+        FirebaseFirestore.getInstance()
+                .collection("GroupMessages")
+                .document(groupID)
+                .collection("ChatHistory")
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .limit(1)
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                        if (!queryDocumentSnapshots.isEmpty()) {
+                            chatItem[0] = queryDocumentSnapshots.getDocuments().get(0).toObject(ChatItem.class);
+                            if (chatItem[0].getMessageBody().length() > 43) {
+                                chatItem[0].setMessageBody(chatItem[0]
+                                        .getMessageBody().substring(0, 40) + "...");
+                            }
+                            FirebaseFirestore.getInstance()
+                                    .collection("Previews")
+                                    .document(userUID)
+                                    .collection("ChatPreviews")
+                                    .document(groupID)
+                                    .set(chatItem[0]);
                         }
                     }
                 });

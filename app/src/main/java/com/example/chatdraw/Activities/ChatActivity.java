@@ -67,7 +67,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
     private String groupName;
     private String groupImageUrl;
     private LinkedList<String> membersID;
-    private LinkedList<DocumentReference> membersPreview;
+//    private LinkedList<DocumentReference> membersPreview;
 
     // RecyclerView
     private RecyclerView mRecyclerView;
@@ -255,27 +255,8 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                 // Send to group's preview collection
                 if (chatItem.getMessageBody().length() > 43) {
                     chatItem.setMessageBody(chatItem.getMessageBody().substring(0, 40) + "...");
-                    chatItem.setSenderID(groupID);
-                    chatItem.setSenderName(groupName);
-                    chatItem.setSenderImageUrl(groupImageUrl);
-                    chatItem.setReceiverImageUrl(groupImageUrl);
                 }
 
-                //  If not yet done, add the document reference of each member's preview to
-                //  membersPreview LinkedList
-                if (membersPreview == null) {
-                    membersPreview = new LinkedList<>();
-                    CollectionReference previews = db.collection("Previews");
-                    for (String s: membersID) {
-                        membersPreview.add(previews.document(s)
-                                .collection("ChatPreviews").document(groupID));
-                    }
-                }
-
-                // Set the chat preview of each member to be the newest ChatItem
-                for (DocumentReference d: membersPreview) {
-                    d.set(chatItem);
-                }
             }
         }
     }
