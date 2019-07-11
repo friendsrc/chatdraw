@@ -4,31 +4,29 @@ import android.app.Activity;
 import android.content.Intent;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
-import android.widget.AdapterView;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ListView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.chatdraw.Adapters.NewFriendAdapter;
 import com.example.chatdraw.R;
-import com.example.chatdraw.Items.NewFriendItem;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -38,7 +36,6 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 
 public class FindFriendActivity extends AppCompatActivity {
-
     private static String TAG = "FindFriendActivity";
 
     private ImageView newImageView;
@@ -78,15 +75,31 @@ public class FindFriendActivity extends AppCompatActivity {
                             @Override
                             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                 if (task.isSuccessful()) {
-                                    String id;
+                                    final String currentUserID;
                                     GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(FindFriendActivity.this);
+
                                     if (acct != null) {
-                                        id = acct.getId();
+                                        currentUserID = acct.getId();
                                     } else {
-                                        id = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                                        FirebaseUser fbUser = FirebaseAuth.getInstance().getCurrentUser();
+                                        if (fbUser != null) {
+                                            currentUserID = fbUser.getUid();
+                                        } else {
+                                            Toast.makeText(FindFriendActivity.this, "User is not validated!", Toast.LENGTH_SHORT).show();
+                                            return;
+                                        }
                                     }
-                                    final String currentUserID = id;
-                                    for (QueryDocumentSnapshot document : task.getResult()) {
+
+                                    QuerySnapshot result = task.getResult();
+
+                                    if (currentUserID == null) {
+                                        Toast.makeText(FindFriendActivity.this, "User is not validated!", Toast.LENGTH_SHORT).show();
+                                        return;
+                                    } else if (result == null) {
+                                        return;
+                                    }
+
+                                    for (QueryDocumentSnapshot document : result) {
                                         final String uID = document.getId();
                                         FirebaseFirestore.getInstance()
                                                 .collection("Users")
@@ -135,8 +148,13 @@ public class FindFriendActivity extends AppCompatActivity {
         // set the action bar
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
-        getSupportActionBar().setTitle("Find Friends");
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        ActionBar actionBar = getSupportActionBar();
+
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setTitle("Find friends");
+        }
 
         final EditText editText = findViewById(R.id.find_friend_edittext);
         ImageView searchButton = findViewById(R.id.find_friend_search_button);
@@ -145,7 +163,7 @@ public class FindFriendActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String str = editText.getText().toString();
                 if (!str.trim().equals("")) {
-                    // find user and update listview
+                    // find user and update list view
                     findUserInDatabase(str.trim());
                 }
             }
@@ -177,31 +195,61 @@ public class FindFriendActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Log.d(TAG, document.getId() + " => " + document.getData());
+                            LinearLayout myLayout = (LinearLayout)findViewById(R.id.find_friend_layout);
+                            QuerySnapshot result = task.getResult();
 
-                                String name = document.getString("name");
-                                newUsername = document.getString("username");
-                                String imgUrl = document.getString("imageUrl");
+                            if (result == null) {
+                                return;
+                            }
 
-                                if (name == null) {
-                                    name = "Anonymous";
-                                    newTextView.setTextColor(getResources().getColor(R.color.pLight));
+                            if (result.size() == 0) {
+                                try {
+                                    newTextView.setVisibility(View.VISIBLE);
+                                    newTextView.setText(R.string.record_not_found);
+                                    newImageView.setVisibility(View.INVISIBLE);
+                                    newButton.setVisibility(View.INVISIBLE);
+
+                                    // close the user keyboard
+                                    InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+                                    imm.hideSoftInputFromWindow(myLayout.getWindowToken(), 0);
+                                } catch (Exception e) {
+                                    // TODO: handle exception
                                 }
-                                newTextView.setText(name);
-                                if (imgUrl != null) {
-                                    Picasso.get()
-                                            .load(imgUrl)
-                                            .fit()
-                                            .into(newImageView);
-                                } else {
-                                    newImageView.setImageResource(R.drawable.blank_account);
+
+                            } else {
+                                for (QueryDocumentSnapshot document : result) {
+                                    Log.d(TAG, document.getId() + " => " + document.getData());
+
+                                    String name = document.getString("name");
+                                    newUsername = document.getString("username");
+                                    String imgUrl = document.getString("imageUrl");
+
+                                    if (name == null) {
+                                        name = "Anonymous";
+                                        newTextView.setTextColor(getResources().getColor(R.color.pLight));
+                                    }
+                                    newTextView.setText(name);
+                                    if (imgUrl != null) {
+                                        Picasso.get()
+                                                .load(imgUrl)
+                                                .fit()
+                                                .into(newImageView);
+                                    } else {
+                                        newImageView.setImageResource(R.drawable.blank_account);
+                                    }
+
+                                    // close the user keyboard
+                                    try {
+                                        InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+                                        imm.hideSoftInputFromWindow(myLayout.getWindowToken(), 0);
+                                    } catch (Exception e) {
+                                        // TODO: handle exception
+                                    }
+
+                                    newImageView.setVisibility(View.VISIBLE);
+                                    newTextView.setVisibility(View.VISIBLE);
+                                    newButton.setVisibility(View.VISIBLE);
                                 }
-
-                                newImageView.setVisibility(View.VISIBLE);
-                                newTextView.setVisibility(View.VISIBLE);
-                                newButton.setVisibility(View.VISIBLE);
-
                             }
                         } else {
                             Log.w(TAG, "Error getting documents.", task.getException());

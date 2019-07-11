@@ -242,6 +242,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Intent intent  = new Intent(this, FriendListActivity.class);
                 startActivity(intent);
                 break;
+            case R.id.nav_group:
+                Intent intent_group = new Intent(this, NewGroupActivity.class);
+                startActivity(intent_group);
+                break;
             case R.id.nav_invites:
                 Toast.makeText(this,"Not yet configured", Toast.LENGTH_SHORT).show();
                 break;

@@ -156,4 +156,6 @@
     <string name="chatdraw_version">1.0</string>
     <string name="copyright">&#169; 2019 Chatdraw app</string>
 
+    <!-- Find friends Activity -->
+    <string name="record_not_found">Record not found!</string>
 </resources>

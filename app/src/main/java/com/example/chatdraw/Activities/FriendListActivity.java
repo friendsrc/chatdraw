@@ -5,6 +5,7 @@ import android.content.Intent;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -14,7 +15,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.example.chatdraw.Adapters.GroupListRecyclerViewAdapter;
 import com.example.chatdraw.Items.NewFriendItem;
@@ -27,6 +28,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -87,8 +89,12 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
         // set the Action Bar title
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
-        getSupportActionBar().setTitle("Contacts");
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setTitle("Contacts");
+        }
 
         // get Groups list from Firebase
         getGroups();
@@ -131,6 +137,10 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FIND_FRIEND_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            if (data == null) {
+                return;
+            }
+
             final String uID = data.getStringExtra("uID");
             recyclerView.setAdapter(mAdapter);
             addUserWithID(uID);
@@ -144,6 +154,11 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         DocumentSnapshot doc = task.getResult();
+
+                        if (doc == null) {
+                            return;
+                        }
+
                         String name = (String) doc.get("name");
                         String status = (String) doc.get("status");
                         String imageURL = (String) doc.get("imageUrl");
@@ -161,8 +176,18 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                         if (acct != null) {
                             currentUserID = acct.getId();
                         } else {
-                            currentUserID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                            FirebaseUser fbUser = FirebaseAuth.getInstance().getCurrentUser();
+                            if (fbUser != null) {
+                                currentUserID = fbUser.getUid();
+                            } else {
+                                return;
+                            }
                         }
+
+                        if (currentUserID == null) {
+                            return;
+                        }
+
                         FirebaseFirestore.getInstance().collection("Users")
                                 .document(currentUserID)
                                 .update("contacts", FieldValue.arrayUnion(uID));
@@ -176,7 +201,17 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
         if (acct != null) {
             id = acct.getId();
         } else {
-            id = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            FirebaseUser fbUser = FirebaseAuth.getInstance().getCurrentUser();
+            if (fbUser != null) {
+                id = fbUser.getUid();
+            } else {
+                Toast.makeText(FriendListActivity.this, "User is not validated!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+
+        if (id == null) {
+            return;
         }
 
         FirebaseFirestore.getInstance().collection("Users").document(id)
@@ -201,7 +236,17 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
         if (acct != null) {
             id = acct.getId();
         } else {
-            id = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            FirebaseUser fbUser = FirebaseAuth.getInstance().getCurrentUser();
+            if (fbUser != null) {
+                id = fbUser.getUid();
+            } else {
+                Toast.makeText(FriendListActivity.this, "User is not validated!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+
+        if (id == null) {
+            return;
         }
 
         // specify an adapter
@@ -226,6 +271,10 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                                             @Override
                                             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                                                 DocumentSnapshot doc = task.getResult();
+                                                if (doc == null) {
+                                                    return;
+                                                }
+
                                                 String name = (String) doc.get("groupName");
                                                 String imageURL = (String) doc.get("groupImageUrl");
 

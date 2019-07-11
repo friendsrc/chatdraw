@@ -29,7 +29,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 // Handle message within 10 seconds
                 handleNow();
             }
-
         }
 
         // Check if message contains a notification payload.
@@ -48,7 +47,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private void handleNow() {
         //  TODO: handleNow()
     }
-
 
     /**
      * Called if InstanceID token is updated. This may occur if the security of
@@ -80,5 +78,4 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Log.e(TAG, "onSendError ", exception );
         super.onSendError(msgID, exception);
     }
-
 }
