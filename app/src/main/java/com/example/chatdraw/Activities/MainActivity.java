@@ -209,8 +209,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         ArrayList<String> groups = (ArrayList<String>) task.getResult().get("groups");
                         // add change listener for groups
-                        for (String s : groups) {
-                            addListener(s);
+                        if (groups != null && !groups.isEmpty()) {
+                            for (String s : groups) {
+                                addListener(s);
+                            }
                         }
                         // add the message previews to RecyclerView
                         getMessageList(mFriendListAdapter);
