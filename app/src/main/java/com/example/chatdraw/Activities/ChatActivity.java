@@ -28,14 +28,18 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 
 import javax.annotation.Nullable;
 
@@ -52,7 +56,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
     // to check if its a one-on-one or group chat
     private boolean isGroup = false;
 
-    // friend's information (if isGroup == false)
+    // friend's information (used if isGroup == false)
     private String friendsUID;
     final String[] friendName = new String[1];
     final String[] friendUsername = new String[1];
@@ -62,18 +66,21 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
     private String groupID;
     private String groupName;
     private String groupImageUrl;
-    private ArrayList<String> membersID;
-    private ArrayList<DocumentReference> membersPreview;
+    private LinkedList<String> membersID;
+    private LinkedList<DocumentReference> membersPreview;
 
     // RecyclerView
     private RecyclerView mRecyclerView;
     private ChatRecyclerViewAdapter mAdapter;
-    private ArrayList<ChatItem> myDataset;
+    private LinkedList<ChatItem> myDataset;
 
     // SwipeRefreshLayout
     SwipeRefreshLayout mSwipeRefreshLayout;
 
-
+    // for data pagination
+    DocumentSnapshot lastSnapshot;
+    int docsPerRetrieval = 500;
+    int docsOnScreen = docsPerRetrieval;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +98,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
         mRecyclerView.setLayoutManager(layoutManager);
 
         // specify an adapter
-        myDataset = new ArrayList<>();
+        myDataset = new LinkedList<>();
         mAdapter = new ChatRecyclerViewAdapter(myDataset, ChatActivity.this, this);
         mRecyclerView.setAdapter(mAdapter);
 
@@ -157,7 +164,9 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                         @Override
                         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                             DocumentSnapshot snapshot = task.getResult();
-                            membersID = (ArrayList<String>) snapshot.get("members");
+                            ArrayList<String> arr = (ArrayList<String>) snapshot.get("members");
+                            membersID = new LinkedList<>();
+                            membersID.addAll(arr);
                             groupName = snapshot.getString("groupName");
                             groupImageUrl = snapshot.getString("groupImageUrl");
                             getMessages();
@@ -198,6 +207,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
 
     // send the ChatItem to Firebase
     private void sendMessage(ChatItem chatItem) {
+        docsOnScreen++;
         Log.d(TAG, "sending Message");
         if (!chatItem.getMessageBody().equals("")) {
             FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -252,9 +262,9 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                 }
 
                 //  If not yet done, add the document reference of each member's preview to
-                //  membersPreview ArrayList
+                //  membersPreview LinkedList
                 if (membersPreview == null) {
-                    membersPreview = new ArrayList<>();
+                    membersPreview = new LinkedList<>();
                     CollectionReference previews = db.collection("Previews");
                     for (String s: membersID) {
                         membersPreview.add(previews.document(s)
@@ -278,14 +288,15 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                     .collection("Friends")
                     .document(friendsUID)
                     .collection("ChatHistory")
-                    .orderBy("timestamp")
+                    .orderBy("timestamp", Query.Direction.DESCENDING)
+                    .limit(docsOnScreen)
                     .addSnapshotListener(new EventListener<QuerySnapshot>() {
                         @Override
                         public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
                             // remove previous data
                             mAdapter.clearData();
                             for (DocumentSnapshot q: queryDocumentSnapshots) {
-                                // turn each DocumentSnapshot into a ChatItem
+                                lastSnapshot = q;
                                 ChatItem chatItem = q.toObject(ChatItem.class);
 
                                 if (chatItem != null && !chatItem.getSenderID().equals(userUID)) {
@@ -301,12 +312,14 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
             db.collection("GroupMessages")
                     .document(groupID)
                     .collection("ChatHistory")
-                    .orderBy("timestamp")
+                    .orderBy("timestamp", Query.Direction.DESCENDING)
+                    .limit(docsOnScreen)
                     .addSnapshotListener(new EventListener<QuerySnapshot>() {
                         @Override
                         public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
                             mAdapter.clearData();
                             for (DocumentSnapshot q: queryDocumentSnapshots) {
+                                lastSnapshot = q;
                                 ChatItem chatItem = q.toObject(ChatItem.class);
 
                                 if (chatItem != null && !chatItem.getSenderID().equals(userUID)) {
@@ -347,12 +360,73 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
     @Override
     public void onRefresh() {
         //TODO: paginate data
-        Toast.makeText(this, "Refresh not yet configured", Toast.LENGTH_SHORT).show();
+        getOlderMessages();
         mSwipeRefreshLayout.setRefreshing(false);
     }
 
     @Override
     public void recyclerViewListClicked(View v, int position){
         // TODO: add delete/copy option
+    }
+
+    public void getOlderMessages() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        if (!isGroup) {
+            db.collection("Messages")
+                    .document(userUID)
+                    .collection("Friends")
+                    .document(friendsUID)
+                    .collection("ChatHistory")
+                    .orderBy("timestamp", Query.Direction.DESCENDING)
+                    .startAfter(lastSnapshot)
+                    .limit(docsPerRetrieval)
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                            if (queryDocumentSnapshots.isEmpty()) {
+                                Toast.makeText(ChatActivity.this,
+                                        "No older messages.", Toast.LENGTH_SHORT).show();
+                            }
+                            for (DocumentSnapshot q: queryDocumentSnapshots) {
+                                lastSnapshot = q;
+                                ChatItem chatItem = q.toObject(ChatItem.class);
+
+                                if (chatItem != null && !chatItem.getSenderID().equals(userUID)) {
+                                    String updatedImageURL = friendImageUrl[0];
+                                    chatItem.setSenderImageUrl(updatedImageURL);
+                                }
+                                mAdapter.addData(chatItem);
+                                mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
+                            }
+                        }
+                    });
+        } else { // if its not a group
+            db.collection("GroupMessages")
+                    .document(groupID)
+                    .collection("ChatHistory")
+                    .orderBy("timestamp", Query.Direction.DESCENDING)
+                    .startAfter(lastSnapshot)
+                    .limit(docsPerRetrieval)
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                            if (queryDocumentSnapshots.isEmpty()) {
+                                Toast.makeText(ChatActivity.this,
+                                        "No older messages.", Toast.LENGTH_SHORT).show();
+                            }
+                            for (DocumentSnapshot q: queryDocumentSnapshots) {
+                                lastSnapshot = q;
+                                ChatItem chatItem = q.toObject(ChatItem.class);
+
+                                if (chatItem != null && !chatItem.getSenderID().equals(userUID)) {
+                                    String updatedImageURL = friendImageUrl[0];
+                                    chatItem.setSenderImageUrl(updatedImageURL);
+                                }
+                                mAdapter.addData(chatItem);
+                                mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
+                            }
+                        }
+                    });
+        }
     }
 }

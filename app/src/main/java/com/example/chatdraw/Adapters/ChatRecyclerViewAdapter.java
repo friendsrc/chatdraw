@@ -17,10 +17,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.firebase.auth.FirebaseAuth;
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.MyViewHolder> {
-    private ArrayList<ChatItem> mDataset;
+    private LinkedList<ChatItem> mDataset;
     private Context context;
     private static RecyclerViewClickListener itemListener;
     private String userId;
@@ -44,11 +44,11 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAd
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public ChatRecyclerViewAdapter(ArrayList<ChatItem> myDataset) {
+    public ChatRecyclerViewAdapter(LinkedList<ChatItem> myDataset) {
         mDataset = myDataset;
     }
 
-    public ChatRecyclerViewAdapter(ArrayList<ChatItem> myDataset, Context context, RecyclerViewClickListener listener) {
+    public ChatRecyclerViewAdapter(LinkedList<ChatItem> myDataset, Context context, RecyclerViewClickListener listener) {
         mDataset = myDataset;
         this.context = context;
         itemListener = listener;
@@ -130,12 +130,12 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAd
     }
 
     public void clearData() {
-        mDataset = new ArrayList<>();
+        mDataset = new LinkedList<>();
         notifyDataSetChanged();
     }
 
     public void addData(ChatItem chatItem) {
-        mDataset.add(chatItem);
+        mDataset.addFirst(chatItem);
         notifyDataSetChanged();
     }
 
