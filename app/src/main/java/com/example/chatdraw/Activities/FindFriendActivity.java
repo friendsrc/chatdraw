@@ -20,6 +20,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.chatdraw.AccountActivity.User;
 import com.example.chatdraw.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -27,6 +28,11 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -34,6 +40,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class FindFriendActivity extends AppCompatActivity {
     private static String TAG = "FindFriendActivity";
@@ -188,74 +195,132 @@ public class FindFriendActivity extends AppCompatActivity {
 
         if (text.length() < 2) return;
 
-        FirebaseFirestore.getInstance().collection("Users")
-                .whereEqualTo("username", text)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        database.getReference("Users")
+                .orderByChild("username")
+                .equalTo(text)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            LinearLayout myLayout = (LinearLayout)findViewById(R.id.find_friend_layout);
-                            QuerySnapshot result = task.getResult();
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if (!dataSnapshot.exists()) {
+                            newImageView.setVisibility(View.INVISIBLE);
+                            newTextView.setVisibility(View.INVISIBLE);
+                            newButton.setVisibility(View.INVISIBLE);
+                            Toast.makeText(FindFriendActivity.this,
+                                    "User not found", Toast.LENGTH_SHORT).show();
+                            return;
+                        } else {
+                            for (DataSnapshot o : dataSnapshot.getChildren()) {
+                                User addedUser = o.getValue(User.class);
+                                String name = addedUser.getName();
+                                newUsername = addedUser.getUsername();
+                                String imgUrl = addedUser.getImageUrl();
 
-                            if (result == null) {
-                                return;
-                            }
+                                if (name == null) {
+                                    name = "Anonymous";
+                                    newTextView.setTextColor(getResources().getColor(R.color.pLight));
+                                }
+                                newTextView.setText(name);
+                                if (imgUrl != null) {
+                                    Picasso.get()
+                                            .load(imgUrl)
+                                            .fit()
+                                            .into(newImageView);
+                                } else {
+                                    newImageView.setImageResource(R.drawable.blank_account);
+                                }
 
-                            if (result.size() == 0) {
+                                // close the user keyboard
                                 try {
-                                    newTextView.setVisibility(View.VISIBLE);
-                                    newTextView.setText(R.string.record_not_found);
-                                    newImageView.setVisibility(View.INVISIBLE);
-                                    newButton.setVisibility(View.INVISIBLE);
-
-                                    // close the user keyboard
                                     InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+                                    LinearLayout myLayout = findViewById(R.id.find_friend_layout);
                                     imm.hideSoftInputFromWindow(myLayout.getWindowToken(), 0);
                                 } catch (Exception e) {
                                     // TODO: handle exception
                                 }
 
-                            } else {
-                                for (QueryDocumentSnapshot document : result) {
-                                    Log.d(TAG, document.getId() + " => " + document.getData());
-
-                                    String name = document.getString("name");
-                                    newUsername = document.getString("username");
-                                    String imgUrl = document.getString("imageUrl");
-
-                                    if (name == null) {
-                                        name = "Anonymous";
-                                        newTextView.setTextColor(getResources().getColor(R.color.pLight));
-                                    }
-                                    newTextView.setText(name);
-                                    if (imgUrl != null) {
-                                        Picasso.get()
-                                                .load(imgUrl)
-                                                .fit()
-                                                .into(newImageView);
-                                    } else {
-                                        newImageView.setImageResource(R.drawable.blank_account);
-                                    }
-
-                                    // close the user keyboard
-                                    try {
-                                        InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
-                                        imm.hideSoftInputFromWindow(myLayout.getWindowToken(), 0);
-                                    } catch (Exception e) {
-                                        // TODO: handle exception
-                                    }
-
-                                    newImageView.setVisibility(View.VISIBLE);
-                                    newTextView.setVisibility(View.VISIBLE);
-                                    newButton.setVisibility(View.VISIBLE);
-                                }
+                                newImageView.setVisibility(View.VISIBLE);
+                                newTextView.setVisibility(View.VISIBLE);
+                                newButton.setVisibility(View.VISIBLE);
                             }
-                        } else {
-                            Log.w(TAG, "Error getting documents.", task.getException());
                         }
                     }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
                 });
+
+
+//        FirebaseFirestore.getInstance().collection("Users")
+//                .whereEqualTo("username", text)
+//                .get()
+//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                        if (task.isSuccessful()) {
+//                            LinearLayout myLayout = (LinearLayout)findViewById(R.id.find_friend_layout);
+//                            QuerySnapshot result = task.getResult();
+//
+//                            if (result == null) {
+//                                return;
+//                            }
+//
+//                            if (result.size() == 0) {
+//                                try {
+//                                    newTextView.setVisibility(View.VISIBLE);
+//                                    newTextView.setText(R.string.record_not_found);
+//                                    newImageView.setVisibility(View.INVISIBLE);
+//                                    newButton.setVisibility(View.INVISIBLE);
+//
+//                                    // close the user keyboard
+//                                    InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+//                                    imm.hideSoftInputFromWindow(myLayout.getWindowToken(), 0);
+//                                } catch (Exception e) {
+//                                    // TODO: handle exception
+//                                }
+//
+//                            } else {
+//                                for (QueryDocumentSnapshot document : result) {
+//                                    Log.d(TAG, document.getId() + " => " + document.getData());
+//
+//                                    String name = document.getString("name");
+//                                    newUsername = document.getString("username");
+//                                    String imgUrl = document.getString("imageUrl");
+//
+//                                    if (name == null) {
+//                                        name = "Anonymous";
+//                                        newTextView.setTextColor(getResources().getColor(R.color.pLight));
+//                                    }
+//                                    newTextView.setText(name);
+//                                    if (imgUrl != null) {
+//                                        Picasso.get()
+//                                                .load(imgUrl)
+//                                                .fit()
+//                                                .into(newImageView);
+//                                    } else {
+//                                        newImageView.setImageResource(R.drawable.blank_account);
+//                                    }
+//
+//                                    // close the user keyboard
+//                                    try {
+//                                        InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+//                                        imm.hideSoftInputFromWindow(myLayout.getWindowToken(), 0);
+//                                    } catch (Exception e) {
+//                                        // TODO: handle exception
+//                                    }
+//
+//                                    newImageView.setVisibility(View.VISIBLE);
+//                                    newTextView.setVisibility(View.VISIBLE);
+//                                    newButton.setVisibility(View.VISIBLE);
+//                                }
+//                            }
+//                        } else {
+//                            Log.w(TAG, "Error getting documents.", task.getException());
+//                        }
+//                    }
+//                });
 
     }
 

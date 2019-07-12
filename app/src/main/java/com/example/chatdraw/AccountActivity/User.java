@@ -1,5 +1,7 @@
 package com.example.chatdraw.AccountActivity;
 
+import androidx.annotation.NonNull;
+
 public class User {
     public String email, name, username, imageUrl;
 
@@ -47,4 +49,10 @@ public class User {
     }
 
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "User " + this.name + " with username " + this.username + " and imageUrl " + this.imageUrl;
+    }
 }
