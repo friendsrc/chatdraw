@@ -106,10 +106,11 @@ public class SettingsActivity extends AppCompatActivity {
         btnChangePassword.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            password.setVisibility(View.VISIBLE);
-            newPassword.setVisibility(View.VISIBLE);
-            changePassword.setVisibility(View.VISIBLE);
-            btnChangePassword.setVisibility(View.GONE);
+                newPassword.setVisibility(View.VISIBLE);
+                password.setVisibility(View.VISIBLE);
+                newPassword.setFocusable(true);
+                changePassword.setVisibility(View.VISIBLE);
+                btnChangePassword.setVisibility(View.GONE);
             }
         });
 
@@ -142,6 +143,14 @@ public class SettingsActivity extends AppCompatActivity {
                             if (task.isSuccessful()) {
                                 Toast.makeText(SettingsActivity.this, "Password is updated, sign in with new password!", Toast.LENGTH_SHORT).show();
                                 signOut();
+
+                                Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                                        Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                                        Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+                                finish();
+
                                 progressBar.setVisibility(View.GONE);
                             } else {
                                 Toast.makeText(SettingsActivity.this, "Failed to update password!", Toast.LENGTH_SHORT).show();
@@ -264,15 +273,24 @@ public class SettingsActivity extends AppCompatActivity {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             Toast.makeText(SettingsActivity.this, "Signed out successfully", Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(SettingsActivity.this, LoginActivity.class));
+                            Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                                    Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                                    Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
                             finish();
                         }
                     });
         } else {
             auth.signOut();
 
-            startActivity(new Intent(SettingsActivity.this, LoginActivity.class));
+            Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                    Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                    Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
             finish();
+
             // this listener will be called when there is change in firebase user session
 //            FirebaseAuth.AuthStateListener authListener = new FirebaseAuth.AuthStateListener() {
 //                @Override

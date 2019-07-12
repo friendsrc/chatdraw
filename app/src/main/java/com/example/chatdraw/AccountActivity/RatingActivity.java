@@ -6,6 +6,7 @@ import androidx.appcompat.widget.Toolbar;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
@@ -48,15 +49,15 @@ public class RatingActivity extends AppCompatActivity {
             @Override
             public void onRatingChanged(RatingBar ratingBar, float rating, boolean b) {
                 if (rating >= 4) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse(
-                            "https://play.google.com/store/apps/details?id=com.example.chatdraw&reviewId=0"));
-                    startActivity(intent);
-
                     ratingThankyou.setVisibility(View.VISIBLE);
                     commentHeader.setVisibility(View.GONE);
                     commentSection.setVisibility(View.GONE);
                     submitButton.setVisibility(View.GONE);
+
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse(
+                            "https://play.google.com/store/apps/details?id=com.example.chatdraw&reviewId=0"));
+                    startActivity(intent);
                 } else {
                     ratingThankyou.setVisibility(View.GONE);
                     commentHeader.setVisibility(View.VISIBLE);

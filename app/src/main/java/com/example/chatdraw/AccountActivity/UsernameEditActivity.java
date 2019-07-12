@@ -35,7 +35,7 @@ public class UsernameEditActivity extends AppCompatActivity {
         username_butt.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
-                final String username = inputUsername.getText().toString().trim();
+                final String username = inputUsername.getText().toString().trim().toLowerCase();
 
                 if (username.length() < 3) {
                     inputUsername.setError(getString(R.string.short_username));

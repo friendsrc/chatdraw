@@ -167,6 +167,7 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                         if (status == null) status = "";
 
                         FriendListItem newFriend = new FriendListItem(name, status, uID ,imageURL);
+
                         myDataset.add(newFriend);
                         mAdapter.notifyDataSetChanged();
 
@@ -188,6 +189,9 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                             return;
                         }
 
+                        // Returns a special value that can be used with set() or update() that
+                        // tells the server to union the given elements with any array value
+                        // that already exists on the server.
                         FirebaseFirestore.getInstance().collection("Users")
                                 .document(currentUserID)
                                 .update("contacts", FieldValue.arrayUnion(uID));
