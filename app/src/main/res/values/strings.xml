@@ -158,4 +158,10 @@
 
     <!-- Find friends Activity -->
     <string name="record_not_found">Record not found!</string>
+
+    <!-- Invite Friends Activity -->
+    <string name="invite_friend_title">Share this invitation link to your friends:</string>
+    <string name="invite_link">https://chatdraw.page.link/app</string>
+    <string name="copy_button">Copy</string>
+    <string name="invite_share">Share to friends</string>
 </resources>

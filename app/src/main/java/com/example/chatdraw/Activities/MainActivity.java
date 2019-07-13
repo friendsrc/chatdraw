@@ -247,7 +247,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 startActivity(intent_group);
                 break;
             case R.id.nav_invites:
-                Toast.makeText(this,"Not yet configured", Toast.LENGTH_SHORT).show();
+                Intent intent_invite = new Intent(this, InviteFriendActivity.class);
+                startActivity(intent_invite);
                 break;
             case R.id.nav_settings:
                 Intent intent_settings = new Intent(this, ProfileEditActivity.class);
