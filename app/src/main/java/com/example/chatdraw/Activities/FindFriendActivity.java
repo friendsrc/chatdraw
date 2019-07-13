@@ -30,7 +30,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -40,7 +39,6 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 public class FindFriendActivity extends AppCompatActivity {
     private static String TAG = "FindFriendActivity";
@@ -75,78 +73,66 @@ public class FindFriendActivity extends AppCompatActivity {
                 final Intent intent = new Intent();
 
                 // get new friend's uID, add to intent, and then destroy this activity
-                FirebaseFirestore.getInstance().collection("Users")
-                        .whereEqualTo("username", newUsername)
-                        .get()
-                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                database.getReference("Users")
+                        .orderByChild("username")
+                        .equalTo(newUsername)
+                        .addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
-                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                if (task.isSuccessful()) {
-                                    final String currentUserID;
-                                    GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(FindFriendActivity.this);
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.exists()) {
+                                    for (DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
+                                        final String uID = userSnapshot.getKey();
+                                        final String currentUserID = getCurrentUid();
 
-                                    if (acct != null) {
-                                        currentUserID = acct.getId();
-                                    } else {
-                                        FirebaseUser fbUser = FirebaseAuth.getInstance().getCurrentUser();
-                                        if (fbUser != null) {
-                                            currentUserID = fbUser.getUid();
-                                        } else {
+                                        if (currentUserID.equals("")) {
                                             Toast.makeText(FindFriendActivity.this, "User is not validated!", Toast.LENGTH_SHORT).show();
-                                            return;
+                                        } else {
+                                            FirebaseFirestore.getInstance()
+                                                    .collection("Users")
+                                                    .document(currentUserID)
+                                                    .get()
+                                                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                                            ArrayList<String> contacts
+                                                                    = (ArrayList<String>)
+                                                                    task.getResult().get("contacts");
+                                                            // if the chosen contact already exist in
+                                                            // this user's contacts list, make a toast
+                                                            if (contacts != null && contacts.contains(uID)) {
+                                                                Toast.makeText(
+                                                                        FindFriendActivity.this,
+                                                                        "Already in Contacts",
+                                                                        Toast.LENGTH_SHORT
+                                                                ).show();
+                                                            } else if (uID.equals(currentUserID)) {
+                                                                Toast.makeText(
+                                                                        FindFriendActivity.this,
+                                                                        "Can't add your own account",
+                                                                        Toast.LENGTH_SHORT
+                                                                ).show();
+                                                            } else {
+                                                                intent.putExtra("uID", uID);
+
+                                                                // set the result as successful
+                                                                setResult(Activity.RESULT_OK, intent);
+
+                                                                // destroy this activity
+                                                                finish();
+                                                            }
+                                                        }
+                                                    });
                                         }
                                     }
-
-                                    QuerySnapshot result = task.getResult();
-
-                                    if (currentUserID == null) {
-                                        Toast.makeText(FindFriendActivity.this, "User is not validated!", Toast.LENGTH_SHORT).show();
-                                        return;
-                                    } else if (result == null) {
-                                        return;
-                                    }
-
-                                    for (QueryDocumentSnapshot document : result) {
-                                        final String uID = document.getId();
-                                        FirebaseFirestore.getInstance()
-                                                .collection("Users")
-                                                .document(currentUserID)
-                                                .get()
-                                                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                                        ArrayList<String> contacts
-                                                                = (ArrayList<String>)
-                                                                task.getResult().get("contacts");
-                                                        // if the chosen contact already exist in
-                                                        // this user's contacts list, make a toast
-                                                        if (contacts != null && contacts.contains(uID)) {
-                                                            Toast.makeText(
-                                                                    FindFriendActivity.this,
-                                                                    "Already in Contacts",
-                                                                    Toast.LENGTH_SHORT
-                                                            ).show();
-                                                        } else  if (uID.equals(currentUserID)) {
-                                                            Toast.makeText(
-                                                                    FindFriendActivity.this,
-                                                                    "Can't add your own account",
-                                                                    Toast.LENGTH_SHORT
-                                                            ).show();
-                                                        } else {
-                                                            intent.putExtra("uID", uID);
-
-                                                            // set the result as successful
-                                                            setResult(Activity.RESULT_OK, intent);
-
-                                                            // destroy this activity
-                                                            finish();
-                                                        }
-                                                    }
-                                                });
-                                    }
                                 } else {
-                                    Log.w(TAG, "Error getting documents.", task.getException());
+                                    Toast.makeText(FindFriendActivity.this, "No record found!", Toast.LENGTH_SHORT).show();
                                 }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
                             }
                         });
             }
@@ -177,6 +163,25 @@ public class FindFriendActivity extends AppCompatActivity {
         });
     }
 
+    public String getCurrentUid() {
+        final String currentUserID;
+        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(FindFriendActivity.this);
+
+        if (acct != null) {
+            currentUserID = acct.getId();
+            return currentUserID;
+        } else {
+            FirebaseUser fbUser = FirebaseAuth.getInstance().getCurrentUser();
+            if (fbUser != null) {
+                currentUserID = fbUser.getUid();
+                return currentUserID;
+            } else {
+                Toast.makeText(FindFriendActivity.this, "User is not validated!", Toast.LENGTH_SHORT).show();
+                return "";
+            }
+        }
+    }
+
     // create an action bar button
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -202,16 +207,27 @@ public class FindFriendActivity extends AppCompatActivity {
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+                        LinearLayout myLayout = findViewById(R.id.find_friend_layout);
+
                         if (!dataSnapshot.exists()) {
                             newImageView.setVisibility(View.INVISIBLE);
                             newTextView.setVisibility(View.INVISIBLE);
                             newButton.setVisibility(View.INVISIBLE);
+
+                            // close the user keyboard
+                            try {
+                                imm.hideSoftInputFromWindow(myLayout.getWindowToken(), 0);
+                            } catch (Exception e) {
+                                // TODO: handle exception
+                            }
+
                             Toast.makeText(FindFriendActivity.this,
                                     "User not found", Toast.LENGTH_SHORT).show();
-                            return;
                         } else {
                             for (DataSnapshot o : dataSnapshot.getChildren()) {
                                 User addedUser = o.getValue(User.class);
+
                                 String name = addedUser.getName();
                                 newUsername = addedUser.getUsername();
                                 String imgUrl = addedUser.getImageUrl();
@@ -221,6 +237,7 @@ public class FindFriendActivity extends AppCompatActivity {
                                     newTextView.setTextColor(getResources().getColor(R.color.pLight));
                                 }
                                 newTextView.setText(name);
+
                                 if (imgUrl != null) {
                                     Picasso.get()
                                             .load(imgUrl)
@@ -232,8 +249,6 @@ public class FindFriendActivity extends AppCompatActivity {
 
                                 // close the user keyboard
                                 try {
-                                    InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
-                                    LinearLayout myLayout = findViewById(R.id.find_friend_layout);
                                     imm.hideSoftInputFromWindow(myLayout.getWindowToken(), 0);
                                 } catch (Exception e) {
                                     // TODO: handle exception

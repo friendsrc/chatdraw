@@ -1,11 +1,19 @@
 package com.example.chatdraw.Items;
 
-public class FriendListItem {
+import java.io.Serializable;
+
+public class FriendListItem implements Serializable {
 
     private String uID;
     private String name;
     private String imageURL;
     private String chatPreview;
+
+    public FriendListItem(String name, String chatPreview, String imageURL) {
+        this.name = name;
+        this.chatPreview = chatPreview;
+        this.imageURL = imageURL;
+    }
 
     public FriendListItem(String name, String chatPreview, String uID, String imageURL) {
         this.name = name;

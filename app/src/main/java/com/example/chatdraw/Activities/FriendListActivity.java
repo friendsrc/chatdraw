@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.ImageView;
@@ -29,14 +30,26 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.llollox.androidtoggleswitch.widgets.ToggleSwitch;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class FriendListActivity extends AppCompatActivity implements RecyclerViewClickListener {
+public class FriendListActivity extends AppCompatActivity implements RecyclerViewClickListener, Serializable {
 
     private static String TAG = "FriendListActivity";
 
@@ -44,7 +57,8 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
 
     private RecyclerView recyclerView;
     private RecyclerView.LayoutManager layoutManager;
-    private ArrayList<FriendListItem> myDataset;
+    private ArrayList<FriendListItem> friendList;
+    private String currentUserID;
 
     // Adapters for RecyclerView
     private RecyclerView.Adapter mAdapter;
@@ -67,14 +81,27 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
         recyclerView.setLayoutManager(layoutManager);
 
         // specify an adapter
-        myDataset = new ArrayList<>();
-        mAdapter = new RecyclerViewAdapter(myDataset, this, new RecyclerViewClickListener() {
+        friendList = new ArrayList<>();
+        mAdapter = new RecyclerViewAdapter(friendList, this, new RecyclerViewClickListener() {
             @Override
             public void recyclerViewListClicked(View v, int position) {
                 // do nothing
             }
         });
         recyclerView.setAdapter(mAdapter);
+
+        // get the current user's uID
+        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(FriendListActivity.this);
+        if (acct != null) {
+            currentUserID = acct.getId();
+        } else {
+            FirebaseUser fbUser = FirebaseAuth.getInstance().getCurrentUser();
+            if (fbUser != null) {
+                currentUserID = fbUser.getUid();
+            } else {
+                return;
+            }
+        }
 
         // set the "add" button to go to the FindFriendActivity
         ImageView imageView = findViewById(R.id.add_friend_imageview);
@@ -96,11 +123,11 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
             actionBar.setTitle("Contacts");
         }
 
-        // get Groups list from Firebase
-        getGroups();
-
         // get Contacts list from Firebase
         getContacts();
+
+        // get Groups list from Firebase
+        getGroups();
 
         // set toggle switch
         ToggleSwitch toggleSwitch = findViewById(R.id.friend_list_toggleswitch);
@@ -116,8 +143,6 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                 }
             }
         });
-
-
     }
 
     @Override
@@ -148,89 +173,69 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
     }
 
     private void addUserWithID(final String uID) {
-        FirebaseFirestore.getInstance().collection("Users").document(uID)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        DocumentSnapshot doc = task.getResult();
+        DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
 
-                        if (doc == null) {
-                            return;
-                        }
+        mDatabaseRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String name = (String) dataSnapshot.child(uID).child("name").getValue();
+                String status = (String) dataSnapshot.child(uID).child("status").getValue();
+                String imageURL = (String) dataSnapshot.child(uID).child("imageUrl").getValue();
 
-                        String name = (String) doc.get("name");
-                        String status = (String) doc.get("status");
-                        String imageURL = (String) doc.get("imageUrl");
+                // check if the user doesn't have name/status/imageURL
+                if (status == null) status = "";
 
-                        // check if the user doesn't have name/status/imageURL
-                        if (status == null) status = "";
+                FriendListItem newFriend = new FriendListItem(name, status, uID, imageURL);
 
-                        FriendListItem newFriend = new FriendListItem(name, status, uID ,imageURL);
+                friendList.add(newFriend);
+                mAdapter.notifyDataSetChanged();
 
-                        myDataset.add(newFriend);
-                        mAdapter.notifyDataSetChanged();
+                if (currentUserID == null) {
+                    return;
+                }
 
-                        // get the current user's uID
-                        String currentUserID;
-                        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(FriendListActivity.this);
-                        if (acct != null) {
-                            currentUserID = acct.getId();
-                        } else {
-                            FirebaseUser fbUser = FirebaseAuth.getInstance().getCurrentUser();
-                            if (fbUser != null) {
-                                currentUserID = fbUser.getUid();
-                            } else {
-                                return;
-                            }
-                        }
+                try {
+                    FileOutputStream fos = getApplicationContext().openFileOutput("FRIEND" + currentUserID, MODE_PRIVATE);
+                    ObjectOutputStream of = new ObjectOutputStream(fos);
+                    of.writeObject(friendList);
+                    of.close();
+                    fos.close();
+                }
+                catch (Exception e) {
+                    Log.e("InternalStorage", e.getMessage());
+                }
 
-                        if (currentUserID == null) {
-                            return;
-                        }
+                // Returns a special value that can be used with set() or update() that
+                // tells the server to union the given elements with any array value
+                // that already exists on the server.
+                FirebaseFirestore.getInstance().collection("Users")
+                        .document(currentUserID)
+                        .update("contacts", FieldValue.arrayUnion(uID));
+            }
 
-                        // Returns a special value that can be used with set() or update() that
-                        // tells the server to union the given elements with any array value
-                        // that already exists on the server.
-                        FirebaseFirestore.getInstance().collection("Users")
-                                .document(currentUserID)
-                                .update("contacts", FieldValue.arrayUnion(uID));
-                    }
-                });
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     public void getContacts() {
-        String id;
-        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(FriendListActivity.this);
-        if (acct != null) {
-            id = acct.getId();
-        } else {
-            FirebaseUser fbUser = FirebaseAuth.getInstance().getCurrentUser();
-            if (fbUser != null) {
-                id = fbUser.getUid();
-            } else {
-                Toast.makeText(FriendListActivity.this, "User is not validated!", Toast.LENGTH_SHORT).show();
-                return;
-            }
-        }
+        try {
+            FileInputStream fis = getApplicationContext().openFileInput("FRIEND" + currentUserID);
+            ObjectInputStream oi = new ObjectInputStream(fis);
+            ArrayList<FriendListItem> friendList = (ArrayList<FriendListItem>) oi.readObject();
 
-        if (id == null) {
-            return;
-        }
+            Log.v("FILELIST", "" + friendList);
 
-        FirebaseFirestore.getInstance().collection("Users").document(id)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
-                        if (arr != null && !arr.isEmpty()) {
-                            for (String s: arr) {
-                                addUserWithID(s);
-                            }
-                        }
-                    }
-                });
+            // TODO how to set Recycler View from a given ArrayList of friendListItem
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public void getGroups() {
