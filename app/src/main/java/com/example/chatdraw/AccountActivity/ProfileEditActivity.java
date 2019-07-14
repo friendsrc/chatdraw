@@ -79,6 +79,7 @@ public class ProfileEditActivity extends AppCompatActivity {
     private String userUID;
     private FirebaseAuth auth;
     private StorageTask mUploadTask;
+    private String userID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -298,7 +299,7 @@ public class ProfileEditActivity extends AppCompatActivity {
     };
 
     private void SelectImage(){
-        final CharSequence[] items={"Camera","Gallery", "Cancel"};
+        final CharSequence[] items={"Camera", "Gallery", "Cancel"};
 
         AlertDialog.Builder builder = new AlertDialog.Builder(ProfileEditActivity.this);
         builder.setTitle("Change profile image from");
@@ -323,7 +324,7 @@ public class ProfileEditActivity extends AppCompatActivity {
                         startActivityForResult(intent, REQUEST_CAMERA);
                     }
                 } else if (items[i].equals("Gallery")) {
-                    Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("image/*");
                     startActivityForResult(intent, SELECT_FILE);
                 } else if (items[i].equals("Cancel")) {
@@ -355,14 +356,28 @@ public class ProfileEditActivity extends AppCompatActivity {
                 circleImageView.setImageURI(selectedImageUri);
             }
 
-            //get the signed in user
-            FirebaseUser user = auth.getCurrentUser();
-            final String userID = user.getUid();
+            GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(ProfileEditActivity.this);
 
-            final String name = "profilePicture";
+            if (acct != null) {
+                userID = acct.getId();
+            } else {
+                //get the signed in user
+                FirebaseUser user = auth.getCurrentUser();
+                if (user != null) {
+                    userID = user.getUid();
+                } else {
+                    return;
+                }
+            }
 
             if (selectedImageUri != null) {
-                final StorageReference fileReference = mStorageRef.child(userID).child("profilepic")
+                mProgressDialog.setTitle("Uploading Image...");
+                mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                mProgressDialog.setProgress(0);
+                mProgressDialog.show();
+
+                final StorageReference fileReference = mStorageRef.child(userID)
+                        .child("profilepic")
                         .child("image.jpg");
 
                 InputStream imageStream = null;
@@ -412,19 +427,30 @@ public class ProfileEditActivity extends AppCompatActivity {
                 }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                        mProgressDialog.setMessage("Uploading Image...");
-                        mProgressDialog.show();
+                        int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                        mProgressDialog.setProgress(currentProgress);
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(ProfileEditActivity.this, "Failed to upload image", Toast.LENGTH_SHORT).show();
                     }
                 });
 
                 selectedImageUri = null;
             } else if (bmp != null) {
+                mProgressDialog.setTitle("Uploading Image...");
+                mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                mProgressDialog.setProgress(0);
+                mProgressDialog.show();
+
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                 byte[] dataforbmp = baos.toByteArray();
 
                 StorageReference fileReference = FirebaseStorage.getInstance().getReference("Users");
-                final StorageReference imageRef = fileReference.child(userID).child("profilepic")
+                final StorageReference imageRef = fileReference.child(userID)
+                        .child("profilepic")
                         .child("image.jpg");
 
                 UploadTask uploadTask = imageRef.putBytes(dataforbmp);
@@ -459,8 +485,13 @@ public class ProfileEditActivity extends AppCompatActivity {
                 }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                        mProgressDialog.setMessage("Uploading Image...");
-                        mProgressDialog.show();
+                        int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                        mProgressDialog.setProgress(currentProgress);
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(ProfileEditActivity.this, "Failed to upload image", Toast.LENGTH_SHORT).show();
                     }
                 });
 

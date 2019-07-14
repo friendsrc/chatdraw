@@ -36,6 +36,13 @@
         android:paddingRight="16dp"
         android:paddingBottom="8dp">
 
+        <ImageView
+            android:id="@+id/chat_attach_imageview"
+            android:layout_marginRight="10sp"
+            android:layout_marginEnd="10sp"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_attach_file_black_24dp"/>
         <EditText
             android:id="@+id/chat_edittext"
             android:hint="@string/chat_hint"

@@ -1,15 +1,28 @@
 package com.example.chatdraw.Activities;
 
+import android.Manifest;
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,6 +31,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.chatdraw.AccountActivity.ProfileEditActivity;
 import com.example.chatdraw.Items.ChatItem;
 import com.example.chatdraw.R;
 import com.example.chatdraw.Adapters.ChatRecyclerViewAdapter;
@@ -25,26 +39,37 @@ import com.example.chatdraw.Listeners.RecyclerViewClickListener;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentChange;
-import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 
 import javax.annotation.Nullable;
 
 public class ChatActivity extends AppCompatActivity implements RecyclerViewClickListener, SwipeRefreshLayout.OnRefreshListener {
-
+    private static final int SELECT_FILE = 0;
+    private static final int REQUEST_CAMERA = 1;
+    private static final int REQUEST_DOCUMENT = 2;
     private static String TAG = "ChatActivity";
 
     // this user's information
@@ -69,6 +94,18 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
     private LinkedList<String> membersID;
 //    private LinkedList<DocumentReference> membersPreview;
 
+    // Uri are actually URLs that are meant for local storage
+    private Uri selectedImageUri;
+    private Uri pdfUri;
+
+    private Bitmap bmp;
+    private ProgressDialog mProgressDialog;
+    private boolean isActionSelected = false;
+    private String userID;
+    private DatabaseReference mDatabaseRef;
+    private FirebaseStorage googleStorageRef;
+    private FirebaseDatabase googleDatabaseRef;
+
     // RecyclerView
     private RecyclerView mRecyclerView;
     private ChatRecyclerViewAdapter mAdapter;
@@ -92,6 +129,12 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
         // use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
         mRecyclerView.setHasFixedSize(true);
+
+        // Progress Dialog for uploading
+        mProgressDialog = new ProgressDialog(ChatActivity.this);
+        mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
+        googleStorageRef = FirebaseStorage.getInstance();
+        googleDatabaseRef = FirebaseDatabase.getInstance();
 
         // use a linear layout manager
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
@@ -135,11 +178,23 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
         // set the action bar title
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
-        getSupportActionBar().setTitle(intent.getStringExtra("name"));
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setTitle(intent.getStringExtra("name"));
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
 
-        //  set onClickListener on the 'Send Message' button
+        // set onCLickListener on the 'More option' button
+        ImageView fileImageView = findViewById(R.id.chat_attach_imageview);
+        fileImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SelectImage();
+            }
+        });
+
+        // set onClickListener on the 'Send Message' button
         ImageView sendImageView = findViewById(R.id.chat_send_imageview);
         sendImageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -188,6 +243,272 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                         }
                     });
         }
+    }
+
+    private void SelectImage(){
+        final CharSequence[] items={"Camera", "Image", "File Explorer", "Cancel"};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
+        builder.setTitle("Send file from");
+
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                if (items[i].equals("Camera")) {
+                    // ask for Camera permission
+                    if (ContextCompat.checkSelfPermission(ChatActivity.this, Manifest.permission.CAMERA)
+                            == PackageManager.PERMISSION_DENIED) {
+                        ActivityCompat.requestPermissions(
+                                ChatActivity.this, new String[] {Manifest.permission.CAMERA},
+                                REQUEST_CAMERA);
+                    } else {
+                        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                        startActivityForResult(intent, REQUEST_CAMERA);
+                    }
+                } else if (items[i].equals("Image")) {
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.setType("image/*");
+                    startActivityForResult(intent, SELECT_FILE);
+                } else if (items[i].equals("File Explorer")) {
+                    if (ContextCompat.checkSelfPermission(ChatActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                            == PackageManager.PERMISSION_DENIED) {
+                        ActivityCompat.requestPermissions(ChatActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_DOCUMENT);
+                    } else {
+                        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                        intent.setType("application/pdf");
+                        startActivityForResult(intent, REQUEST_DOCUMENT);
+                    }
+                } else if (items[i].equals("Cancel")) {
+                    dialogInterface.dismiss();
+                }
+            }
+        });
+        builder.show();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == REQUEST_CAMERA && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            startActivityForResult(intent, REQUEST_CAMERA);
+        } else if (requestCode == REQUEST_DOCUMENT && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("application/pdf");
+            startActivityForResult(intent, REQUEST_DOCUMENT);
+        } else {
+            Toast.makeText(this, "Permission is not granted!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        super.onActivityResult(requestCode, resultCode,data);
+
+        if (resultCode == Activity.RESULT_OK){
+            if (requestCode == REQUEST_CAMERA){
+                Bundle bundle = data.getExtras();
+                bmp = (Bitmap) bundle.get("data");
+                isActionSelected = true;
+            } else if (requestCode == SELECT_FILE){
+                selectedImageUri = data.getData();
+                isActionSelected = true;
+            } else if (requestCode == REQUEST_DOCUMENT) {
+                pdfUri = data.getData();
+                isActionSelected = true;
+
+            } else {
+                isActionSelected = false;
+            }
+
+            if (isActionSelected) {
+                //get the signed in user
+                GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(ChatActivity.this);
+
+                if (acct != null) {
+                    userID = acct.getId();
+                } else {
+                    //get the signed in user
+                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                    if (user != null) {
+                        userID = user.getUid();
+                    } else {
+                        return;
+                    }
+                }
+
+                if (bmp != null) {
+                    mProgressDialog.setTitle("Uploading Image...");
+                    mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    mProgressDialog.setProgress(0);
+                    mProgressDialog.show();
+
+                    // uncomment below after it is worked Joanna
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                    byte[] dataforbmp = baos.toByteArray();
+
+                    StorageReference fileReference = FirebaseStorage.getInstance().getReference("Users");
+                    Intent intent = getIntent();
+                    friendsUID = intent.getStringExtra("uID");
+
+                    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+                    final StorageReference imageRef = fileReference.child(userID)
+                            .child("sentImage")
+                            .child(friendsUID)
+                            .child(timestamp.getTime() + ".jpg");
+
+                    UploadTask uploadTask = imageRef.putBytes(dataforbmp);
+                    uploadTask.addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            // Handle unsuccessful uploads
+                            mProgressDialog.dismiss();
+                            Toast.makeText(ChatActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            mProgressDialog.dismiss();
+                            Toast.makeText(ChatActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
+                            imageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(Uri uri) {
+                                    String url = uri.toString();
+                                    // Upload upload = new Upload(name, url);
+
+                                    // update Firestore Chat Joanna
+                                }
+                            });
+                        }
+                    }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                            int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                            mProgressDialog.setProgress(currentProgress);
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(ChatActivity.this, "Failed to upload images", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                    bmp = null;
+                } else if (selectedImageUri != null) {
+                    mProgressDialog.setTitle("Uploading Image...");
+                    mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    mProgressDialog.setProgress(0);
+                    mProgressDialog.show();
+
+                    // uncomment below after it is worked Joanna
+                    final StorageReference fileReference = FirebaseStorage.getInstance().getReference("Users")
+                            .child(userID)
+                            .child("profilepic")
+                            .child("image.jpg");
+
+                    InputStream imageStream = null;
+
+                    try {
+                        imageStream = getContentResolver().openInputStream(selectedImageUri);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+
+                    Bitmap bmp = BitmapFactory.decodeStream(imageStream);
+
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    bmp.compress(Bitmap.CompressFormat.JPEG, 50, stream);
+
+                    // this is an example if you want to set the bmp to your chat for example Joanna
+                    // circleImageView.setImageBitmap(bmp);
+
+                    byte[] byteArray = stream.toByteArray();
+
+                    UploadTask uploadTask = fileReference.putBytes(byteArray);
+                    uploadTask.addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            // Handle unsuccessful uploads
+                            mProgressDialog.dismiss();
+                            Toast.makeText(ChatActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            mProgressDialog.dismiss();
+                            Toast.makeText(ChatActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
+                            fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(Uri uri) {
+                                    String url = uri.toString();
+                                    // Upload upload = new Upload(name, url);
+
+                                    // update realtime
+                                    String uploadId = mDatabaseRef.push().getKey();
+                                    mDatabaseRef.child(userID).child("imageUrl").setValue(url);
+
+                                    // update firestore
+//                                Upload profileUpload = new Upload(url);
+//                                FirebaseFirestore.getInstance().collection("Users").document(userID).set(profileUpload, SetOptions.merge());
+                                }
+                            });
+                        }
+                    }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                            int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                            mProgressDialog.setProgress(currentProgress);
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(ChatActivity.this, "Failed to upload images", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                    selectedImageUri = null;
+                } else if (pdfUri != null) {
+                    mProgressDialog.setTitle("Uploading Files...");
+                    mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    mProgressDialog.setProgress(0);
+                    mProgressDialog.show();
+
+                    String fileName = System.currentTimeMillis() + "";
+                    final StorageReference storageReference = googleStorageRef.getReference();
+                    storageReference.child(userID).child("Uploads").child(fileName).putFile(pdfUri)
+                            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                @Override
+                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                    // url is the link that will redirect you to the FirebaseStorage
+                                    String url = storageReference.getDownloadUrl().toString();
+
+                                    // connect ke Firestore Joanna
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Toast.makeText(ChatActivity.this, "Failed to upload files", Toast.LENGTH_SHORT).show();
+                                }
+                            }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                                @Override
+                                public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                                    int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                                    mProgressDialog.setProgress(currentProgress);
+                                }
+                            });
+                } else {
+                    Toast.makeText(this, "No file selected or camera picture not configured yet", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(this, "No file selected or camera picture not configured yet", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    public void sendAndSaveImage(final String userID, Bitmap bmp) {
+
     }
 
     // create an action bar button
