@@ -18,11 +18,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -59,6 +61,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.sql.Timestamp;
@@ -98,6 +101,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
     // Uri are actually URLs that are meant for local storage
     private Uri selectedImageUri;
     private Uri pdfUri;
+    private String pdfName;
 
     private Bitmap bmp;
     private ProgressDialog mProgressDialog;
@@ -317,6 +321,24 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                 pdfUri = data.getData();
                 isActionSelected = true;
 
+                // get Pdf name
+                String uriString = pdfUri.toString();
+                File myFile = new File(uriString);
+                String path = myFile.getAbsolutePath();
+
+                if (uriString.startsWith("content://")) {
+                    Cursor cursor = null;
+                    try {
+                        cursor = getContentResolver().query(pdfUri, null, null, null, null);
+                        if (cursor != null && cursor.moveToFirst()) {
+                            pdfName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                        }
+                    } finally {
+                        cursor.close();
+                    }
+                } else if (uriString.startsWith("file://")) {
+                    pdfName = myFile.getName();
+                }
             } else {
                 isActionSelected = false;
             }
@@ -487,7 +509,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                                     String url = storageReference.getDownloadUrl().toString();
 
                                     // connect ke Firestore
-                                    ChatItem newChatItem = addMessageToAdapter(userUID + "\tPDF\t" + url);
+                                    ChatItem newChatItem = addMessageToAdapter(userUID + "\tPDF\t" + pdfName +"\t" + url);
                                     sendMessage(newChatItem);
                                 }
                             })

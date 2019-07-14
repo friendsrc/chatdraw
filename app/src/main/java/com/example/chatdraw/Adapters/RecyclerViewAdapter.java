@@ -105,4 +105,14 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         mDataset.addAll(arr);
         notifyDataSetChanged();
     }
+
+    public void clearData() {
+        mDataset = new ArrayList<>();
+        notifyDataSetChanged();
+    }
+
+    public void addItem(FriendListItem friendListItem) {
+        mDataset.add(friendListItem);
+        notifyDataSetChanged();
+    }
 }

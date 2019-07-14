@@ -363,7 +363,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         if (!queryDocumentSnapshots.isEmpty()) {
                             chatItem[0] = queryDocumentSnapshots.getDocuments().get(0).toObject(ChatItem.class);
                             // Check if the message is not a text message
-                            if (chatItem[0].getMessageBody().startsWith(userUID)) {
+                            if (chatItem[0].getMessageBody().startsWith(chatItem[0].getSenderID())) {
                                 String[] arr = chatItem[0].getMessageBody().split("\t");
                                 if (arr[1].equals("IMAGE")) {
                                     chatItem[0].setMessageBody("[Image]");

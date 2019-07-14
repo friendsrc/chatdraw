@@ -145,6 +145,7 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
         });
     }
 
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.navbar_plain, menu);
@@ -162,6 +163,7 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FIND_FRIEND_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+
             if (data == null) {
                 return;
             }
@@ -169,6 +171,7 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
             final String uID = data.getStringExtra("uID");
             recyclerView.setAdapter(mAdapter);
             addUserWithID(uID);
+            getContacts();
         }
     }
 
@@ -188,6 +191,7 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                 FriendListItem newFriend = new FriendListItem(name, status, uID, imageURL);
 
                 friendList.add(newFriend);
+                mAdapter.addItem(newFriend);
                 mAdapter.notifyDataSetChanged();
 
                 if (currentUserID == null) {
@@ -195,6 +199,11 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                 }
 
                 try {
+                    FileInputStream fis = getApplicationContext().openFileInput("FRIEND" + currentUserID);
+                    ObjectInputStream oi = new ObjectInputStream(fis);
+                    ArrayList<FriendListItem> savedFriendList = (ArrayList<FriendListItem>) oi.readObject();
+                    friendList.addAll(savedFriendList);
+
                     FileOutputStream fos = getApplicationContext().openFileOutput("FRIEND" + currentUserID, MODE_PRIVATE);
                     ObjectOutputStream of = new ObjectOutputStream(fos);
                     of.writeObject(friendList);
@@ -225,8 +234,8 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
             FileInputStream fis = getApplicationContext().openFileInput("FRIEND" + currentUserID);
             ObjectInputStream oi = new ObjectInputStream(fis);
             ArrayList<FriendListItem> friendList = (ArrayList<FriendListItem>) oi.readObject();
+            mAdapter.clearData();
             mAdapter.addAll(friendList);
-            Log.d(TAG, "Get Contacts from storage successful");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             Log.e("InternalStorage", e.getMessage());
