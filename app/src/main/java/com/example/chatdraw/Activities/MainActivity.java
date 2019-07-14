@@ -362,6 +362,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
                         if (!queryDocumentSnapshots.isEmpty()) {
                             chatItem[0] = queryDocumentSnapshots.getDocuments().get(0).toObject(ChatItem.class);
+                            // Check if the message is not a text message
+                            if (chatItem[0].getMessageBody().startsWith(userUID)) {
+                                String[] arr = chatItem[0].getMessageBody().split("\t");
+                                if (arr[1].equals("IMAGE")) {
+                                    chatItem[0].setMessageBody("[Image]");
+                                } else if (arr[1].equals("PDF")) {
+                                    chatItem[0].setMessageBody("[Pdf]");
+                                } else {
+                                    chatItem[0].setMessageBody("[Unknown file type]");
+                                }
+
+                            }
+
                             if (chatItem[0].getMessageBody().length() > 43) {
                                 chatItem[0].setMessageBody(chatItem[0]
                                         .getMessageBody().substring(0, 40) + "...");

@@ -32,6 +32,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.chatdraw.AccountActivity.ProfileEditActivity;
+import com.example.chatdraw.AccountActivity.Upload;
 import com.example.chatdraw.Items.ChatItem;
 import com.example.chatdraw.R;
 import com.example.chatdraw.Adapters.ChatRecyclerViewAdapter;
@@ -342,7 +343,6 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                     mProgressDialog.setProgress(0);
                     mProgressDialog.show();
 
-                    // uncomment below after it is worked TODO
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                     byte[] dataforbmp = baos.toByteArray();
@@ -375,9 +375,9 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                                 @Override
                                 public void onSuccess(Uri uri) {
                                     String url = uri.toString();
-                                    // Upload upload = new Upload(name, url);
+//                                     Upload upload = new Upload(name, url);
 
-                                    // update Firestore Chat TODO
+                                    // update Firestore Chat
                                     ChatItem newChatItem = addMessageToAdapter(userUID + "\tIMAGE\t" + url);
                                     sendMessage(newChatItem);
                                 }
@@ -403,7 +403,6 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                     mProgressDialog.setProgress(0);
                     mProgressDialog.show();
 
-                    // uncomment below after it is worked TODO
                     final StorageReference fileReference = FirebaseStorage.getInstance().getReference("Users")
                             .child(userID)
                             .child("profilepic")
@@ -422,7 +421,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                     ByteArrayOutputStream stream = new ByteArrayOutputStream();
                     bmp.compress(Bitmap.CompressFormat.JPEG, 50, stream);
 
-                    // this is an example if you want to set the bmp to your chat for example TODO
+                    // this is an example if you want to set the bmp to your chat for example
                     // circleImageView.setImageBitmap(bmp);
 
                     byte[] byteArray = stream.toByteArray();
@@ -487,7 +486,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                                     // url is the link that will redirect you to the FirebaseStorage
                                     String url = storageReference.getDownloadUrl().toString();
 
-                                    // connect ke Firestore TODO
+                                    // connect ke Firestore
                                     ChatItem newChatItem = addMessageToAdapter(userUID + "\tPDF\t" + url);
                                     sendMessage(newChatItem);
                                 }
@@ -557,7 +556,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                         .add(chatItem);
 
                 // Check if the message is not a text message
-                if (chatItem.getMessageBody().startsWith(chatItem.getSenderID())) {
+                if (chatItem.getMessageBody().startsWith(userUID)) {
                     String[] arr = chatItem.getMessageBody().split("\t");
                     if (arr[1].equals("IMAGE")) {
                         chatItem.setMessageBody("[Image]");
@@ -592,12 +591,6 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                         .document(groupID)
                         .collection("ChatHistory")
                         .add(chatItem);
-
-                // Send to group's preview collection
-                if (chatItem.getMessageBody().length() > 43) {
-                    chatItem.setMessageBody(chatItem.getMessageBody().substring(0, 40) + "...");
-                }
-
             }
         }
     }
