@@ -78,7 +78,6 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAd
 
         } else { // chat is not sent by this user
             String[] arr = chatItem.getMessageBody().split("\t");
-            Log.d("HEY", "Message is " + arr[1]);
             if (chatItem.getMessageBody().startsWith(chatItem.getSenderID())) {
                 if (arr[1].equals("IMAGE")) {
                     return 21; // chat item is of type image
@@ -97,8 +96,6 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAd
     public RecyclerViewAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent,
                                                                int viewType) {
         // create a new view
-        Log.d("HEY", "Inflate type" + viewType);
-
         View friendListItem;
         if (viewType == 0) {
             friendListItem = LayoutInflater.from(parent.getContext())
@@ -140,7 +137,6 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAd
         if (chatItem.getMessageBody().startsWith(chatItem.getSenderID())) {
             String[] arr = chatItem.getMessageBody().split("\t");
             ImageView message = holder.view.findViewById(R.id.text_message_body_image);
-            Log.d("HEY", "arr[2] is " + arr[2]);
             Picasso.get()
                     .load(arr[2])
                     .fit()
