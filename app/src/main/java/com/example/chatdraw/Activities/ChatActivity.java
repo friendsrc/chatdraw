@@ -186,7 +186,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
         }
 
         // set onCLickListener on the 'More option' button
-        ImageView fileImageView = findViewById(R.id.chat_attach_imageview);
+        ImageView fileImageView = findViewById(R.id.chat_attach_imageView);
         fileImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -342,7 +342,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                     mProgressDialog.setProgress(0);
                     mProgressDialog.show();
 
-                    // uncomment below after it is worked Joanna
+                    // uncomment below after it is worked TODO
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                     byte[] dataforbmp = baos.toByteArray();
@@ -377,7 +377,9 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                                     String url = uri.toString();
                                     // Upload upload = new Upload(name, url);
 
-                                    // update Firestore Chat Joanna
+                                    // update Firestore Chat TODO
+                                    ChatItem newChatItem = addMessageToAdapter(userUID + "\tIMAGE\t" + url);
+                                    sendMessage(newChatItem);
                                 }
                             });
                         }
@@ -401,7 +403,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                     mProgressDialog.setProgress(0);
                     mProgressDialog.show();
 
-                    // uncomment below after it is worked Joanna
+                    // uncomment below after it is worked TODO
                     final StorageReference fileReference = FirebaseStorage.getInstance().getReference("Users")
                             .child(userID)
                             .child("profilepic")
@@ -420,7 +422,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                     ByteArrayOutputStream stream = new ByteArrayOutputStream();
                     bmp.compress(Bitmap.CompressFormat.JPEG, 50, stream);
 
-                    // this is an example if you want to set the bmp to your chat for example Joanna
+                    // this is an example if you want to set the bmp to your chat for example TODO
                     // circleImageView.setImageBitmap(bmp);
 
                     byte[] byteArray = stream.toByteArray();
@@ -450,6 +452,8 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
 
                                     // update firestore
 //                                Upload profileUpload = new Upload(url);
+                                    ChatItem newChatItem = addMessageToAdapter(userUID + "\tIMAGE\t" + url);
+                                    sendMessage(newChatItem);
 //                                FirebaseFirestore.getInstance().collection("Users").document(userID).set(profileUpload, SetOptions.merge());
                                 }
                             });
@@ -483,7 +487,9 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                                     // url is the link that will redirect you to the FirebaseStorage
                                     String url = storageReference.getDownloadUrl().toString();
 
-                                    // connect ke Firestore Joanna
+                                    // connect ke Firestore TODO
+                                    ChatItem newChatItem = addMessageToAdapter(userUID + "\tPDF\t" + url);
+                                    sendMessage(newChatItem);
                                 }
                             })
                             .addOnFailureListener(new OnFailureListener() {
@@ -661,14 +667,13 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
 
     @Override
     public void onRefresh() {
-        //TODO: paginate data
         getOlderMessages();
         mSwipeRefreshLayout.setRefreshing(false);
     }
 
     @Override
     public void recyclerViewListClicked(View v, int position){
-        // TODO: add delete/copy option
+        // add delete/copy option
     }
 
     public void getOlderMessages() {

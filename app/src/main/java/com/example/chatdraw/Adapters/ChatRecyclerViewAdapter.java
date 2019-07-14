@@ -1,6 +1,7 @@
 package com.example.chatdraw.Adapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,9 +63,31 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAd
 
     @Override
     public int getItemViewType(int position) {
-        if (mDataset.get(position).getSenderID().equals(userId)) {
+        ChatItem chatItem = mDataset.get(position);
+
+
+        if (chatItem.getSenderID().equals(userId)) { // chat is sent by this user
+            if (chatItem.getMessageBody().startsWith(userId)) {
+                String[] arr = chatItem.getMessageBody().split("\t");
+                if (arr[1].equals("IMAGE")) {
+                    return 20;
+                } else if (arr[1].equals("PDF")) {
+                    return 30;
+                }
+            }
             return 0;
-        } else {
+        } else { // chat is not sent by this user
+            String[] arr = chatItem.getMessageBody().split("\t");
+            Log.d("HEY", "Message is " + arr[1]);
+            if (chatItem.getMessageBody().startsWith(chatItem.getSenderID())) {
+                if (arr[1].equals("IMAGE")) {
+                    return 21;
+                } else if (arr[1].equals("PDF")) {
+                    return 31;
+                } else {
+                    return 1;
+                }
+            }
             return 1;
         }
     }
@@ -74,13 +97,24 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAd
     public RecyclerViewAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent,
                                                                int viewType) {
         // create a new view
+        Log.d("HEY", "Inflate type" + viewType);
+
         View friendListItem;
         if (viewType == 0) {
             friendListItem = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.right_chat_bubble, parent, false);
-        } else {
+        } else if (viewType == 1){
             friendListItem = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.left_chat_bubble, parent, false);
+        } else if (viewType == 20) {
+            friendListItem = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.right_chat_bubble_photo, parent, false);
+        } else if (viewType == 21){
+            friendListItem = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.left_chat_bubble_photo, parent, false);
+        } else {
+            friendListItem = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.right_chat_bubble, parent, false);
         }
 
         return new RecyclerViewAdapter.MyViewHolder(friendListItem);
@@ -103,8 +137,19 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAd
             name.setText(nameString);
         }
 
-        TextView message = holder.view.findViewById(R.id.text_message_body);
-        message.setText(mDataset.get(position).getMessageBody());
+        if (chatItem.getMessageBody().startsWith(userId)
+                || chatItem.getMessageBody().startsWith(chatItem.getSenderID())) {
+            String[] arr = chatItem.getMessageBody().split("\t");
+            ImageView message = holder.view.findViewById(R.id.text_message_body_image);
+            Log.d("HEY", "arr[2] is " + arr[2]);
+            Picasso.get()
+                    .load(arr[2])
+                    .fit()
+                    .into(message);
+        } else {
+            TextView message = holder.view.findViewById(R.id.text_message_body);
+            message.setText(mDataset.get(position).getMessageBody());
+        }
 
         ImageView profilePicture = holder.view.findViewById(R.id.image_message_profile);
         if (profilePicture != null) {
