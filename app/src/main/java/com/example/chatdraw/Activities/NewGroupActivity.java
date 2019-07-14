@@ -11,6 +11,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.ImageView;
@@ -29,6 +30,10 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -122,19 +127,37 @@ public class NewGroupActivity extends AppCompatActivity implements RecyclerViewC
         } else {
             id = FirebaseAuth.getInstance().getCurrentUser().getUid();
         }
-        FirebaseFirestore.getInstance().collection("Users").document(id)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
-                        if (arr != null && !arr.isEmpty()) {
-                            for (String s: arr) {
-                                addUserWithID(s);
+        try {
+            FileInputStream fis = getApplicationContext().openFileInput("FRIEND" + id);
+            ObjectInputStream oi = new ObjectInputStream(fis);
+            ArrayList<FriendListItem> friendList = (ArrayList<FriendListItem>) oi.readObject();
+            mAdapter.addAll(friendList);
+            Log.d(TAG, "Get Contacts from storage successful");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            Log.e("InternalStorage", e.getMessage());
+            // if file doesn't exist, get data from Firestore
+            FirebaseFirestore.getInstance().collection("Users").document(id)
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
+                            if (arr != null && !arr.isEmpty()) {
+                                for (String s: arr) {
+                                    addUserWithID(s);
+                                }
                             }
                         }
-                    }
-                });
+                    });
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+
+
 
 
     }

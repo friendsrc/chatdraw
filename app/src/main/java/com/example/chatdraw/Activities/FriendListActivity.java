@@ -61,7 +61,7 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
     private String currentUserID;
 
     // Adapters for RecyclerView
-    private RecyclerView.Adapter mAdapter;
+    private RecyclerViewAdapter mAdapter;
     private GroupListRecyclerViewAdapter mGroupAdapter;
 
     @Override
@@ -123,7 +123,7 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
             actionBar.setTitle("Contacts");
         }
 
-        // get Contacts list from Firebase
+        // get Contacts list
         getContacts();
 
         // get Groups list from Firebase
@@ -225,12 +225,25 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
             FileInputStream fis = getApplicationContext().openFileInput("FRIEND" + currentUserID);
             ObjectInputStream oi = new ObjectInputStream(fis);
             ArrayList<FriendListItem> friendList = (ArrayList<FriendListItem>) oi.readObject();
-
-            Log.v("FILELIST", "" + friendList);
-
-            // TODO how to set Recycler View from a given ArrayList of friendListItem
+            mAdapter.addAll(friendList);
+            Log.d(TAG, "Get Contacts from storage successful");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+            Log.e("InternalStorage", e.getMessage());
+            // if file doesn't exist, get data from Firestore
+            FirebaseFirestore.getInstance().collection("Users").document(currentUserID)
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
+                            if (arr != null && !arr.isEmpty()) {
+                                for (String s: arr) {
+                                    addUserWithID(s);
+                                }
+                            }
+                        }
+                    });
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -239,22 +252,7 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
     }
 
     public void getGroups() {
-        // get this user's id
-        final String id;
-        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(FriendListActivity.this);
-        if (acct != null) {
-            id = acct.getId();
-        } else {
-            FirebaseUser fbUser = FirebaseAuth.getInstance().getCurrentUser();
-            if (fbUser != null) {
-                id = fbUser.getUid();
-            } else {
-                Toast.makeText(FriendListActivity.this, "User is not validated!", Toast.LENGTH_SHORT).show();
-                return;
-            }
-        }
-
-        if (id == null) {
+        if (currentUserID == null) {
             return;
         }
 
@@ -264,7 +262,7 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                 = new GroupListRecyclerViewAdapter(myDataset, FriendListActivity.this, this);
         mGroupAdapter = adapter;
 
-        FirebaseFirestore.getInstance().collection("Users").document(id)
+        FirebaseFirestore.getInstance().collection("Users").document(currentUserID)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
 

@@ -98,4 +98,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     }
 
     public FriendListItem getItem(int position) { return  mDataset.get(position); }
+
+    public void addAll(ArrayList<FriendListItem> arr) {
+        mDataset.addAll(arr);
+        notifyDataSetChanged();
+    }
 }

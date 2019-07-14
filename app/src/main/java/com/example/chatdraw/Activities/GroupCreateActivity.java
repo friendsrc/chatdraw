@@ -122,6 +122,10 @@ public class GroupCreateActivity extends AppCompatActivity {
                             .collection("Groups")
                             .document(groupID);
 
+                    firestore.collection("Users")
+                            .document(userUID)
+                            .update("groups", FieldValue.arrayUnion(groupID));
+
                     // add group name to group document
                     Map<String, Object> docData = new HashMap<>();
                     docData.put("groupName", groupName);
@@ -129,8 +133,15 @@ public class GroupCreateActivity extends AppCompatActivity {
                     docData.put("groupImageUrl", url);
                     reference.set(docData);
 
+                    // add group data to Realtime Database
+                    FirebaseDatabase.getInstance()
+                            .getReference("Groups")
+                            .child(groupID)
+                            .setValue(docData);
+
                     // add each member's id to group document and add group id to each
                     // member's document
+                    DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Groups/" + groupID);
                     for (String s: members) {
                         // add member id to group
                         reference.update("members", FieldValue.arrayUnion(s));
@@ -141,7 +152,7 @@ public class GroupCreateActivity extends AppCompatActivity {
                                 .document(s)
                                 .update("groups", FieldValue.arrayUnion(groupID));
 
-                        // create a placeholder chat item, TODO: set imageUrl
+                        // create a placeholder chat item
                         ChatItem chatItem = new ChatItem("", groupID, groupName,
                                 null, url, s,
                                 null, null, null);
@@ -226,8 +237,6 @@ public class GroupCreateActivity extends AppCompatActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode, resultCode,data);
-
-
 
         if (resultCode == Activity.RESULT_OK){
             cameraLogo.setVisibility(View.INVISIBLE);

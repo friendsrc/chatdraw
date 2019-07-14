@@ -29,6 +29,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 
 public class NewMessageActivity extends AppCompatActivity implements RecyclerViewClickListener {
@@ -72,20 +75,38 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
         }
         userUID = id;
 
-
-        FirebaseFirestore.getInstance().collection("Users").document(id)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
-                        if (arr != null && !arr.isEmpty()) {
-                            for (String s: arr) {
-                                addUserWithID(s);
+        // try fetching data from internal storage
+        if (userUID != null) {
+            try {
+                FileInputStream inputStream = getApplicationContext().openFileInput("FRIEND" + userUID);
+                ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
+                ArrayList<FriendListItem> arr = (ArrayList<FriendListItem>) objectInputStream.readObject();
+                myDataset.addAll(arr);
+                mAdapter.notifyDataSetChanged();
+                Log.d(TAG, "Get Contacts from storage successful");
+            } catch (FileNotFoundException e) {
+                Log.e("InternalStorage", e.getMessage());
+                // if file doesn't exist, get data from Firestore
+                FirebaseFirestore.getInstance().collection("Users").document(userUID)
+                        .get()
+                        .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
+                                if (arr != null && !arr.isEmpty()) {
+                                    for (String s: arr) {
+                                        addUserWithID(s);
+                                    }
+                                }
                             }
-                        }
-                    }
-                });
+                        });
+            } catch (Exception e) {
+                Log.e("InternalStorage", e.getMessage());
+            }
+        }
+
+
+
 
         LinearLayout linearLayout = findViewById(R.id.new_group_chat_linearlayout);
         linearLayout.setOnClickListener(new View.OnClickListener() {
