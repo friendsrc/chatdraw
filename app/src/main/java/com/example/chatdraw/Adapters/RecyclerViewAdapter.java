@@ -35,7 +35,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
         @Override
         public void onClick(View v) {
-            itemListener.recyclerViewListClicked(v, this.getAdapterPosition());
+            if (itemListener != null) {
+                itemListener.recyclerViewListClicked(v, this.getAdapterPosition());
+            }
         }
     }
 
@@ -54,7 +56,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     // Create new views (invoked by the layout manager)
     @Override
     public RecyclerViewAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent,
-                                                     int viewType) {
+                                                               int viewType) {
         // create a new view
         View friendListItem = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.friend_list_item, parent, false);

@@ -83,8 +83,6 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAd
                     return 21; // chat item is of type image
                 } else if (arr[1].equals("PDF")) {
                     return 31; // chat item is of type pdf
-                } else {
-                    return 1; // this shouldn't ever be called actly
                 }
             }
             return 1; // chat item is of type text
@@ -97,18 +95,24 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAd
                                                                int viewType) {
         // create a new view
         View friendListItem;
-        if (viewType == 0) {
+        if (viewType == 0) { // text, from this user
             friendListItem = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.right_chat_bubble, parent, false);
-        } else if (viewType == 1){
+        } else if (viewType == 1){ // text, from another user
             friendListItem = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.left_chat_bubble, parent, false);
-        } else if (viewType == 20) {
+        } else if (viewType == 20) { // image, from this user
             friendListItem = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.right_chat_bubble_photo, parent, false);
-        } else if (viewType == 21){
+        } else if (viewType == 21) { // image, from another user
             friendListItem = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.left_chat_bubble_photo, parent, false);
+        } else if (viewType == 30) { // pdf, from this user
+            friendListItem = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.right_chat_bubble_pdf, parent, false);
+        } else if (viewType == 31) { // pdf, from another user
+            friendListItem = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.left_chat_bubble_pdf, parent, false);
         } else {
             friendListItem = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.right_chat_bubble, parent, false);
@@ -136,11 +140,16 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAd
 
         if (chatItem.getMessageBody().startsWith(chatItem.getSenderID())) {
             String[] arr = chatItem.getMessageBody().split("\t");
-            ImageView message = holder.view.findViewById(R.id.text_message_body_image);
-            Picasso.get()
-                    .load(arr[2])
-                    .fit()
-                    .into(message);
+            if (arr[1].equals("IMAGE")) {
+                ImageView message = holder.view.findViewById(R.id.text_message_body_image);
+                Picasso.get()
+                        .load(arr[2])
+                        .fit()
+                        .into(message);
+            } else if (arr[1].equals("PDF")) {
+                TextView message = holder.view.findViewById(R.id.text_message_body);
+                message.setText(arr[2]);
+            }
         } else {
             TextView message = holder.view.findViewById(R.id.text_message_body);
             message.setText(mDataset.get(position).getMessageBody());
