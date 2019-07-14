@@ -65,30 +65,30 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAd
     public int getItemViewType(int position) {
         ChatItem chatItem = mDataset.get(position);
 
-
         if (chatItem.getSenderID().equals(userId)) { // chat is sent by this user
             if (chatItem.getMessageBody().startsWith(userId)) {
                 String[] arr = chatItem.getMessageBody().split("\t");
                 if (arr[1].equals("IMAGE")) {
-                    return 20;
+                    return 20; // chat item is of type image
                 } else if (arr[1].equals("PDF")) {
-                    return 30;
+                    return 30; // chat item is of type pdf
                 }
             }
-            return 0;
+            return 0; // chat item is of type text
+
         } else { // chat is not sent by this user
             String[] arr = chatItem.getMessageBody().split("\t");
             Log.d("HEY", "Message is " + arr[1]);
             if (chatItem.getMessageBody().startsWith(chatItem.getSenderID())) {
                 if (arr[1].equals("IMAGE")) {
-                    return 21;
+                    return 21; // chat item is of type image
                 } else if (arr[1].equals("PDF")) {
-                    return 31;
+                    return 31; // chat item is of type pdf
                 } else {
-                    return 1;
+                    return 1; // this shouldn't ever be called actly
                 }
             }
-            return 1;
+            return 1; // chat item is of type text
         }
     }
 
@@ -137,8 +137,7 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAd
             name.setText(nameString);
         }
 
-        if (chatItem.getMessageBody().startsWith(userId)
-                || chatItem.getMessageBody().startsWith(chatItem.getSenderID())) {
+        if (chatItem.getMessageBody().startsWith(chatItem.getSenderID())) {
             String[] arr = chatItem.getMessageBody().split("\t");
             ImageView message = holder.view.findViewById(R.id.text_message_body_image);
             Log.d("HEY", "arr[2] is " + arr[2]);

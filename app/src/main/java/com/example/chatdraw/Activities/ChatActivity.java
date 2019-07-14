@@ -556,10 +556,24 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                         .collection("ChatHistory")
                         .add(chatItem);
 
+                // Check if the message is not a text message
+                if (chatItem.getMessageBody().startsWith(chatItem.getSenderID())) {
+                    String[] arr = chatItem.getMessageBody().split("\t");
+                    if (arr[1].equals("IMAGE")) {
+                        chatItem.setMessageBody("[Image]");
+                    } else if (arr[1].equals("PDF")) {
+                        chatItem.setMessageBody("[Pdf]");
+                    } else {
+                        chatItem.setMessageBody("[Unknown file type]");
+                    }
+
+                }
+
                 // Limit the length of chat preview
                 if (chatItem.getMessageBody().length() > 43) {
                     chatItem.setMessageBody(chatItem.getMessageBody().substring(0, 40) + "...");
                 }
+
 
                 // Send to user's message preview collection
                 db.collection("Previews").document(userUID)
