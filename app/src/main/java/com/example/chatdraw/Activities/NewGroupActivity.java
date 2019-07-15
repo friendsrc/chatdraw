@@ -27,8 +27,14 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -42,6 +48,8 @@ public class NewGroupActivity extends AppCompatActivity implements RecyclerViewC
     public static final int GROUP_CREATE_REQUEST_CODE = 1001;
 
     public static final String TAG = "NewGroupActivity";
+
+    public String userUID;
     private HashMap<Integer, FriendListItem> chosenContacts;
 
     private RecyclerView recyclerView;
@@ -76,6 +84,13 @@ public class NewGroupActivity extends AppCompatActivity implements RecyclerViewC
 
         // create a hashmap to store chosen contacts
         chosenContacts = new HashMap<>();
+
+        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(NewGroupActivity.this);
+        if (acct != null) {
+            userUID = acct.getId();
+        } else {
+            userUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        }
 
         // get contacts from Firebase
         getContacts();
@@ -118,70 +133,76 @@ public class NewGroupActivity extends AppCompatActivity implements RecyclerViewC
         return true;
     }
 
-    public void getContacts() {
-        FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        String id;
-        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(NewGroupActivity.this);
-        if (acct != null) {
-            id = acct.getId();
-        } else {
-            id = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        }
-        try {
-            FileInputStream fis = getApplicationContext().openFileInput("FRIEND" + id);
-            ObjectInputStream oi = new ObjectInputStream(fis);
-            ArrayList<FriendListItem> friendList = (ArrayList<FriendListItem>) oi.readObject();
-            mAdapter.addAll(friendList);
-            Log.d(TAG, "Get Contacts from storage successful");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            Log.e("InternalStorage", e.getMessage());
-            // if file doesn't exist, get data from Firestore
-            FirebaseFirestore.getInstance().collection("Users").document(id)
-                    .get()
-                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+    public void getContactsFromFirestore() {
+        Log.d(TAG, "Getting contacts from firestore");
+        final FirebaseFirestore db  = FirebaseFirestore.getInstance();
+        db.enableNetwork();
+        FirebaseDatabase.getInstance().goOnline();
+        db.collection("Users")
+                .document(userUID)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
                             ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
-                            if (arr != null && !arr.isEmpty()) {
+                            if (arr != null ) {
                                 for (String s: arr) {
                                     addUserWithID(s);
                                 }
                             }
                         }
-                    });
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
-
-
-
-
+                    }
+                });
     }
 
-    private void addUserWithID(final String uID) {
-        FirebaseFirestore.getInstance().collection("Users").document(uID)
+    public void getContacts() {
+        Log.d(TAG, "Getting contacts from cache");
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.disableNetwork();
+        FirebaseDatabase.getInstance().goOffline();
+        db.collection("Users")
+                .document(userUID)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        DocumentSnapshot doc = task.getResult();
-                        String name = (String) doc.get("name");
-                        String status = (String) doc.get("status");
-                        String imageURL = (String) doc.get("imageUrl");
-
-                        // check if the user doesn't have name/status/imageURL
-                        if (status == null) status = "[status]";
-
-                        FriendListItem friendListItem = new FriendListItem(name, status, uID, imageURL);
-
-                        myDataset.add(friendListItem);
-                        mAdapter.notifyDataSetChanged();
+                        if (task.isSuccessful()) {
+                            ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
+                            if (arr != null) {
+                                for (String s : arr) {
+                                    addUserWithID(s);
+                                }
+                            }
+                            db.enableNetwork();
+                        } else {
+                            getContactsFromFirestore();
+                        }
                     }
                 });
+    }
+
+    private void addUserWithID(final String uID) {
+        DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
+
+        mDatabaseRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String name = (String) dataSnapshot.child(uID).child("name").getValue();
+                String status = (String) dataSnapshot.child(uID).child("status").getValue();
+                String imageURL = (String) dataSnapshot.child(uID).child("imageUrl").getValue();
+
+                if (status == null) status = "";
+
+                FriendListItem newFriend = new FriendListItem(name, status, uID, imageURL);
+                mAdapter.addItem(newFriend);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override

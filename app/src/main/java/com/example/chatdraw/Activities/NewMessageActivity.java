@@ -26,8 +26,14 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -64,7 +70,6 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
         mAdapter = new RecyclerViewAdapter(myDataset, NewMessageActivity.this, this);
         recyclerView.setAdapter(mAdapter);
 
-
         // get Contacts list
         String id;
         GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(NewMessageActivity.this);
@@ -75,37 +80,7 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
         }
         userUID = id;
 
-        // try fetching data from internal storage
-        if (userUID != null) {
-            try {
-                FileInputStream inputStream = getApplicationContext().openFileInput("FRIEND" + userUID);
-                ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
-                ArrayList<FriendListItem> arr = (ArrayList<FriendListItem>) objectInputStream.readObject();
-                myDataset.addAll(arr);
-                mAdapter.notifyDataSetChanged();
-                Log.d(TAG, "Get Contacts from storage successful");
-            } catch (FileNotFoundException e) {
-                Log.e("InternalStorage", e.getMessage());
-                // if file doesn't exist, get data from Firestore
-                FirebaseFirestore.getInstance().collection("Users").document(userUID)
-                        .get()
-                        .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                            @Override
-                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
-                                if (arr != null && !arr.isEmpty()) {
-                                    for (String s: arr) {
-                                        addUserWithID(s);
-                                    }
-                                }
-                            }
-                        });
-            } catch (Exception e) {
-                Log.e("InternalStorage", e.getMessage());
-            }
-        }
-
-
+        getContacts();
 
 
         LinearLayout linearLayout = findViewById(R.id.new_group_chat_linearlayout);
@@ -139,25 +114,26 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
     }
 
     private void addUserWithID(final String uID) {
-        FirebaseFirestore.getInstance().collection("Users").document(uID)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        DocumentSnapshot doc = task.getResult();
-                        String name = (String) doc.get("name");
-                        String status = (String) doc.get("status");
-                        String imageURL = (String) doc.get("imageUrl");
+        DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
 
-                        // check if the user doesn't have name/status
-                        if (status == null) status = "";
+        mDatabaseRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String name = (String) dataSnapshot.child(uID).child("name").getValue();
+                String status = (String) dataSnapshot.child(uID).child("status").getValue();
+                String imageURL = (String) dataSnapshot.child(uID).child("imageUrl").getValue();
 
-                        FriendListItem friendListItem = new FriendListItem(name, status, uID, imageURL);
+                if (status == null) status = "";
 
-                        myDataset.add(friendListItem);
-                        mAdapter.notifyDataSetChanged();
-                    }
-                });
+                FriendListItem newFriend = new FriendListItem(name, status, uID, imageURL);
+                mAdapter.addItem(newFriend);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override
@@ -196,5 +172,53 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
             setResult(55, data);
             finish();
         }
+    }
+
+    public void getContactsFromFirestore() {
+        Log.d(TAG, "Getting contacts from firestore");
+        final FirebaseFirestore db  = FirebaseFirestore.getInstance();
+        db.enableNetwork();
+        FirebaseDatabase.getInstance().goOnline();
+        db.collection("Users")
+                .document(userUID)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
+                            if (arr != null ) {
+                                for (String s: arr) {
+                                    addUserWithID(s);
+                                }
+                            }
+                        }
+                    }
+                });
+    }
+
+    public void getContacts() {
+        Log.d(TAG, "Getting contacts from cache");
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.disableNetwork();
+        db.collection("Users")
+                .document(userUID)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
+                            if (arr != null) {
+                                for (String s : arr) {
+                                    addUserWithID(s);
+                                }
+                            }
+                            db.enableNetwork();
+                        } else {
+                            getContactsFromFirestore();
+                        }
+                    }
+                });
     }
 }

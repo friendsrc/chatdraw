@@ -38,6 +38,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.llollox.androidtoggleswitch.widgets.ToggleSwitch;
 
 import java.io.File;
@@ -90,7 +91,7 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
             }
         });
         recyclerView.setAdapter(mAdapter);
-
+        
         // get the current user's uID
         GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(FriendListActivity.this);
         if (acct != null) {
@@ -171,6 +172,9 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
 
             final String uID = data.getStringExtra("uID");
             recyclerView.setAdapter(mAdapter);
+            FirebaseFirestore.getInstance().collection("Users")
+                    .document(currentUserID)
+                    .update("contacts", FieldValue.arrayUnion(uID));
             addUserWithID(uID);
         }
     }
@@ -189,41 +193,34 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                 if (status == null) status = "";
 
                 FriendListItem newFriend = new FriendListItem(name, status, uID, imageURL);
-
-                friendList.add(newFriend);
+//                friendList.add(newFriend);
                 mAdapter.addItem(newFriend);
-                mAdapter.notifyDataSetChanged();
+//                mAdapter.notifyDataSetChanged();
 
-                if (currentUserID == null) {
-                    return;
-                }
+//                if (currentUserID == null) {
+//                    return;
+//                }
+//
+//                try {
+//                    FileInputStream fis = getApplicationContext().openFileInput("FRIEND" + currentUserID);
+//                    ObjectInputStream oi = new ObjectInputStream(fis);
+//                    ArrayList<FriendListItem> savedFriendList = (ArrayList<FriendListItem>) oi.readObject();
+//                    friendList.addAll(savedFriendList);
+//
+//                    File dir = getFilesDir();
+//                    File file = new File(dir, "FRIEND" + currentUserID);
+//                    file.delete();
+//
+//                    FileOutputStream fos = getApplicationContext().openFileOutput("FRIEND" + currentUserID, MODE_PRIVATE);
+//                    ObjectOutputStream of = new ObjectOutputStream(fos);
+//                    of.writeObject(friendList);
+//                    of.close();
+//                    fos.close();
+//                }
+//                catch (Exception e) {
+//                    Log.e("InternalStorage", e.getMessage());
+//                }
 
-                try {
-                    FileInputStream fis = getApplicationContext().openFileInput("FRIEND" + currentUserID);
-                    ObjectInputStream oi = new ObjectInputStream(fis);
-                    ArrayList<FriendListItem> savedFriendList = (ArrayList<FriendListItem>) oi.readObject();
-                    friendList.addAll(savedFriendList);
-
-                    File dir = getFilesDir();
-                    File file = new File(dir, "FRIEND" + currentUserID);
-                    file.delete();
-
-                    FileOutputStream fos = getApplicationContext().openFileOutput("FRIEND" + currentUserID, MODE_PRIVATE);
-                    ObjectOutputStream of = new ObjectOutputStream(fos);
-                    of.writeObject(friendList);
-                    of.close();
-                    fos.close();
-                }
-                catch (Exception e) {
-                    Log.e("InternalStorage", e.getMessage());
-                }
-
-                // Returns a special value that can be used with set() or update() that
-                // tells the server to union the given elements with any array value
-                // that already exists on the server.
-                FirebaseFirestore.getInstance().collection("Users")
-                        .document(currentUserID)
-                        .update("contacts", FieldValue.arrayUnion(uID));
             }
 
             @Override
@@ -233,35 +230,83 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
         });
     }
 
-    public void getContacts() {
-        try {
-            FileInputStream fis = getApplicationContext().openFileInput("FRIEND" + currentUserID);
-            ObjectInputStream oi = new ObjectInputStream(fis);
-            ArrayList<FriendListItem> friendList = (ArrayList<FriendListItem>) oi.readObject();
-            mAdapter.clearData();
-            mAdapter.addAll(friendList);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            Log.e("InternalStorage", e.getMessage());
-            // if file doesn't exist, get data from Firestore
-            FirebaseFirestore.getInstance().collection("Users").document(currentUserID)
-                    .get()
-                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+    public void getContactsFromFirestore() {
+        Log.d(TAG, "Getting contacts from firestore");
+        final FirebaseFirestore db  = FirebaseFirestore.getInstance();
+        db.enableNetwork();
+        FirebaseDatabase.getInstance().goOnline();
+        db.collection("Users")
+                .document(currentUserID)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
                             ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
-                            if (arr != null && !arr.isEmpty()) {
+                            if (arr != null ) {
                                 for (String s: arr) {
                                     addUserWithID(s);
                                 }
                             }
                         }
-                    });
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+                    }
+                });
+    }
+
+    public void getContacts() {
+        Log.d(TAG, "Getting contacts from cache");
+        final FirebaseFirestore db  = FirebaseFirestore.getInstance();
+        db.disableNetwork();
+        FirebaseDatabase.getInstance().goOffline();
+        db.collection("Users")
+                .document(currentUserID)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
+                            if (arr != null ) {
+                                for (String s: arr) {
+                                    addUserWithID(s);
+                                }
+                            }
+                            db.enableNetwork();
+                        } else {
+                            getContactsFromFirestore();
+                        }
+                    }
+                });
+
+
+//        try {
+//            FileInputStream fis = getApplicationContext().openFileInput("FRIEND" + currentUserID);
+//            ObjectInputStream oi = new ObjectInputStream(fis);
+//            ArrayList<FriendListItem> friendList = (ArrayList<FriendListItem>) oi.readObject();
+//            mAdapter.clearData();
+//            mAdapter.addAll(friendList);
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//            Log.e("InternalStorage", e.getMessage());
+//            // if file doesn't exist, get data from Firestore
+//            FirebaseFirestore.getInstance().collection("Users").document(currentUserID)
+//                    .get()
+//                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+//                        @Override
+//                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+//                            ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
+//                            if (arr != null && !arr.isEmpty()) {
+//                                for (String s: arr) {
+//                                    addUserWithID(s);
+//                                }
+//                            }
+//                        }
+//                    });
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        } catch (ClassNotFoundException e) {
+//            e.printStackTrace();
+//        }
     }
 
     public void getGroups() {
