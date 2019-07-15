@@ -40,6 +40,7 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.llollox.androidtoggleswitch.widgets.ToggleSwitch;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -171,7 +172,6 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
             final String uID = data.getStringExtra("uID");
             recyclerView.setAdapter(mAdapter);
             addUserWithID(uID);
-            getContacts();
         }
     }
 
@@ -203,6 +203,10 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                     ObjectInputStream oi = new ObjectInputStream(fis);
                     ArrayList<FriendListItem> savedFriendList = (ArrayList<FriendListItem>) oi.readObject();
                     friendList.addAll(savedFriendList);
+
+                    File dir = getFilesDir();
+                    File file = new File(dir, "FRIEND" + currentUserID);
+                    file.delete();
 
                     FileOutputStream fos = getApplicationContext().openFileOutput("FRIEND" + currentUserID, MODE_PRIVATE);
                     ObjectOutputStream of = new ObjectOutputStream(fos);
