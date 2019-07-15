@@ -30,15 +30,22 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="4dp" />
 
-    <ImageView
-        android:id="@+id/text_message_body_image"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:maxWidth="240dp"
-        android:layout_marginTop="4dp"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/text_message_cardview"
         app:layout_constraintTop_toBottomOf="@+id/text_message_name"
         app:layout_constraintLeft_toRightOf="@+id/image_message_profile"
-        android:layout_marginLeft="8dp" />
+        app:cardCornerRadius="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/text_message_body_image"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:maxWidth="240dp" />
+    </androidx.cardview.widget.CardView>
+
+
 
     <TextView
         android:id="@+id/text_message_time"
@@ -46,8 +53,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="10sp"
-        app:layout_constraintLeft_toRightOf="@+id/text_message_body_image"
+        app:layout_constraintLeft_toRightOf="@+id/text_message_cardview"
         android:layout_marginLeft="4dp"
-        app:layout_constraintBottom_toBottomOf="@+id/text_message_body_image" />
+        app:layout_constraintBottom_toBottomOf="@+id/text_message_cardview" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

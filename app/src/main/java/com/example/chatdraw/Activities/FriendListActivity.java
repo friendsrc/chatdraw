@@ -308,6 +308,8 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
     }
 
     public void getGroups() {
+        Log.d(TAG, "Getting groups from cache");
+
         // specify an adapter
         ArrayList<NewFriendItem> myDataset = new ArrayList<>();
         final GroupListRecyclerViewAdapter adapter
@@ -358,6 +360,8 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
     }
 
     public void getGroupsFromFirestore() {
+        Log.d(TAG, "Getting groups from firestore");
+
         final FirebaseFirestore db  = FirebaseFirestore.getInstance();
         db.enableNetwork();
         FirebaseDatabase.getInstance().goOnline();
