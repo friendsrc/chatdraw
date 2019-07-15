@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 import com.example.chatdraw.AccountActivity.LoginActivity;
 import com.example.chatdraw.AccountActivity.ProfileEditActivity;
 import com.example.chatdraw.AccountActivity.SettingsActivity;
+import com.example.chatdraw.Credits.CreditActivity;
 import com.example.chatdraw.Items.ChatItem;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -243,12 +244,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.nav_calls:
-                Toast.makeText(this,"Not yet configured", Toast.LENGTH_SHORT).show();
-                break;
             case R.id.nav_contacts:
                 Intent intent  = new Intent(this, FriendListActivity.class);
                 startActivity(intent);
+                break;
+            case R.id.nav_credits:
+                Intent intent_credit  = new Intent(this, CreditActivity.class);
+                startActivity(intent_credit);
                 break;
             case R.id.nav_group:
                 Intent intent_group = new Intent(this, NewGroupActivity.class);

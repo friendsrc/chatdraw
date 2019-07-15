@@ -4,12 +4,12 @@
     tools:showIn="navigation_view">
 
     <group android:checkableBehavior="single">
-        <item android:id="@+id/nav_calls"
-            android:icon="@drawable/ic_call"
-            android:title="Call" />
         <item android:id="@+id/nav_contacts"
             android:icon="@drawable/contacts"
             android:title="Contacts" />
+        <item android:id="@+id/nav_credits"
+            android:icon="@drawable/ic_credits"
+            android:title="Credits" />
         <item android:id="@+id/nav_group"
             android:icon="@drawable/ic_group"
             android:title="New Group" />

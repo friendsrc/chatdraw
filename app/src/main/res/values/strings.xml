@@ -164,4 +164,10 @@
     <string name="invite_link">https://chatdraw.page.link/app</string>
     <string name="copy_button">Copy</string>
     <string name="invite_share">Share to friends</string>
+
+    <!-- Credit Activity -->
+    <string name="credit_name">Credits:</string>
+    <string name="credit_currency">CTD</string>
+    <string name="credit_top_up">TOP UP</string>
+    <string name="credit_history">History:</string>
 </resources>
