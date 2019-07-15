@@ -91,7 +91,7 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
             }
         });
         recyclerView.setAdapter(mAdapter);
-        
+
         // get the current user's uID
         GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(FriendListActivity.this);
         if (acct != null) {
@@ -128,9 +128,6 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
         // get Contacts list
         getContacts();
 
-        // get Groups list from Firebase
-        getGroups();
-
         // set toggle switch
         ToggleSwitch toggleSwitch = findViewById(R.id.friend_list_toggleswitch);
         final RecyclerView recyclerView = findViewById(R.id.friend_list_recycler_view);
@@ -139,6 +136,7 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
             @Override
             public void onToggleSwitchChanged(int i) {
                 if (i == 1) {
+                    if (mGroupAdapter == null) getGroups();
                     recyclerView.setAdapter(mGroupAdapter);
                 } else {
                     recyclerView.setAdapter(mAdapter);
@@ -310,15 +308,15 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
     }
 
     public void getGroups() {
-        if (currentUserID == null) {
-            return;
-        }
-
         // specify an adapter
         ArrayList<NewFriendItem> myDataset = new ArrayList<>();
         final GroupListRecyclerViewAdapter adapter
                 = new GroupListRecyclerViewAdapter(myDataset, FriendListActivity.this, this);
         mGroupAdapter = adapter;
+
+        final FirebaseFirestore db  = FirebaseFirestore.getInstance();
+        db.disableNetwork();
+        FirebaseDatabase.getInstance().goOffline();
 
         FirebaseFirestore.getInstance().collection("Users").document(currentUserID)
                 .get()
@@ -335,16 +333,20 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                                         .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                                             @Override
                                             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                                DocumentSnapshot doc = task.getResult();
-                                                if (doc == null) {
-                                                    return;
+                                                if (task.isSuccessful()) {
+                                                    DocumentSnapshot doc = task.getResult();
+                                                    if (doc == null) {
+                                                        return;
+                                                    }
+
+                                                    String name = (String) doc.get("groupName");
+                                                    String imageURL = (String) doc.get("groupImageUrl");
+
+                                                    NewFriendItem newFriendItem = new NewFriendItem(name, groupID, imageURL);
+                                                    adapter.addData(newFriendItem);
+                                                } else {
+                                                    getGroupsFromFirestore();
                                                 }
-
-                                                String name = (String) doc.get("groupName");
-                                                String imageURL = (String) doc.get("groupImageUrl");
-
-                                                NewFriendItem newFriendItem = new NewFriendItem(name, groupID, imageURL);
-                                                adapter.addData(newFriendItem);
                                             }
                                         });
 
@@ -353,8 +355,45 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                     }
 
                 });
+    }
 
+    public void getGroupsFromFirestore() {
+        final FirebaseFirestore db  = FirebaseFirestore.getInstance();
+        db.enableNetwork();
+        FirebaseDatabase.getInstance().goOnline();
 
+        FirebaseFirestore.getInstance().collection("Users").document(currentUserID)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        ArrayList<String> arr = (ArrayList<String>) task.getResult().get("groups");
+                        if (arr != null && !arr.isEmpty()) {
+                            for (String s: arr) {
+                                final String groupID = s;
+                                FirebaseFirestore.getInstance().collection("Groups").document(groupID)
+                                        .get()
+                                        .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                                if (task.isSuccessful()) {
+                                                    DocumentSnapshot doc = task.getResult();
+                                                    if (doc == null) {
+                                                        return;
+                                                    }
+
+                                                    String name = (String) doc.get("groupName");
+                                                    String imageURL = (String) doc.get("groupImageUrl");
+
+                                                    NewFriendItem newFriendItem = new NewFriendItem(name, groupID, imageURL);
+                                                    mGroupAdapter.addData(newFriendItem);
+                                                }
+                                            }
+                                        });
+                            }
+                        }
+                    }
+                });
     }
 
     @Override
