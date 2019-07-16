@@ -5,25 +5,34 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="5sp"
     android:gravity="top|center"
     tools:context=".Credits.CreditActivity">
 
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/my_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+
     <LinearLayout
+        android:paddingLeft="15sp"
+        android:paddingRight="15sp"
         android:padding="10sp"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <LinearLayout
-            android:layout_gravity="center"
+            android:layout_gravity="bottom"
             android:layout_weight="2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
             <TextView
                 android:text="@string/credit_name"
-                android:textSize="22sp"
+                android:textSize="18sp"
                 android:layout_marginRight="10sp"
                 android:layout_marginLeft="10sp"
                 android:layout_width="wrap_content"
@@ -31,17 +40,20 @@
 
             <TextView
                 android:id="@+id/credit_balance"
-                android:textSize="22sp"
+                android:textSize="32sp"
                 android:text="0"
+                android:textColor="@color/colorPrimary"
+                android:textStyle="bold"
+                android:gravity="center_horizontal"
+                android:minWidth="64dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
             <TextView
-                android:textSize="22sp"
+                android:textSize="18sp"
                 android:layout_marginLeft="10sp"
                 android:layout_marginRight="10sp"
                 android:text="CTD"
-                android:textStyle="bold"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
         </LinearLayout>
@@ -49,22 +61,25 @@
         <Button
             android:id="@+id/top_up_button"
             android:text="@string/credit_top_up"
-            android:textSize="24sp"
-            android:layout_weight="1"
-            android:background="@color/blue"
+            android:textSize="18sp"
+            android:textColor="@color/white"
+            android:background="@drawable/rounded_button_secondary"
+            android:layout_marginRight="10sp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="42dp" />
     </LinearLayout>
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="3sp"
+        android:layout_height="1sp"
         android:background="@android:color/darker_gray"/>
 
 
     <LinearLayout
         android:orientation="horizontal"
-        android:padding="10sp"
+        android:paddingLeft="10sp"
+        android:paddingRight="10sp"
+
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -73,7 +88,7 @@
             android:layout_marginLeft="10sp"
             android:layout_marginRight="10sp"
             android:layout_gravity="center"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 

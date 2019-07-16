@@ -1,7 +1,9 @@
 package com.example.chatdraw.Credits;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -11,6 +13,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -36,10 +39,21 @@ public class CreditActivity extends AppCompatActivity {
             }
         });
 
+        // set the action bar
+        Toolbar myToolbar = findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
+
+        ActionBar actionBar = getSupportActionBar();
+
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setTitle("Credits");
+        }
+
     }
 
     private void setTopUpAction() {
-        final CharSequence[] items={"Paypal", "Visa", "Transfer", "Watch an ads", "Cancel"};
+        final CharSequence[] items={"Paypal", "Visa", "Transfer", "Watch an ad", "Cancel"};
 
         AlertDialog.Builder builder = new AlertDialog.Builder(CreditActivity.this);
         builder.setTitle("Top up credit by");
@@ -53,7 +67,7 @@ public class CreditActivity extends AppCompatActivity {
 
                 } else if (items[i].equals("Transfer")) {
 
-                } else if (items[i].equals("Watch an ads")) {
+                } else if (items[i].equals("Watch an ad")) {
 
                 } else {
                     dialogInterface.dismiss();
@@ -68,5 +82,11 @@ public class CreditActivity extends AppCompatActivity {
         // if the back button is pressed, go back to previous activity
         finish();
         return true;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.navbar_plain, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 }
