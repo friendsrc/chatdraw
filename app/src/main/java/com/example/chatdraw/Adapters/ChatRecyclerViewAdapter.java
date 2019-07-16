@@ -20,7 +20,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.LinkedList;
 
-public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.MyViewHolder> {
+public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerViewAdapter.MyViewHolder> {
     private LinkedList<ChatItem> mDataset;
     private Context context;
     private static RecyclerViewClickListener itemListener;
@@ -91,7 +91,7 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAd
 
     // Create new views (invoked by the layout manager)
     @Override
-    public RecyclerViewAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent,
+    public ChatRecyclerViewAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent,
                                                                int viewType) {
         // create a new view
         View friendListItem;
@@ -118,12 +118,12 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAd
                     .inflate(R.layout.right_chat_bubble, parent, false);
         }
 
-        return new RecyclerViewAdapter.MyViewHolder(friendListItem);
+        return new ChatRecyclerViewAdapter.MyViewHolder(friendListItem);
     }
 
     // Replace the contents of a view (invoked by the layout manager)
     @Override
-    public void onBindViewHolder(RecyclerViewAdapter.MyViewHolder holder, int position) {
+    public void onBindViewHolder(ChatRecyclerViewAdapter.MyViewHolder holder, int position) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
         ChatItem chatItem = mDataset.get(position);

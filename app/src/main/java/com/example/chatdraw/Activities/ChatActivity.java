@@ -2,6 +2,7 @@ package com.example.chatdraw.Activities;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -21,6 +22,8 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -29,8 +32,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.chatdraw.AccountActivity.ProfileEditActivity;
@@ -59,6 +64,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -96,7 +102,6 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
     private String groupName;
     private String groupImageUrl;
     private LinkedList<String> membersID;
-//    private LinkedList<DocumentReference> membersPreview;
 
     // Uri are actually URLs that are meant for local storage
     private Uri selectedImageUri;
@@ -119,6 +124,9 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
     // SwipeRefreshLayout
     SwipeRefreshLayout mSwipeRefreshLayout;
 
+    // Photo dialog pop-up
+    Dialog mPhotoDialog;
+
     // for data pagination
     DocumentSnapshot lastSnapshot;
     int docsPerRetrieval = 500;
@@ -128,6 +136,8 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
+        mPhotoDialog = new Dialog(this);
 
         mRecyclerView = findViewById(R.id.chat_recycler_view);
 
@@ -519,12 +529,12 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                                     Toast.makeText(ChatActivity.this, "Failed to upload files", Toast.LENGTH_SHORT).show();
                                 }
                             }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                                @Override
-                                public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                                    int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                                    mProgressDialog.setProgress(currentProgress);
-                                }
-                            });
+                        @Override
+                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                            int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                            mProgressDialog.setProgress(currentProgress);
+                        }
+                    });
                 } else {
                     Toast.makeText(this, "No file selected or camera picture not configured yet", Toast.LENGTH_SHORT).show();
                 }
@@ -702,7 +712,9 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
 
     @Override
     public void recyclerViewListClicked(View v, int position){
-        // add delete/copy option
+        if (v.findViewById(R.id.text_message_cardview) != null) {
+            showPhotoPopup(v, mAdapter.getItem(position));
+        }
     }
 
     public void getOlderMessages() {
@@ -764,5 +776,40 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                         }
                     });
         }
+    }
+
+    public void showPhotoPopup(View v, ChatItem chatItem) {
+        mPhotoDialog.setContentView(R.layout.photopopup);
+
+        mPhotoDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+
+        ImageView photo = mPhotoDialog.findViewById(R.id.photo_popup_image);
+        String[] arr = chatItem.getMessageBody().split("\t");
+        String photoUrl = arr[2];
+        Picasso.get()
+                .load(photoUrl)
+                .fit()
+                .into(photo);
+
+
+        ImageView closeButton = mPhotoDialog.findViewById(R.id.photo_popup_close_button);
+        closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mPhotoDialog.dismiss();
+            }
+        });
+
+        ImageView saveButton = mPhotoDialog.findViewById(R.id.photo_popup_save_button);
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(ChatActivity.this, "Not yet configured", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
+        mPhotoDialog.show();
     }
 }
