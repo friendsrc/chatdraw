@@ -23,11 +23,35 @@ public class ImagePreviewActivity extends AppCompatActivity {
                 .fit()
                 .into(imageView);
 
-        ImageView closeButton = findViewById(R.id.photo_close_button);
+        final ImageView closeButton = findViewById(R.id.photo_close_button);
         closeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
+            }
+        });
+
+        final ImageView saveButton = findViewById(R.id.photo_save_button);
+        final View viewTop = findViewById(R.id.photo_view1);
+        final View viewBottom = findViewById(R.id.photo_view2);
+
+        final boolean[] isToggledOff = {false};
+
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isToggledOff[0]) {
+                    closeButton.animate().translationY(-200);
+                    viewTop.animate().translationY(-200);
+                    viewBottom.animate().translationY(300);
+                    saveButton.animate().translationY(300);
+                } else {
+                    closeButton.animate().translationY(0);
+                    viewTop.animate().translationY(0);
+                    viewBottom.animate().translationY(0);
+                    saveButton.animate().translationY(0);
+                }
+                isToggledOff[0] = !isToggledOff[0];
             }
         });
 
