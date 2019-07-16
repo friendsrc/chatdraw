@@ -29,9 +29,12 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -713,7 +716,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
     @Override
     public void recyclerViewListClicked(View v, int position){
         if (v.findViewById(R.id.text_message_cardview) != null) {
-            showPhotoPopup(v, mAdapter.getItem(position));
+            showPhotoPopup(mAdapter.getItem(position));
         }
     }
 
@@ -778,11 +781,10 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
         }
     }
 
-    public void showPhotoPopup(View v, ChatItem chatItem) {
+    public void showPhotoPopup(ChatItem chatItem) {
         mPhotoDialog.setContentView(R.layout.photopopup);
-
         mPhotoDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-
+        mPhotoDialog.setCancelable(true);
 
         ImageView photo = mPhotoDialog.findViewById(R.id.photo_popup_image);
         String[] arr = chatItem.getMessageBody().split("\t");
@@ -809,7 +811,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
             }
         });
 
-
         mPhotoDialog.show();
+        mPhotoDialog.getWindow().setGravity(Gravity.CENTER);
     }
 }
