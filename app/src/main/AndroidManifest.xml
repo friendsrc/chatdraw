@@ -18,7 +18,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Credits.CreditActivity"></activity>
+        <activity android:name=".Activities.ImagePreviewActivity"></activity>
+        <activity android:name=".Credits.CreditActivity" />
         <activity android:name=".Activities.InviteFriendActivity" />
         <activity android:name=".AccountActivity.ContactUsActivity" />
         <activity android:name=".AccountActivity.RatingActivity" />

@@ -411,7 +411,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                                 public void onSuccess(Uri uri) {
                                     String url = uri.toString();
 //                                     Upload upload = new Upload(name, url);
-
+                                    Log.d("HEY", "url is" + url);
                                     // update Firestore Chat
                                     ChatItem newChatItem = addMessageToAdapter(userUID + "\tIMAGE\t" + url);
                                     sendMessage(newChatItem);
@@ -438,10 +438,12 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                     mProgressDialog.setProgress(0);
                     mProgressDialog.show();
 
+                    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
                     final StorageReference fileReference = FirebaseStorage.getInstance().getReference("Users")
                             .child(userID)
                             .child("profilepic")
-                            .child("image.jpg");
+                            .child(timestamp.getTime() + ".jpg");
 
                     InputStream imageStream = null;
 
@@ -478,7 +480,9 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                                 @Override
                                 public void onSuccess(Uri uri) {
                                     String url = uri.toString();
-                                    // Upload upload = new Upload(name, url);
+//                                    Upload upload = new Upload(name, url);
+                                    Log.d("HEY", "url is" + url);
+
 
                                     // update realtime
                                     String uploadId = mDatabaseRef.push().getKey();
@@ -648,6 +652,8 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                             for (DocumentSnapshot q: queryDocumentSnapshots) {
                                 lastSnapshot = q;
                                 ChatItem chatItem = q.toObject(ChatItem.class);
+                                String[] arr = chatItem.getMessageBody().split("\t");
+                                if (arr.length > 2) Log.d("HEY", arr[2]);
 
                                 if (chatItem != null && !chatItem.getSenderID().equals(userUID)) {
                                     String updatedImageURL = friendImageUrl[0];
@@ -716,7 +722,10 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
     @Override
     public void recyclerViewListClicked(View v, int position){
         if (v.findViewById(R.id.text_message_cardview) != null) {
-            showPhotoPopup(mAdapter.getItem(position));
+            Intent intent = new Intent(ChatActivity.this, ImagePreviewActivity.class);
+            String[] arr = mAdapter.getItem(position).getMessageBody().split("\t");
+            intent.putExtra("imageUrl", arr[2]);
+            startActivity(intent);
         }
     }
 
