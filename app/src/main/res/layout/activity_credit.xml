@@ -93,6 +93,7 @@
             android:layout_height="wrap_content" />
 
         <SearchView
+            android:id="@+id/action_search_view"
             app:showAsAction="always|collapseActionView"
             app:actionViewClass="android.support.v7.widget.SearchView"
             android:layout_width="wrap_content"
@@ -100,4 +101,13 @@
 
         </SearchView>
     </LinearLayout>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="10sp"
+        android:scrollbars="vertical"
+        android:background="@color/bluegray100">
+
+    </androidx.recyclerview.widget.RecyclerView>
 </LinearLayout>
