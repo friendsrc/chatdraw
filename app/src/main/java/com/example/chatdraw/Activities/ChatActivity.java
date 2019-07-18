@@ -664,7 +664,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                             }
                         }
                     });
-        } else { // if its not a group
+        } else { // if its a group
             db.collection("GroupMessages")
                     .document(groupID)
                     .collection("ChatHistory")

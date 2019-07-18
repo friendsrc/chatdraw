@@ -1,19 +1,23 @@
 package com.example.chatdraw.Items;
 
+import java.util.Calendar;
+import java.util.Date;
+
 public class TransactionItem {
-    private int mImageResource;
     private String mText1;
     private String mText2;
+    private Date timestamp;
 
-    public TransactionItem(int imageResource, String text1, String text2) {
-        mImageResource = imageResource;
-        mText1 = text1;
-        mText2 = text2;
+    public TransactionItem() {
+
     }
 
-    public int getImageResource() {
-        return mImageResource;
+    public TransactionItem(String text1, String text2) {
+        this.mText1 = text1;
+        this.mText2 = text2;
+        this.timestamp= Calendar.getInstance().getTime();
     }
+
 
     public String getText1() {
         return mText1;
@@ -21,5 +25,19 @@ public class TransactionItem {
 
     public String getText2() {
         return mText2;
+    }
+
+    public Date getTimestamp() { return timestamp; }
+
+    public void setText1(String text1) {
+        this.mText1 = text1;
+    }
+
+    public void setText2(String text2) {
+        this.mText2 = text2;
+    }
+
+    public void setTimestamp (Date timestamp) {
+        this.timestamp = timestamp;
     }
 }
