@@ -5,12 +5,17 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.content.ContentResolver;
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -26,9 +31,11 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.Timestamp;
@@ -46,14 +53,18 @@ public class ImagePreviewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_preview);
 
+        // get imageUrl and image senderName from intent
         final String imageUrl = getIntent().getStringExtra("imageUrl");
         mSenderName = getIntent().getStringExtra("senderName");
+
+        // load the image into imageView
         ImageView imageView = findViewById(R.id.photo_imageView);
         Picasso.get()
                 .load(imageUrl)
                 .fit()
                 .into(imageView);
 
+        // set the back button
         final ImageView closeButton = findViewById(R.id.photo_close_button);
         closeButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -62,9 +73,11 @@ public class ImagePreviewActivity extends AppCompatActivity {
             }
         });
 
+        // set the senderName
         final TextView senderName = findViewById(R.id.photo_sender_name_textview);
         senderName.setText(mSenderName);
 
+        // set the saveButton to save image into internal storage
         final ImageView saveButton = findViewById(R.id.photo_save_button);
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -73,10 +86,11 @@ public class ImagePreviewActivity extends AppCompatActivity {
             }
         });
 
+        // get the two half-transparent Views
         final View viewTop = findViewById(R.id.photo_view1);
         final View viewBottom = findViewById(R.id.photo_view2);
 
-
+        // create a toggle to hide all the views except the photo if the photo imageView is tapped
         final boolean[] isToggledOff = {false};
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -108,10 +122,11 @@ public class ImagePreviewActivity extends AppCompatActivity {
                 Log.d(TAG, "imageUrl converted into bitmap: " + bitmap.toString());
                 mBitmap = bitmap;
 
+                // check for permission to write into external storage
                 if (ContextCompat.checkSelfPermission(ImagePreviewActivity.this,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE)
                         != PackageManager.PERMISSION_GRANTED) {
-
+                    // Permission not yet granted, ask for permission
                     String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         requestPermissions(permissions, WRITE_EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE);
@@ -121,9 +136,9 @@ public class ImagePreviewActivity extends AppCompatActivity {
                                 WRITE_EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE);
                     }
                 } else {
-                    // Permission has already been granted
-                    String name = "Image-" + new Timestamp(System.currentTimeMillis()).getTime() + ".jpg";
-                    MediaStore.Images.Media.insertImage(
+                    // Permission has already been granted, continue to save the image
+                    String name = "" + new Timestamp(System.currentTimeMillis()).getTime() + ".jpg";
+                    insertImage(
                             getContentResolver(),
                             mBitmap,
                             name,
@@ -137,7 +152,8 @@ public class ImagePreviewActivity extends AppCompatActivity {
             @Override
             public void onBitmapFailed(Exception e, Drawable errorDrawable) {
                 e.printStackTrace();
-                Log.d(TAG, "imageUrl convertion to bitmap failed, exception: " + e.getMessage());
+                Log.d(TAG,
+                        "imageUrl convertion to bitmap failed, exception: " + e.getMessage());
             }
 
             @Override
@@ -153,9 +169,9 @@ public class ImagePreviewActivity extends AppCompatActivity {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // permission was granted
-                    String name = "Image-" + new Timestamp(System.currentTimeMillis()).getTime() + ".jpg";
-                    MediaStore.Images.Media.insertImage(
+                    // permission was granted, continue to save the image
+                    String name = "" + new Timestamp(System.currentTimeMillis()).getTime() + ".jpg";
+                    insertImage(
                             getContentResolver(),
                             mBitmap,
                             name,
@@ -174,6 +190,102 @@ public class ImagePreviewActivity extends AppCompatActivity {
                 return;
             }
 
+        }
+    }
+
+
+    public static final String insertImage(ContentResolver cr,
+                                           Bitmap source,
+                                           String title,
+                                           String description) {
+
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, title);
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, title);
+        values.put(MediaStore.Images.Media.DESCRIPTION, description);
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        // Add the date meta data to ensure the image is added at the front of the gallery
+        values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis()/1000);
+        values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis()/1000);
+        values.put(MediaStore.Images.Media.DATE_MODIFIED, System.currentTimeMillis()/1000);
+        values.put(MediaStore.Images.Media.SIZE, source.getByteCount());
+
+        Uri url = null;
+        String stringUrl = null;    /* value to be returned */
+
+        try {
+            url = cr.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+            if (source != null) {
+                OutputStream imageOut = cr.openOutputStream(url);
+                try {
+                    source.compress(Bitmap.CompressFormat.JPEG, 50, imageOut);
+                } finally {
+                    imageOut.close();
+                }
+
+                long id = ContentUris.parseId(url);
+                // Wait until MINI_KIND thumbnail is generated.
+                Bitmap miniThumb = MediaStore.Images.Thumbnails.getThumbnail(cr, id, MediaStore.Images.Thumbnails.MINI_KIND, null);
+                // This is for backward compatibility.
+                storeThumbnail(cr, miniThumb, id, 50F, 50F, MediaStore.Images.Thumbnails.MICRO_KIND);
+            } else {
+                cr.delete(url, null, null);
+                url = null;
+            }
+        } catch (Exception e) {
+            if (url != null) {
+                cr.delete(url, null, null);
+                url = null;
+            }
+        }
+
+        if (url != null) {
+            stringUrl = url.toString();
+        }
+
+        return stringUrl;
+    }
+
+    private static final Bitmap storeThumbnail(
+            ContentResolver cr,
+            Bitmap source,
+            long id,
+            float width,
+            float height,
+            int kind) {
+
+        // create the matrix to scale it
+        Matrix matrix = new Matrix();
+
+        float scaleX = width / source.getWidth();
+        float scaleY = height / source.getHeight();
+
+        matrix.setScale(scaleX, scaleY);
+
+        Bitmap thumb = Bitmap.createBitmap(source, 0, 0,
+                source.getWidth(),
+                source.getHeight(), matrix,
+                true
+        );
+
+        ContentValues values = new ContentValues(4);
+        values.put(MediaStore.Images.Thumbnails.KIND,kind);
+        values.put(MediaStore.Images.Thumbnails.IMAGE_ID,(int)id);
+        values.put(MediaStore.Images.Thumbnails.HEIGHT,thumb.getHeight());
+        values.put(MediaStore.Images.Thumbnails.WIDTH,thumb.getWidth());
+
+        Uri url = cr.insert(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, values);
+
+        try {
+            OutputStream thumbOut = cr.openOutputStream(url);
+            thumb.compress(Bitmap.CompressFormat.JPEG, 100, thumbOut);
+            thumbOut.close();
+            return thumb;
+        } catch (FileNotFoundException ex) {
+            return null;
+        } catch (IOException ex) {
+            return null;
         }
     }
 

@@ -411,7 +411,6 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                                 public void onSuccess(Uri uri) {
                                     String url = uri.toString();
 //                                     Upload upload = new Upload(name, url);
-                                    Log.d("HEY", "url is" + url);
                                     // update Firestore Chat
                                     ChatItem newChatItem = addMessageToAdapter(userUID + "\tIMAGE\t" + url);
                                     sendMessage(newChatItem);
@@ -481,7 +480,6 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                                 public void onSuccess(Uri uri) {
                                     String url = uri.toString();
 //                                    Upload upload = new Upload(name, url);
-                                    Log.d("HEY", "url is" + url);
 
 
                                     // update realtime
@@ -653,7 +651,6 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                                 lastSnapshot = q;
                                 ChatItem chatItem = q.toObject(ChatItem.class);
                                 String[] arr = chatItem.getMessageBody().split("\t");
-                                if (arr.length > 2) Log.d("HEY", arr[2]);
 
                                 if (chatItem != null && !chatItem.getSenderID().equals(userUID)) {
                                     String updatedImageURL = friendImageUrl[0];
