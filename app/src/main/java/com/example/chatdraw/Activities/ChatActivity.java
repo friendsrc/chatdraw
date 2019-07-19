@@ -723,8 +723,16 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
     public void recyclerViewListClicked(View v, int position){
         if (v.findViewById(R.id.text_message_cardview) != null) {
             Intent intent = new Intent(ChatActivity.this, ImagePreviewActivity.class);
-            String[] arr = mAdapter.getItem(position).getMessageBody().split("\t");
+            ChatItem chatItem = mAdapter.getItem(position);
+            String[] arr = chatItem.getMessageBody().split("\t");
             intent.putExtra("imageUrl", arr[2]);
+            String senderName;
+            if (chatItem.getSenderID().equals(userUID)) {
+                senderName = "You";
+            } else {
+                senderName = chatItem.getSenderName();
+            }
+            intent.putExtra("senderName", senderName);
             startActivity(intent);
         }
     }
