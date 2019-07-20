@@ -168,6 +168,6 @@
     <!-- Credit Activity -->
     <string name="credit_name">Credits:</string>
     <string name="credit_currency">CTD</string>
-    <string name="credit_top_up">TOP UP</string>
+    <string name="credit_history_button">HISTORY</string>
     <string name="credit_history">History:</string>
 </resources>

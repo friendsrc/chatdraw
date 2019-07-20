@@ -60,7 +60,7 @@
 
         <Button
             android:id="@+id/top_up_button"
-            android:text="@string/credit_top_up"
+            android:text="@string/credit_history_button"
             android:textSize="18sp"
             android:textColor="@color/white"
             android:background="@drawable/rounded_button_secondary"
@@ -75,39 +75,4 @@
         android:background="@android:color/darker_gray"/>
 
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:paddingLeft="10sp"
-        android:paddingRight="10sp"
-
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <TextView
-            android:text="@string/credit_history"
-            android:layout_marginLeft="10sp"
-            android:layout_marginRight="10sp"
-            android:layout_gravity="center"
-            android:textSize="18sp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <SearchView
-            android:id="@+id/action_search_view"
-            app:showAsAction="always|collapseActionView"
-            app:actionViewClass="android.support.v7.widget.SearchView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-        </SearchView>
-    </LinearLayout>
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="10sp"
-        android:scrollbars="vertical"
-        android:background="@color/bluegray100">
-
-    </androidx.recyclerview.widget.RecyclerView>
 </LinearLayout>
