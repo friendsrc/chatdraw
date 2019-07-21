@@ -752,17 +752,19 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
         } else if (v.findViewById(R.id.pdf_icon_imageview) != null) {
             String url = chatItem.getMessageBody().split("\t")[3];
 
-//            url = "https://firebasestorage.googleapis.com/v0/b/chatdraw-ff7eb.appspot.com/o/106689861101623002819%2FUploads%2F1563716544971?alt=media&token=822fb971-61af-46d8-902b-3a8417b21685";
-            Log.d("HEY", url);
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(Uri.parse(url), "application/pdf");
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            Intent newIntent = Intent.createChooser(intent, "Open File");
-            try {
-                startActivity(newIntent);
-            } catch (ActivityNotFoundException e) {
-                // Instruct the user to install a PDF reader here, or something
-            }
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            startActivity(browserIntent);
+
+//            Log.d("HEY", url);
+//            Intent intent = new Intent(Intent.ACTION_VIEW);
+//            intent.setDataAndType(Uri.parse(url), "application/pdf");
+//            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//            Intent newIntent = Intent.createChooser(intent, "Open File");
+//            try {
+//                startActivity(newIntent);
+//            } catch (ActivityNotFoundException e) {
+//                // Instruct the user to install a PDF reader here, or something
+//            }
 
         }
 
