@@ -20,6 +20,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 public class SignupActivity extends AppCompatActivity {
     private EditText inputEmail, inputPassword;
     private Button btnSignIn, btnSignUp, btnResetPassword;
@@ -130,10 +134,12 @@ public class SignupActivity extends AppCompatActivity {
                                         }
                                     });
 
-                                    // also add user to firestore
-                                    FirebaseFirestore.getInstance().collection("Users")
-                                            .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                            .set(user);
+                                    FirebaseFirestore db = FirebaseFirestore.getInstance();
+                                    String userUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                                    Map<String, Object> map = new HashMap<>();
+                                    map.put("contacts", new ArrayList<String>());
+                                    map.put("groups", new ArrayList<String>());
+                                    db.collection("Users").document(userUID).set(map);
                                 }
                             }
                         });

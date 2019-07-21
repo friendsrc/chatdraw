@@ -86,17 +86,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // set persistence on
-        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-                .setPersistenceEnabled(true)
-                .build();
-        FirebaseFirestore.getInstance().setFirestoreSettings(settings);
-        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
-
         drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-//        navigationView.setCheckedItem(R.id.nav_contacts);
 
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
         final View hView = navigationView.getHeaderView(0);

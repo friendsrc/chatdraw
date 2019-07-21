@@ -48,8 +48,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
@@ -211,15 +209,10 @@ public class ProfileEditActivity extends AppCompatActivity {
                     if (acct != null) {
                         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(acct.getId()).child("status");
                         databaseReference.setValue(stringValue);
-
-                        FirebaseFirestore.getInstance().collection("Users").document(acct.getId()).set(map);
-
                     } else {
                         final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(user.getUid()).child("status");
                         databaseReference.setValue(stringValue);
-
-                        FirebaseFirestore.getInstance().collection("Users").document(user.getUid()).set(map);
                     }
 
                 } else {
@@ -417,10 +410,6 @@ public class ProfileEditActivity extends AppCompatActivity {
                                 // update realtime
                                 String uploadId = mDatabaseRef.push().getKey();
                                 mDatabaseRef.child(userID).child("imageUrl").setValue(url);
-
-                                // update firestore
-//                                Upload profileUpload = new Upload(url);
-//                                FirebaseFirestore.getInstance().collection("Users").document(userID).set(profileUpload, SetOptions.merge());
                             }
                         });
                     }
@@ -475,10 +464,6 @@ public class ProfileEditActivity extends AppCompatActivity {
                                 // update realtime
                                 String uploadId = mDatabaseRef.push().getKey();
                                 mDatabaseRef.child(userID).child("imageUrl").setValue(url);
-
-                                // update firestore
-                                Upload profileUpload = new Upload(url);
-                                FirebaseFirestore.getInstance().collection("Users").document(userID).set(profileUpload, SetOptions.merge());
                             }
                         });
                     }
@@ -527,11 +512,7 @@ public class ProfileEditActivity extends AppCompatActivity {
 //                    // update realtime
 //                    String uploadId = mDatabaseRef.push().getKey();
 //                    mDatabaseRef.child(userID).child("imageUrl").setValue(url);
-//
-//                    // update firestore
-//                    Upload profileUpload = new Upload(url);
-//                    FirebaseFirestore.getInstance().collection("Users").document(userID).set(profileUpload, SetOptions.merge());
-//
+////
 //                }
 //                });
 //            }

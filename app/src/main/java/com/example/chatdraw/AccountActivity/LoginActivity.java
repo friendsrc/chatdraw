@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.example.chatdraw.Activities.FriendListActivity;
 import com.example.chatdraw.Activities.MainActivity;
 import com.example.chatdraw.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -26,6 +27,7 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -35,6 +37,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity
         implements GoogleApiClient.OnConnectionFailedListener,
@@ -199,7 +205,7 @@ public class LoginActivity extends AppCompatActivity
             final GoogleSignInAccount account = completedTask.getResult(ApiException.class);
 
             if (account != null) {
-                String userID = account.getId();
+                final String userID = account.getId();
                 DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users");
                 databaseReference.orderByKey().equalTo(userID).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -224,10 +230,19 @@ public class LoginActivity extends AppCompatActivity
                             }
 
                             // edit: add to firestore
-                            FirebaseFirestore.getInstance()
-                                    .collection("Users")
-                                    .document(personId)
-                                    .set(user);
+                            final FirebaseFirestore db = FirebaseFirestore.getInstance();
+                            db.collection("Users")
+                                    .document(userID)
+                                    .get()
+                                    .addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            Map<String, Object> map = new HashMap<>();
+                                            map.put("contacts", new ArrayList<String>());
+                                            map.put("groups", new ArrayList<String>());
+                                            db.collection("Users").document(userID).set(map);
+                                        }
+                                    });
 
                             final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users");
                             databaseReference

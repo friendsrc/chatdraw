@@ -126,6 +126,39 @@ public class GroupCreateActivity extends AppCompatActivity {
                             .document(userUID)
                             .update("groups", FieldValue.arrayUnion(groupID));
 
+                    final FirebaseFirestore db = FirebaseFirestore.getInstance();
+                    db.collection("Users")
+                            .document(userUID)
+                            .update("groups", FieldValue.arrayUnion(groupID))
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    Toast.makeText(GroupCreateActivity.this,
+                                            "Contact added successfully.",
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Map<String, Object> map = new HashMap<>();
+                                    map.put("contacts", new ArrayList<String>());
+                                    map.put("groups", new ArrayList<String>());
+                                    db.collection("Users").document(userUID).set(map);
+                                    db.collection("Users")
+                                            .document(userUID)
+                                            .update("groups", FieldValue.arrayUnion(groupID))
+                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                @Override
+                                                public void onSuccess(Void aVoid) {
+                                                    Toast.makeText(GroupCreateActivity.this,
+                                                            "Contact added successfully.",
+                                                            Toast.LENGTH_SHORT).show();
+                                                }
+                                            });
+                                }
+                            });
+
                     // add group name to group document
                     Map<String, Object> docData = new HashMap<>();
                     docData.put("groupName", groupName);
@@ -147,10 +180,31 @@ public class GroupCreateActivity extends AppCompatActivity {
                         reference.update("members", FieldValue.arrayUnion(s));
 
                         // add group id to member
+                        final String memberID = s;
                         FirebaseFirestore.getInstance()
                                 .collection("Users")
                                 .document(s)
-                                .update("groups", FieldValue.arrayUnion(groupID));
+                                .update("groups", FieldValue.arrayUnion(groupID))
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Map<String, Object> map = new HashMap<>();
+                                        map.put("contacts", new ArrayList<String>());
+                                        map.put("groups", new ArrayList<String>());
+                                        db.collection("Users").document(memberID).set(map);
+                                        db.collection("Users")
+                                                .document(memberID)
+                                                .update("groups", FieldValue.arrayUnion(groupID))
+                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void aVoid) {
+                                                        Toast.makeText(GroupCreateActivity.this,
+                                                                "Contact added successfully.",
+                                                                Toast.LENGTH_SHORT).show();
+                                                    }
+                                                });
+                                    }
+                                });
 
                         // create a placeholder chat item
                         ChatItem chatItem = new ChatItem("", groupID, groupName,

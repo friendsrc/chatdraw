@@ -27,6 +27,8 @@ import com.example.chatdraw.Adapters.RecyclerViewAdapter;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -50,6 +52,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FriendListActivity extends AppCompatActivity implements RecyclerViewClickListener, Serializable {
 
@@ -170,9 +174,39 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
 
             final String uID = data.getStringExtra("uID");
             recyclerView.setAdapter(mAdapter);
-            FirebaseFirestore.getInstance().collection("Users")
+
+            final FirebaseFirestore db = FirebaseFirestore.getInstance();
+            db.collection("Users")
                     .document(currentUserID)
-                    .update("contacts", FieldValue.arrayUnion(uID));
+                    .update("contacts", FieldValue.arrayUnion(uID))
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Toast.makeText(FriendListActivity.this,
+                                    "Contact added successfully.",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Map<String, Object> map = new HashMap<>();
+                            map.put("contacts", new ArrayList<String>());
+                            map.put("groups", new ArrayList<String>());
+                            db.collection("Users").document(currentUserID).set(map);
+                            db.collection("Users")
+                                    .document(currentUserID)
+                                    .update("contacts", FieldValue.arrayUnion(uID))
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            Toast.makeText(FriendListActivity.this,
+                                                    "Contact added successfully.",
+                                                    Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        }
+                    });
             addUserWithID(uID);
         }
     }
@@ -191,24 +225,13 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                 if (status == null) status = "";
 
                 FriendListItem newFriend = new FriendListItem(name, status, uID, imageURL);
-//                friendList.add(newFriend);
                 mAdapter.addItem(newFriend);
-//                mAdapter.notifyDataSetChanged();
 
 //                if (currentUserID == null) {
 //                    return;
 //                }
 //
 //                try {
-//                    FileInputStream fis = getApplicationContext().openFileInput("FRIEND" + currentUserID);
-//                    ObjectInputStream oi = new ObjectInputStream(fis);
-//                    ArrayList<FriendListItem> savedFriendList = (ArrayList<FriendListItem>) oi.readObject();
-//                    friendList.addAll(savedFriendList);
-//
-//                    File dir = getFilesDir();
-//                    File file = new File(dir, "FRIEND" + currentUserID);
-//                    file.delete();
-//
 //                    FileOutputStream fos = getApplicationContext().openFileOutput("FRIEND" + currentUserID, MODE_PRIVATE);
 //                    ObjectOutputStream of = new ObjectOutputStream(fos);
 //                    of.writeObject(friendList);

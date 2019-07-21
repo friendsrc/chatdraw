@@ -26,10 +26,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FirebaseFirestore;
-
-import org.w3c.dom.Document;
 
 public class PersonalActivity extends AppCompatActivity {
     private DatabaseReference databaseReference;
@@ -116,7 +112,6 @@ public class PersonalActivity extends AppCompatActivity {
                         } else {
                             progressBar.setVisibility(View.VISIBLE);
 
-                            DocumentReference firestoreRef;
 
                             GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(PersonalActivity.this);
                             if (acct != null) {
@@ -126,8 +121,6 @@ public class PersonalActivity extends AppCompatActivity {
                                     finalID = personId;
                                     databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(personId);
 
-                                    // edit: save to firestore
-                                    firestoreRef = FirebaseFirestore.getInstance().collection("Users").document(acct.getId());
                                 } else {
                                     Toast.makeText(PersonalActivity.this, "Unable to get google profile ID", Toast.LENGTH_SHORT).show();
                                     startActivity(new Intent(PersonalActivity.this, LoginActivity.class));
@@ -141,16 +134,12 @@ public class PersonalActivity extends AppCompatActivity {
                                         .getReference("Users")
                                         .child(finalID);
 
-                                // edit: save to firestore
-                                firestoreRef = FirebaseFirestore.getInstance().collection("Users").document(currentFirebaseUser.getUid());
                             }
 
                             if (TextUtils.isEmpty(profile)) {
                                 databaseReference.child("name").setValue("Anonymous");
                             } else {
                                 databaseReference.child("name").setValue(profile);
-                                // edit:
-                                firestoreRef.update("name", profile);
                             }
 
                             if (TextUtils.isEmpty(username)) {
@@ -191,8 +180,6 @@ public class PersonalActivity extends AppCompatActivity {
                                         });
                                     }
                                 }
-                                // edit:
-                                firestoreRef.update("username", "@" + username);
                             }
 
                             startActivity(new Intent(PersonalActivity.this, MainActivity.class));
