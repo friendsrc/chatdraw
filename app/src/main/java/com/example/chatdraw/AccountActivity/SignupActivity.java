@@ -99,7 +99,7 @@ public class SignupActivity extends AppCompatActivity {
                         .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
-                                Toast.makeText(SignupActivity.this, "createUserWithEmail:onComplete:" + task.isSuccessful(), Toast.LENGTH_SHORT).show();
+                                // Toast.makeText(SignupActivity.this, "createUserWithEmail:onComplete:" + task.isSuccessful(), Toast.LENGTH_SHORT).show();
                                 progressBar.setVisibility(View.GONE);
 
                             /* If sign in fails, display a message to the user. If sign in succeeds
@@ -112,7 +112,7 @@ public class SignupActivity extends AppCompatActivity {
                                 } else {
                                     String name = null;
                                     String username = null;
-                                    User user = new User(email, name, username);
+                                    User user = new User(email, name, username, 80);
 
                                     FirebaseDatabase.getInstance().getReference("Users")
                                             .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
@@ -120,6 +120,7 @@ public class SignupActivity extends AppCompatActivity {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
                                             if (task.isSuccessful()) {
+                                                Toast.makeText(SignupActivity.this, "Congratulations, you get 80 CTD", Toast.LENGTH_SHORT).show();
                                                 // startActivity(new Intent(SignupActivity.this, FriendListActivity.class));
                                                 startActivity(new Intent(SignupActivity.this, PersonalActivity.class));
                                                 finish();

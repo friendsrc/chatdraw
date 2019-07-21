@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 public class User {
     public String email, name, username, imageUrl;
+    public Integer credits;
 
     public User(){
 
@@ -22,6 +23,15 @@ public class User {
         this.imageUrl = imageUrl;
     }
 
+    public User(String email, String name, String username, Integer credits) {
+        this.email = email;
+        this.name = name;
+        this.username = username;
+        this.credits = credits;
+    }
+
+    public Integer getCredits() { return credits; }
+
     public String getEmail() {
         return email;
     }
@@ -35,6 +45,8 @@ public class User {
     }
 
     public String getImageUrl() { return imageUrl; }
+
+    public void setCredits(Integer newCredit) { this.credits = newCredit; }
 
     public void setEmail(String email) {
         this.email = email;

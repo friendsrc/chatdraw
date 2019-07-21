@@ -98,7 +98,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView.setNavigationItemSelectedListener(this);
 //        navigationView.setCheckedItem(R.id.nav_contacts);
 
-        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
         final View hView = navigationView.getHeaderView(0);
 
@@ -106,23 +105,37 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (acct != null) {
             userUID = acct.getId();
         } else {
-            if (userUID == null) {
-                userUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+            if (user != null) {
+                userUID = user.getUid();
+            } else {
+                Toast.makeText(this, "User is not verified", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                        Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                        Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                finish();
             }
         }
 
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(MainActivity.this);
+                String tempName = "";
+                String tempUsername = "";
+                String imgurl = "";
 
-                String imgurl;
+                tempName = (String) dataSnapshot.child(userUID).child("name").getValue();
+                tempUsername = (String) dataSnapshot.child(userUID).child("username").getValue();
+                imgurl = (String) dataSnapshot.child(userUID).child("imageUrl").getValue();
 
-                if (acct != null) {
-                    imgurl = (String) dataSnapshot.child(acct.getId()).child("imageUrl").getValue();
-                } else {
-                    imgurl = (String) dataSnapshot.child(user.getUid()).child("imageUrl").getValue();
-                }
+                TextView tv = (TextView) hView.findViewById(R.id.profile_field);
+                tv.setText(tempName);
+
+                TextView tv1 = (TextView) hView.findViewById(R.id.username_field);
+                tv1.setText(tempUsername);
 
                 ImageButton imgbut = (ImageButton) hView.findViewById(R.id.profile_edit_button);
 
@@ -138,41 +151,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(MainActivity.this);
-                String tempName = "";
-                String tempUsername = "";
-
-                if (acct != null) {
-                    String uID = acct.getId();
-
-                    if (uID != null) {
-                        tempName = (String) dataSnapshot.child(uID).child("name").getValue();
-                        tempUsername = (String) dataSnapshot.child(uID).child("username").getValue();
-                    } else {
-                        Toast.makeText(MainActivity.this, "Error on user validation", Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    tempName = (String) dataSnapshot.child(user.getUid()).child("name").getValue();
-                    tempUsername = (String) dataSnapshot.child(user.getUid()).child("username").getValue();
-                }
-
-                TextView tv = (TextView) hView.findViewById(R.id.profile_field);
-                tv.setText(tempName);
-
-                TextView tv1 = (TextView) hView.findViewById(R.id.username_field);
-                tv1.setText(tempUsername);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                Toast.makeText(MainActivity.this, "Unknown error, please contact us", Toast.LENGTH_SHORT).show();
             }
         });
 

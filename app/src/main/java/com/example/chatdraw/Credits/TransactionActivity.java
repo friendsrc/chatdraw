@@ -124,32 +124,4 @@ public class TransactionActivity extends AppCompatActivity {
         finish();
         return true;
     }
-
-    // dummy data
-    private void fillExampleList() {
-        exampleList = new LinkedList<>();
-        exampleList.add(new TransactionItem("Line 1", "Line 2"));
-        exampleList.add(new TransactionItem("Line 3", "Line 4"));
-        exampleList.add(new TransactionItem("Line 5", "Line 6"));
-        exampleList.add(new TransactionItem("Line 7", "Line 8"));
-        exampleList.add(new TransactionItem("Line 9", "Line 10"));
-        exampleList.add(new TransactionItem("Line 11", "Line 12"));
-        exampleList.add(new TransactionItem("Line 13", "Line 14"));
-        exampleList.add(new TransactionItem("Line 15", "Line 16"));
-        exampleList.add(new TransactionItem("Line 17", "Line 18"));
-        exampleList.add(new TransactionItem("Line 19", "Line 20"));
-        exampleList.add(new TransactionItem("Line 21", "Line 22"));
-        exampleList.add(new TransactionItem("Line 23", "Line 24"));
-        exampleList.add(new TransactionItem("Line 25", "Line 26"));
-    }
-
-    private void setUpRecyclerView() {
-        recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setHasFixedSize(true);
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
-        adapter = new CreditRecyclerViewAdapter(exampleList);
-
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAdapter(adapter);
-    }
 }

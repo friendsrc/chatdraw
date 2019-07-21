@@ -189,7 +189,7 @@ public class SettingsActivity extends AppCompatActivity {
                                                     finish();
                                                     progressBar.setVisibility(View.GONE);
                                                 } else {
-                                                    Toast.makeText(SettingsActivity.this, "Failed to delete your account!", Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(SettingsActivity.this, "Failed to delete your account! Please re-open the app!", Toast.LENGTH_SHORT).show();
                                                     progressBar.setVisibility(View.GONE);
                                                 }
                                             }

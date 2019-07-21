@@ -2,6 +2,7 @@ package com.example.chatdraw.AccountActivity;
 
 import android.content.Intent;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
@@ -11,6 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.chatdraw.Activities.MainActivity;
@@ -30,7 +32,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import org.w3c.dom.Document;
 
 public class PersonalActivity extends AppCompatActivity {
+    private DatabaseReference databaseReference;
     private ProgressBar progressBar;
+    private String finalID = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +65,7 @@ public class PersonalActivity extends AppCompatActivity {
         finishButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
-                String temp = inputName.getText().toString().trim();
+                final String temp = inputName.getText().toString().trim();
 
                 if (temp.length() < 3) {
                     inputName.setError(getString(R.string.short_name));
@@ -112,7 +116,6 @@ public class PersonalActivity extends AppCompatActivity {
                         } else {
                             progressBar.setVisibility(View.VISIBLE);
 
-                            DatabaseReference databaseReference;
                             DocumentReference firestoreRef;
 
                             GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(PersonalActivity.this);
@@ -120,6 +123,7 @@ public class PersonalActivity extends AppCompatActivity {
                                 String personId = acct.getId();
 
                                 if (personId != null) {
+                                    finalID = personId;
                                     databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(personId);
 
                                     // edit: save to firestore
@@ -131,10 +135,12 @@ public class PersonalActivity extends AppCompatActivity {
                                 }
                             } else {
                                 FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                                finalID = currentFirebaseUser.getUid();
                                 databaseReference = FirebaseDatabase
                                         .getInstance()
                                         .getReference("Users")
-                                        .child(currentFirebaseUser.getUid());
+                                        .child(finalID);
+
                                 // edit: save to firestore
                                 firestoreRef = FirebaseFirestore.getInstance().collection("Users").document(currentFirebaseUser.getUid());
                             }
@@ -151,6 +157,40 @@ public class PersonalActivity extends AppCompatActivity {
                                 databaseReference.child("username").setValue(null);
                             } else {
                                 databaseReference.child("username").setValue("@" + username);
+                                if (!TextUtils.isEmpty(profile)) {
+                                    if (finalID.equals("")) {
+                                        Toast.makeText(PersonalActivity.this, "User is not validated", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
+
+                                        mDatabaseRef.addValueEventListener(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                String tempName = (String) dataSnapshot.child(finalID).child("name").getValue();
+                                                String tempUsername = (String) dataSnapshot.child(finalID).child("username").getValue();
+
+                                                if ((tempName == null) && (tempUsername == null)) {
+                                                    Integer tempCredit = (Integer) dataSnapshot.child(finalID).child("credits").getValue();
+
+                                                    Toast.makeText(PersonalActivity.this, "Yay, you get an additional 20 CTD", Toast.LENGTH_SHORT).show();
+
+                                                    if (tempCredit == null) {
+                                                        databaseReference.child("credits").setValue(100);
+                                                    } else {
+                                                        databaseReference.child("credits").setValue(tempCredit + 20);
+                                                    }
+                                                } else {
+                                                    Toast.makeText(PersonalActivity.this, "You have claimed the reward", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                                Toast.makeText(PersonalActivity.this, "You interrupted the connection", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    }
+                                }
                                 // edit:
                                 firestoreRef.update("username", "@" + username);
                             }
