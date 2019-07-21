@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 
@@ -26,6 +27,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.util.Log;
@@ -68,6 +70,18 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
+import com.tonyodev.fetch2.Download;
+import com.tonyodev.fetch2.Error;
+import com.tonyodev.fetch2.Fetch;
+import com.tonyodev.fetch2.FetchConfiguration;
+import com.tonyodev.fetch2.FetchListener;
+import com.tonyodev.fetch2.NetworkType;
+import com.tonyodev.fetch2.Priority;
+import com.tonyodev.fetch2.Request;
+import com.tonyodev.fetch2core.DownloadBlock;
+import com.tonyodev.fetch2core.Func;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -76,6 +90,7 @@ import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -481,7 +496,6 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                                     String url = uri.toString();
 //                                    Upload upload = new Upload(name, url);
 
-
                                     // update realtime
                                     String uploadId = mDatabaseRef.push().getKey();
                                     mDatabaseRef.child(userID).child("imageUrl").setValue(url);
@@ -490,7 +504,6 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
 //                                Upload profileUpload = new Upload(url);
                                     ChatItem newChatItem = addMessageToAdapter(userUID + "\tIMAGE\t" + url);
                                     sendMessage(newChatItem);
-//                                FirebaseFirestore.getInstance().collection("Users").document(userID).set(profileUpload, SetOptions.merge());
                                 }
                             });
                         }
@@ -515,22 +528,30 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                     mProgressDialog.show();
 
                     String fileName = System.currentTimeMillis() + "";
-                    final StorageReference storageReference = googleStorageRef.getReference();
-                    storageReference.child(userID).child("Uploads").child(fileName).putFile(pdfUri)
+                    final StorageReference storageReference = googleStorageRef.getReference().child(userID).child("Uploads").child(fileName);
+                    storageReference.putFile(pdfUri)
                             .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                                 @Override
                                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                    mProgressDialog.dismiss();
                                     // url is the link that will redirect you to the FirebaseStorage
-                                    String url = storageReference.getDownloadUrl().toString();
+                                    storageReference.getDownloadUrl()
+                                            .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                                @Override
+                                                public void onSuccess(Uri uri) {
+                                                    // connect ke Firestore
+                                                    ChatItem newChatItem = addMessageToAdapter(userUID + "\tPDF\t" + pdfName +"\t" + uri);
+                                                    sendMessage(newChatItem);
+                                                }
+                                            });
 
-                                    // connect ke Firestore
-                                    ChatItem newChatItem = addMessageToAdapter(userUID + "\tPDF\t" + pdfName +"\t" + url);
-                                    sendMessage(newChatItem);
+
                                 }
                             })
                             .addOnFailureListener(new OnFailureListener() {
                                 @Override
                                 public void onFailure(@NonNull Exception e) {
+                                    mProgressDialog.dismiss();
                                     Toast.makeText(ChatActivity.this, "Failed to upload files", Toast.LENGTH_SHORT).show();
                                 }
                             }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
@@ -547,10 +568,6 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                 Toast.makeText(this, "No file selected or camera picture not configured yet", Toast.LENGTH_SHORT).show();
             }
         }
-    }
-
-    public void sendAndSaveImage(final String userID, Bitmap bmp) {
-
     }
 
     // create an action bar button
@@ -718,9 +735,10 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
 
     @Override
     public void recyclerViewListClicked(View v, int position){
+        ChatItem chatItem = mAdapter.getItem(position);
+
         if (v.findViewById(R.id.text_message_cardview) != null) {
             Intent intent = new Intent(ChatActivity.this, ImagePreviewActivity.class);
-            ChatItem chatItem = mAdapter.getItem(position);
             String[] arr = chatItem.getMessageBody().split("\t");
             intent.putExtra("imageUrl", arr[2]);
             String senderName;
@@ -731,7 +749,23 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
             }
             intent.putExtra("senderName", senderName);
             startActivity(intent);
+        } else if (v.findViewById(R.id.pdf_icon_imageview) != null) {
+            String url = chatItem.getMessageBody().split("\t")[3];
+
+//            url = "https://firebasestorage.googleapis.com/v0/b/chatdraw-ff7eb.appspot.com/o/106689861101623002819%2FUploads%2F1563716544971?alt=media&token=822fb971-61af-46d8-902b-3a8417b21685";
+            Log.d("HEY", url);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(Uri.parse(url), "application/pdf");
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            Intent newIntent = Intent.createChooser(intent, "Open File");
+            try {
+                startActivity(newIntent);
+            } catch (ActivityNotFoundException e) {
+                // Instruct the user to install a PDF reader here, or something
+            }
+
         }
+
     }
 
     public void getOlderMessages() {
