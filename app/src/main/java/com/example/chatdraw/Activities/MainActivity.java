@@ -78,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // for testing, TODO: move to onDestroy()
         Intent i= new Intent(this, ChatService.class);
         i.putExtra("id", userUID);
         this.startService(i);
@@ -375,6 +376,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     }
                 });
     }
+
+//    @Override
+//    protected void onNewIntent(Intent intent) {
+//        super.onNewIntent(intent);
+//        setIntent(intent);
+//        if (intent != null) {
+//            Intent newIntent = new Intent(MainActivity.this, ChatActivity.class);
+//            newIntent.putExtra("name", intent.getStringExtra("name"));
+//            newIntent.putExtra("uID", intent.getStringExtra("uID"));
+//            startActivity(intent);
+//        }
+//    }
+
 
 //    @Override
 //    protected void onDestroy() {

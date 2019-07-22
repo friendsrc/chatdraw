@@ -3,8 +3,10 @@ package com.example.chatdraw.Activities;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 
@@ -185,6 +187,12 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
         // get friend's UID
         Intent intent = getIntent();
         friendsUID = intent.getStringExtra("uID");
+
+        // remove notification
+        String ns = Context.NOTIFICATION_SERVICE;
+        NotificationManager nMgr = (NotificationManager) getSystemService(ns);
+        // TODO: cancel per id
+        nMgr.cancelAll();
 
         // get user's UID
         GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(ChatActivity.this);
@@ -708,6 +716,8 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
     @Override
     public boolean onSupportNavigateUp() {
         // if the back button is pressed, destroy this activity
+        Intent intent = new Intent(ChatActivity.this, MainActivity.class);
+        startActivity(intent);
         finish();
         return true;
     }
