@@ -31,6 +31,8 @@ public class PersonalActivity extends AppCompatActivity {
     private DatabaseReference databaseReference;
     private ProgressBar progressBar;
     private String finalID = "";
+    private boolean claimedReward = false;
+    private boolean messageShown = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,7 +114,6 @@ public class PersonalActivity extends AppCompatActivity {
                         } else {
                             progressBar.setVisibility(View.VISIBLE);
 
-
                             GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(PersonalActivity.this);
                             if (acct != null) {
                                 String personId = acct.getId();
@@ -136,49 +137,56 @@ public class PersonalActivity extends AppCompatActivity {
 
                             }
 
-                            if (TextUtils.isEmpty(profile)) {
-                                databaseReference.child("name").setValue("Anonymous");
-                            } else {
-                                databaseReference.child("name").setValue(profile);
-                            }
+                            if (!TextUtils.isEmpty(profile) && !TextUtils.isEmpty(username)) {
+                                if (finalID.equals("")) {
+                                    Toast.makeText(PersonalActivity.this, "User is not validated", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
 
-                            if (TextUtils.isEmpty(username)) {
-                                databaseReference.child("username").setValue(null);
-                            } else {
-                                databaseReference.child("username").setValue("@" + username);
-                                if (!TextUtils.isEmpty(profile)) {
-                                    if (finalID.equals("")) {
-                                        Toast.makeText(PersonalActivity.this, "User is not validated", Toast.LENGTH_SHORT).show();
-                                    } else {
-                                        DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
+                                    mDatabaseRef.addValueEventListener(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                            String tempName = (String) dataSnapshot.child(finalID).child("name").getValue();
+                                            String tempUsername = (String) dataSnapshot.child(finalID).child("username").getValue();
 
-                                        mDatabaseRef.addValueEventListener(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                String tempName = (String) dataSnapshot.child(finalID).child("name").getValue();
-                                                String tempUsername = (String) dataSnapshot.child(finalID).child("username").getValue();
+                                            if ((tempName == null) && (tempUsername == null)) {
+                                                Long tempCredit = (Long) dataSnapshot.child(finalID).child("credits").getValue();
 
-                                                if ((tempName == null) && (tempUsername == null)) {
-                                                    Integer tempCredit = (Integer) dataSnapshot.child(finalID).child("credits").getValue();
+                                                databaseReference.child("name").setValue(profile);
+                                                databaseReference.child("username").setValue("@" + username);
 
-                                                    Toast.makeText(PersonalActivity.this, "Yay, you get an additional 20 CTD", Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(PersonalActivity.this, "Yay, you get an additional 20 CTD", Toast.LENGTH_SHORT).show();
 
-                                                    if (tempCredit == null) {
-                                                        databaseReference.child("credits").setValue(100);
-                                                    } else {
-                                                        databaseReference.child("credits").setValue(tempCredit + 20);
-                                                    }
+                                                if (tempCredit == null) {
+                                                    databaseReference.child("credits").setValue(100);
                                                 } else {
+                                                    databaseReference.child("credits").setValue(tempCredit + 20);
+                                                }
+                                            } else {
+                                                if (!messageShown) {
                                                     Toast.makeText(PersonalActivity.this, "You have claimed the reward", Toast.LENGTH_SHORT).show();
+                                                    messageShown = true;
                                                 }
                                             }
+                                        }
 
-                                            @Override
-                                            public void onCancelled(@NonNull DatabaseError databaseError) {
-                                                Toast.makeText(PersonalActivity.this, "You interrupted the connection", Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
-                                    }
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                                            Toast.makeText(PersonalActivity.this, "You interrupted the connection", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                                }
+                            } else {
+                                if (TextUtils.isEmpty(profile)) {
+                                    databaseReference.child("name").setValue("Anonymous");
+                                } else {
+                                    databaseReference.child("name").setValue(profile);
+                                }
+
+                                if (TextUtils.isEmpty(username)) {
+                                    databaseReference.child("username").setValue(null);
+                                } else {
+                                    databaseReference.child("username").setValue("@" + username);
                                 }
                             }
 
