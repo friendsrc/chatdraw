@@ -7,19 +7,15 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-import com.example.chatdraw.AccountActivity.LoginActivity;
-import com.example.chatdraw.Activities.MainActivity;
 import com.example.chatdraw.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -64,45 +60,41 @@ public class ChatService extends Service {
                         ArrayList<String> groups = (ArrayList<String>) documentSnapshot.get("groups");
                         contacts.addAll(groups);
 
-                        for (String s : contacts) {
-                            final String chatID = s;
-                            Log.d(TAG, "adding for " + s);
-                            db.collection("Previews")
-                                    .document(id)
-                                    .collection("ChatPreviews")
-                                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                                        @Override
-                                        public void onEvent(@Nullable QuerySnapshot snapshots, @Nullable FirebaseFirestoreException e) {
-                                            if (e != null) {
-                                                Log.w(TAG, "listen:error", e);
-                                                return;
-                                            }
-
-                                            for (DocumentChange dc : snapshots.getDocumentChanges()) {
-                                                switch (dc.getType()) {
-                                                    case ADDED:
-                                                        String messageBody = (String) dc.getDocument().get("messageBody");
-                                                        String senderName = (String) dc.getDocument().get("senderID");
-                                                        int messageId = chatID.hashCode();
-                                                        createNotification(messageId, messageBody);
-                                                        Log.d(TAG, "New message: " + dc.getDocument().getData());
-                                                        break;
-                                                    case MODIFIED:
-                                                        String body = (String) dc.getDocument().get("messageBody");
-                                                        String sender = (String) dc.getDocument().get("senderID");
-                                                        int id = chatID.hashCode();
-                                                        createNotification(id, body);
-                                                        Log.d(TAG, "Modified message: " + dc.getDocument().getData());
-                                                        break;
-                                                    case REMOVED:
-                                                        Log.d(TAG, "Removed message: " + dc.getDocument().getData());
-                                                        break;
-                                                }
-                                            }
-
+                        db.collection("Previews")
+                                .document(id)
+                                .collection("ChatPreviews")
+                                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                                    @Override
+                                    public void onEvent(@Nullable QuerySnapshot snapshots, @Nullable FirebaseFirestoreException e) {
+                                        if (e != null) {
+                                            Log.w(TAG, "listen:error", e);
+                                            return;
                                         }
-                                    });
-                        }
+
+                                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                                            switch (dc.getType()) {
+                                                case ADDED:
+                                                    String messageBody = (String) dc.getDocument().get("messageBody");
+                                                    String senderName = (String) dc.getDocument().get("senderName");
+                                                    int messageId = dc.getDocument().get("senderID").hashCode();
+                                                    createNotification(messageId, messageBody, senderName);
+                                                    Log.d(TAG, "New message: " + dc.getDocument().getData());
+                                                    break;
+                                                case MODIFIED:
+                                                    String body = (String) dc.getDocument().get("messageBody");
+                                                    String sender = (String) dc.getDocument().get("senderName");
+                                                    int id = dc.getDocument().get("senderID").hashCode();
+                                                    createNotification(id, body, sender);
+                                                    Log.d(TAG, "Modified message: " + dc.getDocument().getData());
+                                                    break;
+                                                case REMOVED:
+                                                    Log.d(TAG, "Removed message: " + dc.getDocument().getData());
+                                                    break;
+                                            }
+                                        }
+
+                                    }
+                                });
 
                     }
                 });
@@ -118,10 +110,11 @@ public class ChatService extends Service {
         return null;
     }
 
-    public void createNotification(int messageId, String messageBody) {
+    public void createNotification(int messageId, String messageBody, String senderName) {
+        if (senderName == null) senderName = "Anonymous";
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.blank_account)
-                .setContentTitle("My notification")
+                .setContentTitle(senderName)
                 .setContentText(messageBody)
                 .setStyle(new NotificationCompat.BigTextStyle()
                         .bigText(messageBody))
