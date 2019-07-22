@@ -10,6 +10,7 @@ import com.example.chatdraw.AccountActivity.ProfileEditActivity;
 import com.example.chatdraw.AccountActivity.SettingsActivity;
 import com.example.chatdraw.Credits.CreditActivity;
 import com.example.chatdraw.Items.ChatItem;
+import com.example.chatdraw.Services.ChatService;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -76,6 +77,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Intent i= new Intent(this, ChatService.class);
+        i.putExtra("id", userUID);
+        this.startService(i);
 
         // create Adapter and set to ListView
         final FriendListAdapter friendListAdapter = new FriendListAdapter(this);
@@ -370,6 +375,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     }
                 });
     }
+
+//    @Override
+//    protected void onDestroy() {
+//        // use this to start and trigger a service
+//        Intent i= new Intent(this, ChatService.class);
+//        i.putExtra("id", userUID);
+//        this.startService(i);
+//        super.onDestroy();
+//    }
 }
 
 // Changing image into bitmap from firebase storage

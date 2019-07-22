@@ -755,7 +755,6 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             startActivity(browserIntent);
 
-//            Log.d("HEY", url);
 //            Intent intent = new Intent(Intent.ACTION_VIEW);
 //            intent.setDataAndType(Uri.parse(url), "application/pdf");
 //            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
