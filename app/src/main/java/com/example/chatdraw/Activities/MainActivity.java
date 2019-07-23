@@ -1,6 +1,8 @@
 package com.example.chatdraw.Activities;
 
 import android.app.Activity;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -77,11 +79,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // for testing, TODO: move to onDestroy()
-        Intent i= new Intent(this, ChatService.class);
-        i.putExtra("id", userUID);
-        this.startService(i);
 
         // create Adapter and set to ListView
         final FriendListAdapter friendListAdapter = new FriendListAdapter(this);
@@ -169,8 +166,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         newChatImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            Intent intent = new Intent(MainActivity.this, NewMessageActivity.class);
-            startActivityForResult(intent, NEW_MESSAGE_REQUEST_CODE);
+                Intent intent = new Intent(MainActivity.this, NewMessageActivity.class);
+                startActivityForResult(intent, NEW_MESSAGE_REQUEST_CODE);
             }
         });
 
@@ -182,6 +179,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 startActivity(intent);
             }
         });
+
+        // remove service
+        Intent stopIntent = new Intent(MainActivity.this, ChatService.class);
+        stopService(stopIntent);
+
+        // remove notifications
+//        String ns = Context.NOTIFICATION_SERVICE;
+//        NotificationManager nMgr = (NotificationManager) getSystemService(ns);
+//        nMgr.cancelAll();
     }
 
     @Override
@@ -321,7 +327,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                 uId =chatItem.getReceiverID();
                                 name = chatItem.getReceiverName();
                                 imageUrl = chatItem.getReceiverImageUrl();
-                            // if the sender is not the user, use the sender's profile
+                                // if the sender is not the user, use the sender's profile
                             } else {
                                 name = chatItem.getSenderName();
                                 imageUrl = chatItem.getSenderImageUrl();
@@ -377,27 +383,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 });
     }
 
-//    @Override
-//    protected void onNewIntent(Intent intent) {
-//        super.onNewIntent(intent);
-//        setIntent(intent);
-//        if (intent != null) {
-//            Intent newIntent = new Intent(MainActivity.this, ChatActivity.class);
-//            newIntent.putExtra("name", intent.getStringExtra("name"));
-//            newIntent.putExtra("uID", intent.getStringExtra("uID"));
-//            startActivity(intent);
-//        }
-//    }
 
-
-//    @Override
-//    protected void onDestroy() {
-//        // use this to start and trigger a service
-//        Intent i= new Intent(this, ChatService.class);
-//        i.putExtra("id", userUID);
-//        this.startService(i);
-//        super.onDestroy();
-//    }
+    @Override
+    protected void onStop() {
+        Log.d("HEY", "onStop called");
+        Intent i = new Intent(this, ChatService.class);
+        i.putExtra("id", userUID);
+        this.startService(i);
+        super.onStop();
+    }
 }
 
 // Changing image into bitmap from firebase storage

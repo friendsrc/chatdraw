@@ -152,6 +152,8 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
     int docsPerRetrieval = 500;
     int docsOnScreen = docsPerRetrieval;
 
+    boolean isFromService;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -188,11 +190,10 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
         Intent intent = getIntent();
         friendsUID = intent.getStringExtra("uID");
 
-        // remove notification
-        String ns = Context.NOTIFICATION_SERVICE;
-        NotificationManager nMgr = (NotificationManager) getSystemService(ns);
-        // TODO: cancel per id
-        nMgr.cancelAll();
+        Log.d("HEY", friendsUID);
+
+        // check if this activity is from ChatService
+        isFromService = intent.getBooleanExtra("isFromService", false);
 
         // get user's UID
         GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(ChatActivity.this);
@@ -716,8 +717,10 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
     @Override
     public boolean onSupportNavigateUp() {
         // if the back button is pressed, destroy this activity
-        Intent intent = new Intent(ChatActivity.this, MainActivity.class);
-        startActivity(intent);
+        if (isFromService) {
+            Intent intent = new Intent(ChatActivity.this, MainActivity.class);
+            startActivity(intent);
+        }
         finish();
         return true;
     }
@@ -872,5 +875,11 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
 
         mPhotoDialog.show();
         mPhotoDialog.getWindow().setGravity(Gravity.CENTER);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
     }
 }

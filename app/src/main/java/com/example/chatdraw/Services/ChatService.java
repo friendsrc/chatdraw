@@ -28,6 +28,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
 
@@ -42,7 +43,7 @@ public class ChatService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(TAG, "service created");
+        Log.d("HEY", "service created");
         createNotificationChannel();
 
         String userUID;
@@ -80,11 +81,11 @@ public class ChatService extends Service {
                                                     senderName = dc.getDocument().getString("receiverName");
                                                     senderID = dc.getDocument().getString("receiverID");
                                                 }
-                                                int messageId = dc.getDocument().get("senderID").hashCode();
+                                                int messageId = senderID.hashCode();
                                                 switch (dc.getType()) {
                                                     case ADDED:
-                                                        createNotification(messageId, messageBody, senderName, senderID);
-                                                        Log.d(TAG, "New message: " + dc.getDocument().getData());
+//                                                        createNotification(messageId, messageBody, senderName, senderID);
+//                                                        Log.d(TAG, "New message: " + dc.getDocument().getData());
                                                         break;
                                                     case MODIFIED:
                                                         createNotification(messageId, messageBody, senderName, senderID);
@@ -117,7 +118,8 @@ public class ChatService extends Service {
         Intent resultIntent = new Intent(this, ChatActivity.class);
         resultIntent.putExtra("uID", senderID);
         resultIntent.putExtra("name", senderName);
-        resultIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        resultIntent.putExtra("isFromService", true);
+//        resultIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         // Create the TaskStackBuilder and add the intent, which inflates the back stack
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
         stackBuilder.addNextIntentWithParentStack(resultIntent);
@@ -126,17 +128,16 @@ public class ChatService extends Service {
                 stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.drawable.brush)
                 .setContentTitle(senderName)
                 .setContentText(messageBody)
                 .setContentIntent(resultPendingIntent)
+                .setAutoCancel(true)
                 .setStyle(new NotificationCompat.BigTextStyle()
                         .bigText(messageBody))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-
-        // notificationId is a unique int for each notification that you must define
         notificationManager.notify(messageId, builder.build());
     }
 
@@ -145,12 +146,11 @@ public class ChatService extends Service {
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "ChatDraw";
-            String description = "Incoming Message";
+            String description = "Incoming message notification";
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);
-            // Register the channel with the system; you can't change the importance
-            // or other notification behaviors after this
+
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
