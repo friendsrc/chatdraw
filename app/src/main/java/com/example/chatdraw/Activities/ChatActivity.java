@@ -586,11 +586,25 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
         return super.onCreateOptionsMenu(menu);
     }
 
-    // handle button activities
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-//        int id = item.getItemId();
-        return super.onOptionsItemSelected(item);
+        switch (item.getItemId()) {
+            case R.id.draw:
+                // Go to draw activity
+                Toast.makeText(this, "Draw", Toast.LENGTH_SHORT).show();
+                return true;
+
+            case R.id.call:
+                // make a call
+                Toast.makeText(this, "Call", Toast.LENGTH_SHORT).show();
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
     }
 
 
