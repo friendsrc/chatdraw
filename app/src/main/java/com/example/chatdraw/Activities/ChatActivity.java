@@ -100,6 +100,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
     private static final int SELECT_FILE = 0;
     private static final int REQUEST_CAMERA = 1;
     private static final int REQUEST_DOCUMENT = 2;
+    private final int REQUEST_USE_SIP = 109;
     private static String TAG = "ChatActivity";
 
     // this user's information
@@ -337,6 +338,10 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
             intent.setType("application/pdf");
             startActivityForResult(intent, REQUEST_DOCUMENT);
+        } else if (requestCode == REQUEST_USE_SIP && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "Call", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(ChatActivity.this, CallActivity.class);
+            startActivity(intent);
         } else {
             Toast.makeText(this, "Permission is not granted!", Toast.LENGTH_SHORT).show();
         }
@@ -596,9 +601,15 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
 
             case R.id.call:
                 // make a call
-                Toast.makeText(this, "Call", Toast.LENGTH_SHORT).show();
-                return true;
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.USE_SIP) == PackageManager.PERMISSION_DENIED) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.USE_SIP}, REQUEST_USE_SIP);
+                } else {
+                    Toast.makeText(this, "Call", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(ChatActivity.this, CallActivity.class);
+                    startActivity(intent);
+                }
 
+                return true;
             default:
                 // If we got here, the user's action was not recognized.
                 // Invoke the superclass to handle it.
