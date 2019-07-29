@@ -30,14 +30,18 @@ import android.widget.Toast;
 
 import com.example.chatdraw.R;
 
+import org.linphone.core.AuthInfo;
+import org.linphone.core.Core;
+import org.linphone.core.Factory;
+
 import java.text.ParseException;
 
 public class CallActivity extends AppCompatActivity implements View.OnClickListener {
     private final int REQUEST_USE_SIP = 109;
     private final String KEY = "password";
-    private final String USERNAME = "calit2_buddy";
+    private final String USERNAME = "victory";
     private final String DOMAIN = "sip.linphone.org";
-    private final String PASSWORD = "";
+    private final String PASSWORD = "herewego";
 
     private SipManager manager = null;
     private SipProfile profile = null;
@@ -49,11 +53,16 @@ public class CallActivity extends AppCompatActivity implements View.OnClickListe
     private Button makeCallBtn, endCallBtn;
     private IncomingReceiver receiver;
 
+    private AuthInfo mAuthInfo;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_call);
 
+//        mAuthInfo = Factory.instance().createAuthInfo(
+//                "https://stackoverflow.com/questions/53616538/linphone-android-not-receiving-calls"
+//                )
         // Attaches the view's button onto the private
         makeCallBtn = (Button) findViewById(R.id.makeCall);
         endCallBtn = (Button) findViewById(R.id.endCall);
@@ -300,13 +309,11 @@ public class CallActivity extends AppCompatActivity implements View.OnClickListe
                             @Override
                             public void onRegistrationDone(String s, long l) {
                                 Log.e("$$", "Sip Profile <" + s + "> successfully registered");
-                                Toast.makeText(CallActivity.this, s + " login successful", Toast.LENGTH_SHORT).show();
                             }
 
                             @Override
                             public void onRegistrationFailed(String s, int i, String s1) {
                                 Log.e("$$", "Sip Profile failed to register <" + s + "> Error Message: " +s1);
-                                Toast.makeText(CallActivity.this, s + " login unsuccessful", Toast.LENGTH_SHORT).show();
                             }
                         });
             } catch (ParseException e) {

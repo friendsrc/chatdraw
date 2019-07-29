@@ -17,6 +17,14 @@ allprojects {
     repositories {
         google()
         jcenter()
+        // For snapshots
+        maven {
+            url "https://linphone.org/snapshots/maven_repository/"
+        }
+        // For releases
+//        maven {
+//            url "https://linphone.org/releases/maven_repository/"
+//        }
 //        maven {
 //            url "https://maven.google.com"
 //        }
