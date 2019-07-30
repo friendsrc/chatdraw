@@ -100,8 +100,11 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
     private static final int SELECT_FILE = 0;
     private static final int REQUEST_CAMERA = 1;
     private static final int REQUEST_DOCUMENT = 2;
+    private static final int CALLING_REQUEST = 3;
     private final int REQUEST_USE_SIP = 109;
     private static String TAG = "ChatActivity";
+
+    private String[] Permission_all = {Manifest.permission.USE_SIP, Manifest.permission.RECORD_AUDIO };
 
     // this user's information
     private String userUID;
@@ -338,10 +341,8 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
             intent.setType("application/pdf");
             startActivityForResult(intent, REQUEST_DOCUMENT);
-        } else if (requestCode == REQUEST_USE_SIP && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "Call", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(ChatActivity.this, CallActivity.class);
-            startActivity(intent);
+        } else if (requestCode == CALLING_REQUEST && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "Allow all permissions to enable call feature", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(this, "Permission is not granted!", Toast.LENGTH_SHORT).show();
         }
@@ -591,6 +592,17 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
         return super.onCreateOptionsMenu(menu);
     }
 
+    public static boolean hasPermissions(Context context, String... permissions){
+        if (context != null && permissions != null) {
+            for (String permission: permissions) {
+                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -601,8 +613,8 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
 
             case R.id.call:
                 // make a call
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.USE_SIP) == PackageManager.PERMISSION_DENIED) {
-                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.USE_SIP}, REQUEST_USE_SIP);
+                if (!hasPermissions(this, Permission_all)){
+                    ActivityCompat.requestPermissions(this, Permission_all, CALLING_REQUEST);
                 } else {
                     Toast.makeText(this, "Call", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(ChatActivity.this, CallActivity.class);
