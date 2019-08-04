@@ -3,6 +3,7 @@ package com.example.chatdraw.Drawing;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.MotionEventCompat;
 
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -23,6 +24,9 @@ public class DrawActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_draw);
         CanvasView canvasView = findViewById(R.id.canvas);
+        Intent intent = getIntent();
+        canvasView.setIDs(intent.getStringExtra("userUID")
+                , intent.getStringExtra("friendsUID"));
         canvasView.getFromFirebase();
     }
 

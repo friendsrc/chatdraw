@@ -19,7 +19,6 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.LinkedList;
 
@@ -59,6 +58,12 @@ public class CanvasView extends View {
         mPaint.setStrokeWidth(4f);
 
         line = new LinkedList<>();
+
+    }
+
+    public void setIDs(String userID, String friendID) {
+        userUID = userID;
+        friendsUID = friendID;
     }
 
     // override onSizeChanged
@@ -110,12 +115,19 @@ public class CanvasView extends View {
     private void upTouch() {
         mPath.lineTo(mX, mY);
 
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference()
-                .child("Drawing");
-//                .child(System.currentTimeMillis() + "");
-
-        ref.child("line").setValue(line);
-        ref.child("size").setValue(line.size());
+        DatabaseReference ref;
+        if (userUID.compareTo(friendsUID) > 0) {
+            ref = FirebaseDatabase.getInstance().getReference()
+                    .child("Drawing")
+                    .child(userUID + "|" + friendsUID)
+                    .push();
+        } else {
+            ref = FirebaseDatabase.getInstance().getReference()
+                    .child("Drawing")
+                    .child(friendsUID + "|" + userUID)
+                    .push();
+        }
+        ref.setValue(line);
 
         line = new LinkedList<>();
 
@@ -148,58 +160,62 @@ public class CanvasView extends View {
 
     public void getFromFirebase() {
         Log.d("TEST", "getFromFirebase()");
+
+        DatabaseReference ref;
+        if (userUID.compareTo(friendsUID) > 0) {
+            ref = FirebaseDatabase.getInstance().getReference()
+                    .child("Drawing")
+                    .child(userUID + "|" + friendsUID);
+        } else {
+            ref = FirebaseDatabase.getInstance().getReference()
+                    .child("Drawing")
+                    .child(friendsUID + "|" + userUID);
+        }
+
         final Point[] prevPoint = new Point[1];
         final Point[] currPoint = new Point[1];
 
-        FirebaseDatabase.getInstance().getReference("Drawing/line")
-                .addChildEventListener(new ChildEventListener() {
-                    @Override
-                    public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                        Log.d("TEST", "onChildAdded()");
-                        Path newPath = new Path();
-                            currPoint[0] =  dataSnapshot.getValue(Point.class);
-                            Log.d("TEST",  "point added " + currPoint[0].getX());
-                            if (prevPoint[0] != null && prevPoint[0].getX() != -1) {
-                                mPath.quadTo(prevPoint[0].getX(), prevPoint[0].getY(),
-                                        currPoint[0].getX(), currPoint[0].getY());
-                            } else {
-                                Log.d("TEST", "first point");
-                                mPath.moveTo(currPoint[0].getX(), currPoint[0].getY());
-                            }
-                            prevPoint[0] = currPoint[0];
-
+        ref.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                Log.d("TEST", "onChildAdded()");
+                for (DataSnapshot d : dataSnapshot.getChildren()) {
+                    currPoint[0] =  d.getValue(Point.class);
+                    Log.d("TEST",  "point added " + currPoint[0].getX());
+                    if (prevPoint[0] != null && prevPoint[0].getX() != -1) {
+                        mPath.quadTo(prevPoint[0].getX(), prevPoint[0].getY(),
+                                currPoint[0].getX(), currPoint[0].getY());
+                    } else {
+                        Log.d("TEST", "first point");
+                        mPath.moveTo(currPoint[0].getX(), currPoint[0].getY());
                     }
+                    prevPoint[0] = currPoint[0];
+                }
+                prevPoint[0] = new Point(-1, -1);
 
-                    @Override
-                    public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                        Log.d("TEST", "onChildChanged()");
-                        Path newPath = new Path();
-                        currPoint[0] =  dataSnapshot.getValue(Point.class);
-                        Log.d("TEST",  "point added " + currPoint[0].getX());
-                        if (prevPoint[0] != null && prevPoint[0].getX() != -1) {
-                            mPath.quadTo(prevPoint[0].getX(), prevPoint[0].getY(),
-                                    currPoint[0].getX(), currPoint[0].getY());
-                        } else {
-                            Log.d("TEST", "first point");
-                            mPath.moveTo(currPoint[0].getX(), currPoint[0].getY());
-                        }
-                        prevPoint[0] = currPoint[0];
-                    }
+            }
 
-                    @Override
-                    public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                Log.d("TEST", "onChildChanged()");
 
-                    }
+            }
 
-                    @Override
-                    public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
 
-                    }
+            }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
 
-                    }
-                });
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
     }
 }
