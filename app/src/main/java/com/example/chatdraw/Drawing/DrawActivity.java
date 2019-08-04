@@ -22,13 +22,14 @@ public class DrawActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_draw);
+        CanvasView canvasView = findViewById(R.id.canvas);
+        canvasView.getFromFirebase();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        CanvasView canvasView = findViewById(R.id.canvas);
-        canvasView.getFromFirebase();
+
     }
 
 

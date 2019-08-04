@@ -151,39 +151,49 @@ public class CanvasView extends View {
         final Point[] prevPoint = new Point[1];
         final Point[] currPoint = new Point[1];
 
-        FirebaseDatabase.getInstance().getReference("Drawing/size")
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        Log.d("TEST", dataSnapshot.getValue(Integer.class).toString());
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                });
-
-
-
-
         FirebaseDatabase.getInstance().getReference("Drawing/line")
-                .addListenerForSingleValueEvent(new ValueEventListener() {
+                .addChildEventListener(new ChildEventListener() {
                     @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                         Log.d("TEST", "onChildAdded()");
                         Path newPath = new Path();
-                        for (DataSnapshot p : dataSnapshot.getChildren()) {
-
-                            currPoint[0] =  p.getValue(Point.class);
+                            currPoint[0] =  dataSnapshot.getValue(Point.class);
                             Log.d("TEST",  "point added " + currPoint[0].getX());
-
                             if (prevPoint[0] != null && prevPoint[0].getX() != -1) {
                                 mPath.quadTo(prevPoint[0].getX(), prevPoint[0].getY(),
                                         currPoint[0].getX(), currPoint[0].getY());
+                            } else {
+                                Log.d("TEST", "first point");
+                                mPath.moveTo(currPoint[0].getX(), currPoint[0].getY());
                             }
                             prevPoint[0] = currPoint[0];
+
+                    }
+
+                    @Override
+                    public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                        Log.d("TEST", "onChildChanged()");
+                        Path newPath = new Path();
+                        currPoint[0] =  dataSnapshot.getValue(Point.class);
+                        Log.d("TEST",  "point added " + currPoint[0].getX());
+                        if (prevPoint[0] != null && prevPoint[0].getX() != -1) {
+                            mPath.quadTo(prevPoint[0].getX(), prevPoint[0].getY(),
+                                    currPoint[0].getX(), currPoint[0].getY());
+                        } else {
+                            Log.d("TEST", "first point");
+                            mPath.moveTo(currPoint[0].getX(), currPoint[0].getY());
                         }
+                        prevPoint[0] = currPoint[0];
+                    }
+
+                    @Override
+                    public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+                    }
+
+                    @Override
+                    public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
                     }
 
                     @Override
@@ -191,29 +201,5 @@ public class CanvasView extends View {
 
                     }
                 });
-
-//                .addValueEventListener(new ValueEventListener() {
-//                    @Override
-//                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                        Path newPath = new Path();
-//                        int size = dataSnapshot.child("size").getValue(Integer.class);
-//                        for (int i = 0; i < size; i++) {
-//                            currPoint[0] =  dataSnapshot.child("line")
-//                                    .child(i + "")
-//                                    .getValue(Point.class);
-//                            if (prevPoint[0] != null && prevPoint[0].getX() != -1) {
-//                                newPath.quadTo(prevPoint[0].getX(), prevPoint[0].getY(),
-//                                        currPoint[0].getX(), currPoint[0].getY());
-//                            }
-//                            prevPoint[0] = currPoint[0];
-//                        }
-//                        mCanvas.drawPath(newPath, mPaint);
-//                    }
-//
-//                    @Override
-//                    public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//                    }
-//                });
     }
 }
