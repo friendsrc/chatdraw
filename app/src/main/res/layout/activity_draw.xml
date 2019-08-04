@@ -4,9 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Activities.DrawActivity">
+    tools:context=".Drawing.DrawActivity">
 
-    <com.example.chatdraw.CanvasView
+    <com.example.chatdraw.Drawing.CanvasView
         android:id="@+id/signature_canvas"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

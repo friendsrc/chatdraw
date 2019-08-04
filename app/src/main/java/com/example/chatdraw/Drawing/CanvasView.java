@@ -1,4 +1,4 @@
-package com.example.chatdraw;
+package com.example.chatdraw.Drawing;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -7,10 +7,27 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.LinkedList;
+
+
 public class CanvasView extends View {
+
+    public static final String TAG = "CanvasView";
+
+    public String userUID;
+    public String friendsUID;
 
     public int width;
     public int height;
@@ -21,6 +38,8 @@ public class CanvasView extends View {
     private Paint mPaint;
     private float mX, mY;
     private static final float TOLERANCE = 5;
+
+    private LinkedList<Point> line;
 
     public CanvasView(Context c, AttributeSet attrs) {
         super(c, attrs);
@@ -36,6 +55,8 @@ public class CanvasView extends View {
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setStrokeJoin(Paint.Join.ROUND);
         mPaint.setStrokeWidth(4f);
+
+        line = new LinkedList<>();
     }
 
     // override onSizeChanged
@@ -61,6 +82,8 @@ public class CanvasView extends View {
         mPath.moveTo(x, y);
         mX = x;
         mY = y;
+
+        line.add(new Point(x, y));
     }
 
     // when ACTION_MOVE move touch according to the x,y values
@@ -72,6 +95,8 @@ public class CanvasView extends View {
             mX = x;
             mY = y;
         }
+
+        line.add(new Point(x, y));
     }
 
     public void clearCanvas() {
@@ -82,6 +107,16 @@ public class CanvasView extends View {
     // when ACTION_UP stop touch
     private void upTouch() {
         mPath.lineTo(mX, mY);
+
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference()
+                .child("Drawing");
+//                .child(System.currentTimeMillis() + "");
+
+        ref.child("line").setValue(line);
+        ref.child("size").setValue(line.size());
+
+        line = new LinkedList<>();
+
     }
 
     //override the onTouchEvent
@@ -89,6 +124,8 @@ public class CanvasView extends View {
     public boolean onTouchEvent(MotionEvent event) {
         float x = event.getX();
         float y = event.getY();
+
+        Log.d(TAG, x + "," + y);
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
@@ -105,5 +142,29 @@ public class CanvasView extends View {
                 break;
         }
         return true;
+    }
+
+    private void getFromFirebase() {
+        final Point[] prevPoint;
+        final Point[] currPoint = new Point[1];
+
+        FirebaseDatabase.getInstance().getReference("Drawing")
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        int size = dataSnapshot.child("size").getValue(Integer.class);
+                        for (int i = 0; i < size; i++) {
+                            currPoint[0] =  dataSnapshot.child("line")
+                                    .child(i + "")
+                                    .getValue(Point.class);
+                            //todo
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
     }
 }

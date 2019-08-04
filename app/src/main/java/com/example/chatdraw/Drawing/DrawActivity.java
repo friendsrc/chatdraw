@@ -1,4 +1,4 @@
-package com.example.chatdraw.Activities;
+package com.example.chatdraw.Drawing;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.MotionEventCompat;
