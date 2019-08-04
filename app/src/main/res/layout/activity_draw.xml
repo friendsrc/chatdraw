@@ -7,7 +7,7 @@
     tools:context=".Drawing.DrawActivity">
 
     <com.example.chatdraw.Drawing.CanvasView
-        android:id="@+id/signature_canvas"
+        android:id="@+id/canvas"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:textColor="#FFFFFF" />

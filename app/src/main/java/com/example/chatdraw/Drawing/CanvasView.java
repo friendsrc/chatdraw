@@ -12,7 +12,9 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -144,20 +146,43 @@ public class CanvasView extends View {
         return true;
     }
 
-    private void getFromFirebase() {
-        final Point[] prevPoint;
+    public void getFromFirebase() {
+        Log.d("TEST", "getFromFirebase()");
+        final Point[] prevPoint = new Point[1];
         final Point[] currPoint = new Point[1];
 
-        FirebaseDatabase.getInstance().getReference("Drawing")
-                .addValueEventListener(new ValueEventListener() {
+        FirebaseDatabase.getInstance().getReference("Drawing/size")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        int size = dataSnapshot.child("size").getValue(Integer.class);
-                        for (int i = 0; i < size; i++) {
-                            currPoint[0] =  dataSnapshot.child("line")
-                                    .child(i + "")
-                                    .getValue(Point.class);
-                            //todo
+                        Log.d("TEST", dataSnapshot.getValue(Integer.class).toString());
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
+
+
+
+        FirebaseDatabase.getInstance().getReference("Drawing/line")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        Log.d("TEST", "onChildAdded()");
+                        Path newPath = new Path();
+                        for (DataSnapshot p : dataSnapshot.getChildren()) {
+
+                            currPoint[0] =  p.getValue(Point.class);
+                            Log.d("TEST",  "point added " + currPoint[0].getX());
+
+                            if (prevPoint[0] != null && prevPoint[0].getX() != -1) {
+                                mPath.quadTo(prevPoint[0].getX(), prevPoint[0].getY(),
+                                        currPoint[0].getX(), currPoint[0].getY());
+                            }
+                            prevPoint[0] = currPoint[0];
                         }
                     }
 
@@ -166,5 +191,29 @@ public class CanvasView extends View {
 
                     }
                 });
+
+//                .addValueEventListener(new ValueEventListener() {
+//                    @Override
+//                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                        Path newPath = new Path();
+//                        int size = dataSnapshot.child("size").getValue(Integer.class);
+//                        for (int i = 0; i < size; i++) {
+//                            currPoint[0] =  dataSnapshot.child("line")
+//                                    .child(i + "")
+//                                    .getValue(Point.class);
+//                            if (prevPoint[0] != null && prevPoint[0].getX() != -1) {
+//                                newPath.quadTo(prevPoint[0].getX(), prevPoint[0].getY(),
+//                                        currPoint[0].getX(), currPoint[0].getY());
+//                            }
+//                            prevPoint[0] = currPoint[0];
+//                        }
+//                        mCanvas.drawPath(newPath, mPaint);
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                    }
+//                });
     }
 }
