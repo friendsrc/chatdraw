@@ -591,7 +591,9 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
         switch (item.getItemId()) {
             case R.id.draw:
                 // Go to draw activity
-                Toast.makeText(this, "Draw", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(ChatActivity.this, DrawActivity.class);
+                startActivity(intent);
+//                Toast.makeText(this, "Draw", Toast.LENGTH_SHORT).show();
                 return true;
 
             case R.id.call:
