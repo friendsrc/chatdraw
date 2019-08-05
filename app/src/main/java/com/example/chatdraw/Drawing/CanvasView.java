@@ -161,7 +161,7 @@ public class CanvasView extends View {
     public void getFromFirebase() {
         Log.d("TEST", "getFromFirebase()");
 
-        DatabaseReference ref;
+        final DatabaseReference ref;
         if (userUID.compareTo(friendsUID) > 0) {
             ref = FirebaseDatabase.getInstance().getReference()
                     .child("Drawing")
@@ -192,7 +192,7 @@ public class CanvasView extends View {
                     prevPoint[0] = currPoint[0];
                 }
                 prevPoint[0] = new Point(-1, -1);
-
+                invalidate();
             }
 
             @Override
@@ -203,7 +203,10 @@ public class CanvasView extends View {
 
             @Override
             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
+                clearCanvas();
+                invalidate();
+                getFromFirebase();
+                ref.removeEventListener(this);
             }
 
             @Override

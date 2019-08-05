@@ -569,11 +569,16 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
         switch (item.getItemId()) {
             case R.id.draw:
                 // Go to draw activity
-                Intent intent = new Intent(ChatActivity.this, DrawActivity.class);
-                intent.putExtra("userUID", userUID);
-                intent.putExtra("friendsUID", friendsUID);
-                startActivity(intent);
-//                Toast.makeText(this, "Draw", Toast.LENGTH_SHORT).show();
+                if (isGroup) {
+                    Toast.makeText(this,
+                            "Drawing for groups not yet supported", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    Intent intent = new Intent(ChatActivity.this, DrawActivity.class);
+                    intent.putExtra("userUID", userUID);
+                    intent.putExtra("friendsUID", friendsUID);
+                    startActivity(intent);
+                }
                 return true;
 
             case R.id.call:

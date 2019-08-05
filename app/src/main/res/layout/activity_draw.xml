@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Drawing.DrawActivity">
@@ -9,7 +11,13 @@
     <com.example.chatdraw.Drawing.CanvasView
         android:id="@+id/canvas"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:textColor="#FFFFFF" />
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <Button
+        android:id="@+id/clear_drawing_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Clear"/>
+
+</LinearLayout>
