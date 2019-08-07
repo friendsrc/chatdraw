@@ -99,7 +99,7 @@ public class CanvasView extends View {
         mY = y;
 
         mRef.child(System.currentTimeMillis() + "")
-                .setValue(new Point(x, y));
+                .setValue(new Point(x, y, userUID));
     }
 
     // when ACTION_MOVE move touch according to the x,y values
@@ -113,7 +113,7 @@ public class CanvasView extends View {
         }
 
         mRef.child(System.currentTimeMillis() + "")
-                .setValue(new Point(x, y));
+                .setValue(new Point(x, y, userUID));
     }
 
     public void clearCanvas() {
@@ -126,7 +126,7 @@ public class CanvasView extends View {
         mPath.lineTo(mX, mY);
 
         mRef.child(System.currentTimeMillis() + "")
-                .setValue(new Point(-1, -1));
+                .setValue(new Point(-1, -1, userUID));
 
     }
 
@@ -156,8 +156,6 @@ public class CanvasView extends View {
     }
 
     public void getFromFirebase() {
-        Log.d("TEST", "getFromFirebase()");
-
         final DatabaseReference ref = mRef;
 
         final Point[] prevPoint = new Point[1];
@@ -166,9 +164,8 @@ public class CanvasView extends View {
         ref.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                Log.d("TEST", "onChildAdded()");
+                Log.d(TAG, "onChildAdded");
                 currPoint[0] =  dataSnapshot.getValue(Point.class);
-                Log.d("TEST",  "point added " + currPoint[0].getX());
 
                 if (prevPoint[0] == null) {
                     if (currPoint[0].getX() == -1) {
@@ -197,7 +194,7 @@ public class CanvasView extends View {
 
             @Override
             public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                Log.d("TEST", "onChildChanged()");
+                Log.d(TAG, "onChildChanged()");
 
             }
 
