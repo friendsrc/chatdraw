@@ -30,6 +30,8 @@ public class CanvasView extends View {
     public String userUID;
     public String friendsUID;
 
+    public DatabaseReference mRef;
+
     public int width;
     public int height;
     private Bitmap mBitmap;
@@ -39,8 +41,6 @@ public class CanvasView extends View {
     private Paint mPaint;
     private float mX, mY;
     private static final float TOLERANCE = 5;
-
-    private LinkedList<Point> line;
 
     public CanvasView(Context c, AttributeSet attrs) {
         super(c, attrs);
@@ -57,13 +57,21 @@ public class CanvasView extends View {
         mPaint.setStrokeJoin(Paint.Join.ROUND);
         mPaint.setStrokeWidth(4f);
 
-        line = new LinkedList<>();
-
     }
 
     public void setIDs(String userID, String friendID) {
         userUID = userID;
         friendsUID = friendID;
+
+        if (userUID.compareTo(friendsUID) > 0) {
+            mRef = FirebaseDatabase.getInstance().getReference()
+                    .child("Drawing")
+                    .child(userUID + "|" + friendsUID);
+        } else {
+            mRef = FirebaseDatabase.getInstance().getReference()
+                    .child("Drawing")
+                    .child(friendsUID + "|" + userUID);
+        }
     }
 
     // override onSizeChanged
@@ -90,7 +98,8 @@ public class CanvasView extends View {
         mX = x;
         mY = y;
 
-        line.add(new Point(x, y));
+        mRef.child(System.currentTimeMillis() + "")
+                .setValue(new Point(x, y));
     }
 
     // when ACTION_MOVE move touch according to the x,y values
@@ -103,7 +112,8 @@ public class CanvasView extends View {
             mY = y;
         }
 
-        line.add(new Point(x, y));
+        mRef.child(System.currentTimeMillis() + "")
+                .setValue(new Point(x, y));
     }
 
     public void clearCanvas() {
@@ -115,21 +125,8 @@ public class CanvasView extends View {
     private void upTouch() {
         mPath.lineTo(mX, mY);
 
-        DatabaseReference ref;
-        if (userUID.compareTo(friendsUID) > 0) {
-            ref = FirebaseDatabase.getInstance().getReference()
-                    .child("Drawing")
-                    .child(userUID + "|" + friendsUID)
-                    .push();
-        } else {
-            ref = FirebaseDatabase.getInstance().getReference()
-                    .child("Drawing")
-                    .child(friendsUID + "|" + userUID)
-                    .push();
-        }
-        ref.setValue(line);
-
-        line = new LinkedList<>();
+        mRef.child(System.currentTimeMillis() + "")
+                .setValue(new Point(-1, -1));
 
     }
 
@@ -161,16 +158,7 @@ public class CanvasView extends View {
     public void getFromFirebase() {
         Log.d("TEST", "getFromFirebase()");
 
-        final DatabaseReference ref;
-        if (userUID.compareTo(friendsUID) > 0) {
-            ref = FirebaseDatabase.getInstance().getReference()
-                    .child("Drawing")
-                    .child(userUID + "|" + friendsUID);
-        } else {
-            ref = FirebaseDatabase.getInstance().getReference()
-                    .child("Drawing")
-                    .child(friendsUID + "|" + userUID);
-        }
+        final DatabaseReference ref = mRef;
 
         final Point[] prevPoint = new Point[1];
         final Point[] currPoint = new Point[1];
@@ -179,19 +167,31 @@ public class CanvasView extends View {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 Log.d("TEST", "onChildAdded()");
-                for (DataSnapshot d : dataSnapshot.getChildren()) {
-                    currPoint[0] =  d.getValue(Point.class);
-                    Log.d("TEST",  "point added " + currPoint[0].getX());
-                    if (prevPoint[0] != null && prevPoint[0].getX() != -1) {
-                        mPath.quadTo(prevPoint[0].getX(), prevPoint[0].getY(),
-                                currPoint[0].getX(), currPoint[0].getY());
+                currPoint[0] =  dataSnapshot.getValue(Point.class);
+                Log.d("TEST",  "point added " + currPoint[0].getX());
+
+                if (prevPoint[0] == null) {
+                    if (currPoint[0].getX() == -1) {
+                        // do nothing
                     } else {
-                        Log.d("TEST", "first point");
                         mPath.moveTo(currPoint[0].getX(), currPoint[0].getY());
                     }
-                    prevPoint[0] = currPoint[0];
+                } else if (prevPoint[0].getX() == -1) {
+                    if (currPoint[0].getX()  == -1) {
+                        // do nothing
+                    } else {
+                        mPath.moveTo(currPoint[0].getX(), currPoint[0].getY());
+                    }
+                } else {
+                    if (currPoint[0].getX() == -1) {
+                        // do nothing
+                    } else {
+                        mPath.quadTo(prevPoint[0].getX(), prevPoint[0].getY(),
+                                currPoint[0].getX(), currPoint[0].getY());
+                    }
                 }
-                prevPoint[0] = new Point(-1, -1);
+
+                prevPoint[0] = currPoint[0];
                 invalidate();
             }
 
