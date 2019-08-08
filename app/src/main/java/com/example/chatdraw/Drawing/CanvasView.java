@@ -21,6 +21,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 
 
@@ -30,6 +31,9 @@ public class CanvasView extends View {
 
     public String userUID;
     public String friendsUID;
+
+    private String currentLineID;
+    private HashMap<String, Paint> paints = new HashMap<>();
 
     public DatabaseReference mRef;
 
@@ -85,11 +89,9 @@ public class CanvasView extends View {
         mCanvas = new Canvas(mBitmap);
     }
 
-    // override onDraw
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        // draw the mPath with the mPaint on the canvas when onDraw
         canvas.drawPath(mPath, mPaint);
     }
 
@@ -99,8 +101,10 @@ public class CanvasView extends View {
 //        mX = x;
 //        mY = y;
 
+        currentLineID = userUID + "|" + System.currentTimeMillis();
+
         mRef.child(System.currentTimeMillis() + "")
-                .setValue(new Point(x, y, userUID));
+                .setValue(new Point(x, y, userUID, currentLineID));
     }
 
     // when ACTION_MOVE move touch according to the x,y values
@@ -114,7 +118,7 @@ public class CanvasView extends View {
 //        }
 
         mRef.child(System.currentTimeMillis() + "")
-                .setValue(new Point(x, y, userUID));
+                .setValue(new Point(x, y, userUID, currentLineID));
     }
 
     public void clearCanvas() {
@@ -123,11 +127,11 @@ public class CanvasView extends View {
     }
 
     // when ACTION_UP stop touch
-    private void upTouch() {
+    private void upTouch(float x, float y) {
 //        mPath.lineTo(mX, mY);
 
         mRef.child(System.currentTimeMillis() + "")
-                .setValue(new Point(-1, -1, userUID));
+                .setValue(new Point(-1, -1, userUID, currentLineID));
 
     }
 
@@ -142,15 +146,15 @@ public class CanvasView extends View {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 startTouch(x, y);
-                invalidate();
+//                invalidate();
                 break;
             case MotionEvent.ACTION_MOVE:
                 moveTouch(x, y);
-                invalidate();
+//                invalidate();
                 break;
             case MotionEvent.ACTION_UP:
-                upTouch();
-                invalidate();
+                upTouch(x, y);
+//                invalidate();
                 break;
         }
         return true;
@@ -168,26 +172,20 @@ public class CanvasView extends View {
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 Log.d(TAG, "onChildAdded");
                 currPoint[0] =  dataSnapshot.getValue(Point.class);
-                if (prevPoint[0] == null) {
-                    if (currPoint[0].getX() == -1) {
-                        // do nothing
-                    } else {
-                        mPath.moveTo(currPoint[0].getX(), currPoint[0].getY());
-                    }
-                } else if (prevPoint[0].getX() == -1) {
-                    if (currPoint[0].getX()  == -1) {
-                        // do nothing
-                    } else {
-                        mPath.moveTo(currPoint[0].getX(), currPoint[0].getY());
-                    }
+
+                if (!paints.containsKey(currPoint[0].getLineID())) {
+                    // start of a new line
+                    paints.put(currPoint[0].getLineID(), mPaint);
+                    mPath.moveTo(currPoint[0].getX(), currPoint[0].getY());
+                } else if (currPoint[0].getX() == -1) {
+                    // line ended
+                    paints.remove(currPoint[0].getLineID());
                 } else {
-                    if (currPoint[0].getX() == -1) {
-                        // do nothing
-                    } else {
-                        mPath.quadTo(prevPoint[0].getX(), prevPoint[0].getY(),
-                                currPoint[0].getX(), currPoint[0].getY());
-                    }
+                    // middle points
+                    mPath.quadTo(prevPoint[0].getX(), prevPoint[0].getY(),
+                            currPoint[0].getX(), currPoint[0].getY());
                 }
+
 
                 prevPoint[0] = currPoint[0];
                 invalidate();
