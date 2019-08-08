@@ -19,6 +19,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.LinkedList;
 
@@ -55,7 +56,7 @@ public class CanvasView extends View {
         mPaint.setColor(Color.BLACK);
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setStrokeJoin(Paint.Join.ROUND);
-        mPaint.setStrokeWidth(4f);
+        mPaint.setStrokeWidth(6f);
 
     }
 
@@ -94,9 +95,9 @@ public class CanvasView extends View {
 
     // when ACTION_DOWN start touch according to the x,y values
     private void startTouch(float x, float y) {
-        mPath.moveTo(x, y);
-        mX = x;
-        mY = y;
+//        mPath.moveTo(x, y);
+//        mX = x;
+//        mY = y;
 
         mRef.child(System.currentTimeMillis() + "")
                 .setValue(new Point(x, y, userUID));
@@ -104,13 +105,13 @@ public class CanvasView extends View {
 
     // when ACTION_MOVE move touch according to the x,y values
     private void moveTouch(float x, float y) {
-        float dx = Math.abs(x - mX);
-        float dy = Math.abs(y - mY);
-        if (dx >= TOLERANCE || dy >= TOLERANCE) {
-            mPath.quadTo(mX, mY, (x + mX) / 2, (y + mY) / 2);
-            mX = x;
-            mY = y;
-        }
+//        float dx = Math.abs(x - mX);
+//        float dy = Math.abs(y - mY);
+//        if (dx >= TOLERANCE || dy >= TOLERANCE) {
+//            mPath.quadTo(mX, mY, (x + mX) / 2, (y + mY) / 2);
+//            mX = x;
+//            mY = y;
+//        }
 
         mRef.child(System.currentTimeMillis() + "")
                 .setValue(new Point(x, y, userUID));
@@ -123,7 +124,7 @@ public class CanvasView extends View {
 
     // when ACTION_UP stop touch
     private void upTouch() {
-        mPath.lineTo(mX, mY);
+//        mPath.lineTo(mX, mY);
 
         mRef.child(System.currentTimeMillis() + "")
                 .setValue(new Point(-1, -1, userUID));
@@ -155,6 +156,7 @@ public class CanvasView extends View {
         return true;
     }
 
+
     public void getFromFirebase() {
         final DatabaseReference ref = mRef;
 
@@ -166,7 +168,6 @@ public class CanvasView extends View {
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 Log.d(TAG, "onChildAdded");
                 currPoint[0] =  dataSnapshot.getValue(Point.class);
-
                 if (prevPoint[0] == null) {
                     if (currPoint[0].getX() == -1) {
                         // do nothing
@@ -190,6 +191,7 @@ public class CanvasView extends View {
 
                 prevPoint[0] = currPoint[0];
                 invalidate();
+
             }
 
             @Override

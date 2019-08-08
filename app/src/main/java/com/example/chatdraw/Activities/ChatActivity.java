@@ -168,7 +168,6 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
         Intent intent = getIntent();
         friendsUID = intent.getStringExtra("uID");
 
-        Log.d("HEY", friendsUID);
 
         // check if this activity is from ChatService
         isFromService = intent.getBooleanExtra("isFromService", false);
@@ -223,9 +222,11 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                 EditText editText = findViewById(R.id.chat_edittext);
                 String message = editText.getText().toString();
                 // create a new ChatItem
-                ChatItem newChatItem = addMessageToAdapter(message);
-                sendMessage(newChatItem); // send the ChatItem to Firebase
-                editText.setText(""); // erase the content of the EditText
+                if (!message.trim().equals("")) {
+                    ChatItem newChatItem = addMessageToAdapter(message);
+                    sendMessage(newChatItem); // send the ChatItem to Firebase
+                    editText.setText(""); // erase the content of the EditText
+                }
             }
         });
 
