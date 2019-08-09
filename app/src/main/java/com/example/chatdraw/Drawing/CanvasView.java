@@ -21,6 +21,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -31,6 +32,11 @@ public class CanvasView extends View {
 
     public String userUID;
     public String friendsUID;
+
+    private ArrayList<String> lineIDs = new ArrayList<>();
+    private ArrayList<Path> paths = new ArrayList<>();
+
+
 
     private String currentLineID;
     private HashMap<String, Paint> paints = new HashMap<>();
@@ -46,7 +52,7 @@ public class CanvasView extends View {
     Context context;
     private Paint mPaint;
     private float mX, mY;
-    private static final float TOLERANCE = 5;
+    private static final float TOUCH_TOLERANCE = 5;
 
     public CanvasView(Context c, AttributeSet attrs) {
         super(c, attrs);
@@ -66,37 +72,33 @@ public class CanvasView extends View {
     }
 
     public void undo() {
-        final String deletedLineID = currentLineID;
-
-        mRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        Log.d("JJKL", "current line id is " + deletedLineID);
-
-                        for (DataSnapshot d : dataSnapshot.getChildren()) {
-                            String[] arr = d.getValue(Point.class).getLineID().split("@");
-                            Log.d("JJKL", d.getRef().toString() + "\tline Sender is " + arr[0]+ " with line id " + arr[1]);
-
-                            if (arr[0].equals(userUID) && arr[1].equals(deletedLineID.split("@")[1])) {
-                                String key = d.getKey();
-                                d.getRef().removeValue();
-                            } else {
-                                Log.d("JJKL", "NOPE");
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                });
-
-
-        mRef.removeEventListener(mChildEventListener);
-        mPath.reset();
+        final String lineID  = lineIDs.remove(lineIDs.size()-  1);
+        paths.remove(paths.size() - 1);
         invalidate();
-        getFromFirebase();
+
+//        mRef.addListenerForSingleValueEvent(new ValueEventListener() {
+//                    @Override
+//                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                        Log.d("JJKL", "current line id is " + lineID);
+//
+//                        for (DataSnapshot d : dataSnapshot.getChildren()) {
+//                            String[] arr = d.getValue(Point.class).getLineID().split("@");
+//                            Log.d("JJKL", d.getRef().toString() + "\tline Sender is " + arr[0]+ " with line id " + arr[1]);
+//
+//                            if (arr[0].equals(userUID) && arr[1].equals(lineID.split("@")[1])) {
+//                                String key = d.getKey();
+//                                d.getRef().removeValue();
+//                            } else {
+//                                Log.d("JJKL", "NOPE");
+//                            }
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                    }
+//                });
     }
 
     public void setIDs(String userID, String friendID) {
@@ -126,7 +128,10 @@ public class CanvasView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
+//        super.onDraw(canvas);
+        for (Path p : paths){
+            canvas.drawPath(p, mPaint);
+        }
         canvas.drawPath(mPath, mPaint);
     }
 
@@ -157,6 +162,8 @@ public class CanvasView extends View {
     }
 
     public void clearCanvas() {
+        paths.clear();
+        lineIDs.clear();
         mRef.removeValue();
         mPath.reset();
         invalidate();
@@ -211,17 +218,32 @@ public class CanvasView extends View {
 
                 if (currPoint[0] == null) return;
 
+                float x = currPoint[0].getX();
+                float y  = currPoint[0].getY();
+
                 if (!paints.containsKey(currPoint[0].getLineID())) {
                     // start of a new line
                     paints.put(currPoint[0].getLineID(), mPaint);
-                    mPath.moveTo(currPoint[0].getX(), currPoint[0].getY());
+                    lineIDs.add(currPoint[0].getLineID());
+                    mPath.reset();
+                    mPath.moveTo(x, y);
+                    mX = x;
+                    mY = y;
                 } else if (currPoint[0].getX() == -1) {
                     // line ended
                     paints.remove(currPoint[0].getLineID());
+                    mPath.lineTo(mX, mY);
+                    paths.add(mPath);
+                    mPath = new Path();
                 } else if (prevPoint[0] != null){
                     // middle points
-                    mPath.quadTo(prevPoint[0].getX(), prevPoint[0].getY(),
-                            currPoint[0].getX(), currPoint[0].getY());
+                    float dx = Math.abs(x - mX);
+                    float dy = Math.abs(y - mY);
+                    if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
+                        mPath.quadTo(mX, mY, (x + mX)/2, (y + mY)/2);
+                        mX = x;
+                        mY = y;
+                    }
                 }
 
 
@@ -238,10 +260,10 @@ public class CanvasView extends View {
 
             @Override
             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-//                clearCanvas();
-//                invalidate();
-//                getFromFirebase();
-//                ref.removeEventListener(this);
+                clearCanvas();
+                invalidate();
+                getFromFirebase();
+                ref.removeEventListener(this);
             }
 
             @Override
