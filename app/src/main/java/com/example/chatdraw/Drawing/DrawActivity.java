@@ -25,6 +25,9 @@ public class DrawActivity extends AppCompatActivity {
     private String userUID;
     private String friendsUID;
 
+    private DatabaseReference mRef;
+    private CanvasView mCanvasView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,26 +40,35 @@ public class DrawActivity extends AppCompatActivity {
 
         // set up canvas
         final CanvasView canvasView = findViewById(R.id.canvas);
+        mCanvasView = canvasView;
         canvasView.setIDs(userUID, friendsUID);
         canvasView.getFromFirebase();
+
+        if (userUID.compareTo(friendsUID) > 0) {
+            mRef = FirebaseDatabase.getInstance().getReference()
+                    .child("Drawing")
+                    .child(userUID + "|" + friendsUID);
+        } else {
+            mRef = FirebaseDatabase.getInstance().getReference()
+                    .child("Drawing")
+                    .child(friendsUID + "|" + userUID);
+        }
 
         // set clear canvas button
         Button clearButton = findViewById(R.id.clear_drawing_button);
         clearButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DatabaseReference ref;
-                if (userUID.compareTo(friendsUID) > 0) {
-                    ref = FirebaseDatabase.getInstance().getReference()
-                            .child("Drawing")
-                            .child(userUID + "|" + friendsUID);
-                } else {
-                    ref = FirebaseDatabase.getInstance().getReference()
-                            .child("Drawing")
-                            .child(friendsUID + "|" + userUID);
-                }
-                ref.removeValue();
                 canvasView.clearCanvas();
+            }
+        });
+
+        // set undo button
+        final Button undoButton = findViewById(R.id.undo_drawing_button);
+        undoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                canvasView.undo();
             }
         });
     }

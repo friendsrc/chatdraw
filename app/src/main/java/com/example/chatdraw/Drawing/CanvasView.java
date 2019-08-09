@@ -34,6 +34,7 @@ public class CanvasView extends View {
 
     private String currentLineID;
     private HashMap<String, Paint> paints = new HashMap<>();
+    ChildEventListener mChildEventListener;
 
     public DatabaseReference mRef;
 
@@ -62,6 +63,40 @@ public class CanvasView extends View {
         mPaint.setStrokeJoin(Paint.Join.ROUND);
         mPaint.setStrokeWidth(6f);
 
+    }
+
+    public void undo() {
+        final String deletedLineID = currentLineID;
+
+        mRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        Log.d("JJKL", "current line id is " + deletedLineID);
+
+                        for (DataSnapshot d : dataSnapshot.getChildren()) {
+                            String[] arr = d.getValue(Point.class).getLineID().split("@");
+                            Log.d("JJKL", d.getRef().toString() + "\tline Sender is " + arr[0]+ " with line id " + arr[1]);
+
+                            if (arr[0].equals(userUID) && arr[1].equals(deletedLineID.split("@")[1])) {
+                                String key = d.getKey();
+                                d.getRef().removeValue();
+                            } else {
+                                Log.d("JJKL", "NOPE");
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
+
+        mRef.removeEventListener(mChildEventListener);
+        mPath.reset();
+        invalidate();
+        getFromFirebase();
     }
 
     public void setIDs(String userID, String friendID) {
@@ -101,7 +136,7 @@ public class CanvasView extends View {
 //        mX = x;
 //        mY = y;
 
-        currentLineID = userUID + "|" + System.currentTimeMillis();
+        currentLineID = userUID + "@" + System.currentTimeMillis();
 
         mRef.child(System.currentTimeMillis() + "")
                 .setValue(new Point(x, y, userUID, currentLineID));
@@ -122,6 +157,7 @@ public class CanvasView extends View {
     }
 
     public void clearCanvas() {
+        mRef.removeValue();
         mPath.reset();
         invalidate();
     }
@@ -167,11 +203,13 @@ public class CanvasView extends View {
         final Point[] prevPoint = new Point[1];
         final Point[] currPoint = new Point[1];
 
-        ref.addChildEventListener(new ChildEventListener() {
+        mChildEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 Log.d(TAG, "onChildAdded");
                 currPoint[0] =  dataSnapshot.getValue(Point.class);
+
+                if (currPoint[0] == null) return;
 
                 if (!paints.containsKey(currPoint[0].getLineID())) {
                     // start of a new line
@@ -180,7 +218,7 @@ public class CanvasView extends View {
                 } else if (currPoint[0].getX() == -1) {
                     // line ended
                     paints.remove(currPoint[0].getLineID());
-                } else {
+                } else if (prevPoint[0] != null){
                     // middle points
                     mPath.quadTo(prevPoint[0].getX(), prevPoint[0].getY(),
                             currPoint[0].getX(), currPoint[0].getY());
@@ -200,10 +238,10 @@ public class CanvasView extends View {
 
             @Override
             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-                clearCanvas();
-                invalidate();
-                getFromFirebase();
-                ref.removeEventListener(this);
+//                clearCanvas();
+//                invalidate();
+//                getFromFirebase();
+//                ref.removeEventListener(this);
             }
 
             @Override
@@ -215,7 +253,10 @@ public class CanvasView extends View {
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
             }
-        });
+        };
+
+
+        ref.addChildEventListener(mChildEventListener);
 
     }
 }
