@@ -44,7 +44,6 @@ public class CanvasView extends View {
     public float currentBrushSize = 6f;
 
 
-
     private String currentLineID;
     private HashMap<String, Paint> paints = new HashMap<>();
     ChildEventListener mChildEventListener;
@@ -163,7 +162,6 @@ public class CanvasView extends View {
         for (Path p : mapIDtoPath.values()){
             canvas.drawPath(p, mapPathToPaint.get(p));
         }
-//        canvas.drawPath(mPath, mPaint);
     }
 
     // when ACTION_DOWN start touch according to the x,y values
@@ -239,6 +237,9 @@ public class CanvasView extends View {
 
                 if (!paints.containsKey(currPoint[0].getLineID())) {
                     // start of a new line
+                    currentColor = currPoint[0].getColor();
+                    currentBrushSize =  currPoint[0].getBrushSize();
+
                     mPaint = new Paint();
                     mPaint.setAntiAlias(true);
                     mPaint.setColor(currentColor);

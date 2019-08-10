@@ -10,6 +10,7 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 
 import com.example.chatdraw.R;
 import com.google.firebase.database.DatabaseReference;
@@ -109,7 +110,24 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
             }
         });
 
+        // set brush size picker seekbar
+        SeekBar sizePicker = findViewById(R.id.brush_size_seekbar);
+        sizePicker.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                mCanvasView.currentBrushSize = (float) progress / 10;
+            }
 
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
     }
 
 
