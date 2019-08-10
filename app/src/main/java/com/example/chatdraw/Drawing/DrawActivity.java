@@ -130,7 +130,7 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
     @Override
     public void onColorSelected(int dialogId, int color) {
         mColorButton.setColorFilter(color, PorterDuff.Mode.MULTIPLY);
-        mCanvasView.mPaint.setColor(color);
+        mCanvasView.currentColor = color;
     }
 
     @Override

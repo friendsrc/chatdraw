@@ -35,10 +35,14 @@ public class CanvasView extends View {
 
     private ArrayList<String> lineIDs = new ArrayList<>();
     private ArrayList<String> removedLineIDs =  new ArrayList<>();
-//    private ArrayList<Path> paths = new ArrayList<>();
 
     private HashMap<String, Path> mapIDtoPath = new HashMap<>();
     private HashMap<String, Path> mapIDtoRemovedPath = new HashMap<>();
+
+    private HashMap<Path, Paint> mapPathToPaint = new HashMap<>();
+    public int currentColor = Color.BLACK;
+    public float currentBrushSize = 6f;
+
 
 
     private String currentLineID;
@@ -67,10 +71,10 @@ public class CanvasView extends View {
         // and we set a new Paint with the desired attributes
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
-        mPaint.setColor(Color.BLACK);
+        mPaint.setColor(currentColor);
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setStrokeJoin(Paint.Join.ROUND);
-        mPaint.setStrokeWidth(6f);
+        mPaint.setStrokeWidth(currentBrushSize);
 
     }
 
@@ -157,7 +161,7 @@ public class CanvasView extends View {
     protected void onDraw(Canvas canvas) {
 //        super.onDraw(canvas);
         for (Path p : mapIDtoPath.values()){
-            canvas.drawPath(p, mPaint);
+            canvas.drawPath(p, mapPathToPaint.get(p));
         }
 //        canvas.drawPath(mPath, mPaint);
     }
@@ -166,13 +170,13 @@ public class CanvasView extends View {
     private void startTouch(float x, float y) {
         currentLineID = userUID + "@" + System.currentTimeMillis();
         mRef.child(System.currentTimeMillis() + "")
-                .setValue(new Point(x, y, userUID, currentLineID, true));
+                .setValue(new Point(x, y, userUID, currentLineID, true, currentColor, currentBrushSize));
     }
 
     // when ACTION_MOVE move touch according to the x,y values
     private void moveTouch(float x, float y) {
         mRef.child(System.currentTimeMillis() + "")
-                .setValue(new Point(x, y, userUID, currentLineID, true));
+                .setValue(new Point(x, y, userUID, currentLineID, true, currentColor, currentBrushSize));
     }
 
     public void clearCanvas() {
@@ -186,7 +190,7 @@ public class CanvasView extends View {
     // when ACTION_UP stop touch
     private void upTouch(float x, float y) {
         mRef.child(System.currentTimeMillis() + "")
-                .setValue(new Point(-1, -1, userUID, currentLineID, true));
+                .setValue(new Point(-1, -1, userUID, currentLineID, true, currentColor, currentBrushSize));
 
     }
 
@@ -233,12 +237,16 @@ public class CanvasView extends View {
                 float x = currPoint[0].getX();
                 float y  = currPoint[0].getY();
 
-
-
                 if (!paints.containsKey(currPoint[0].getLineID())) {
                     // start of a new line
-                    Log.d(TAG, "start a new line");
+                    mPaint = new Paint();
+                    mPaint.setAntiAlias(true);
+                    mPaint.setColor(currentColor);
+                    mPaint.setStyle(Paint.Style.STROKE);
+                    mPaint.setStrokeJoin(Paint.Join.ROUND);
+                    mPaint.setStrokeWidth(currentBrushSize);
                     paints.put(currPoint[0].getLineID(), mPaint);
+                    mapPathToPaint.put(mPath, mPaint);
                     lineIDs.add(currPoint[0].getLineID());
                     if (currPoint[0].isVisible()) {
                         mapIDtoPath.put(currPoint[0].getLineID(), mPath);
@@ -251,16 +259,11 @@ public class CanvasView extends View {
                     mY = y;
                 } else if (currPoint[0].getX() == -1) {
                     // line ended
-                    Log.d(TAG, "line ended");
-
                     paints.remove(currPoint[0].getLineID());
                     mPath.lineTo(mX, mY);
-//                    paths.add(mPath);
                     mPath = new Path();
                 } else if (prevPoint[0] != null){
                     // middle points
-                    Log.d(TAG, "middle points");
-
                     float dx = Math.abs(x - mX);
                     float dy = Math.abs(y - mY);
                     if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
@@ -316,15 +319,5 @@ public class CanvasView extends View {
 
         ref.addChildEventListener(mChildEventListener);
 
-    }
-
-    public void renewCanvas() {
-        mRef.removeEventListener(mChildEventListener);
-        clearCanvas();
-//        paths.clear();
-        mapIDtoPath.clear();
-        paints.clear();
-        lineIDs.clear();
-        getFromFirebase();
     }
 }

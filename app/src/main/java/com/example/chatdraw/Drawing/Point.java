@@ -6,6 +6,8 @@ public class Point {
     private String senderID;
     private String lineID;
     private boolean isVisible;
+    private int color;
+    private float brushSize;
 
     public Point() {
         this.x = -1;
@@ -13,14 +15,18 @@ public class Point {
         this.senderID = null;
         this.lineID = null;
         this.isVisible = false;
+        this.color = 0;
+        this.brushSize = 0;
     }
 
-    public Point(float x, float y, String senderID, String lineID, boolean isVisible) {
+    public Point(float x, float y, String senderID, String lineID, boolean isVisible, int color, float brushSize) {
         this.x = x;
         this.y = y;
         this.senderID = senderID;
         this.lineID = lineID;
         this.isVisible = isVisible;
+        this.color = color;
+        this.brushSize = brushSize;
     }
 
     public float getX() {
@@ -61,5 +67,21 @@ public class Point {
 
     public void setVisible(boolean visible) {
         isVisible = visible;
+    }
+
+    public int getColor() {
+        return color;
+    }
+
+    public void setColor(int color) {
+        this.color = color;
+    }
+
+    public float getBrushSize() {
+        return brushSize;
+    }
+
+    public void setBrushSize(float brushSize) {
+        this.brushSize = brushSize;
     }
 }
