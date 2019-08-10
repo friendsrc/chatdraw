@@ -5,12 +5,22 @@
     android:orientation="vertical"
     android:gravity="center_horizontal"
     android:layout_width="match_parent"
+    android:background="@color/bluegray100"
     android:layout_height="match_parent"
     tools:context=".Drawing.DrawActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/my_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
 
     <com.example.chatdraw.Drawing.CanvasView
         android:id="@+id/canvas"
         android:layout_width="match_parent"
+        android:background="@color/white"
         android:layout_height="0dp"
         android:layout_weight="1"/>
 
@@ -18,6 +28,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
         android:gravity="center_horizontal">
 
         <Button

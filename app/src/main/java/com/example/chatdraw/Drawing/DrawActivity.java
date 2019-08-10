@@ -1,6 +1,8 @@
 package com.example.chatdraw.Drawing;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.MotionEventCompat;
 
 import android.content.Intent;
@@ -10,6 +12,7 @@ import android.graphics.Paint;
 import android.graphics.Region;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
@@ -80,12 +83,26 @@ public class DrawActivity extends AppCompatActivity {
                 canvasView.redo();
             }
         });
+
+        // set the action bar
+        Toolbar myToolbar = findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
+        getSupportActionBar().setTitle("Canvas");
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        // if the back button is pressed, go back to previous activity
+        finish();
+        return true;
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.navbar_draw, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
 
