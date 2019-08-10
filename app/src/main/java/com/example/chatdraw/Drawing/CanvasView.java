@@ -34,9 +34,9 @@ public class CanvasView extends View {
     public String friendsUID;
 
     private ArrayList<String> lineIDs = new ArrayList<>();
-    private ArrayList<Path> paths = new ArrayList<>();
+//    private ArrayList<Path> paths = new ArrayList<>();
 
-
+    private HashMap<String, Path> mapIDtoPath = new HashMap<>();
 
     private String currentLineID;
     private HashMap<String, Paint> paints = new HashMap<>();
@@ -73,32 +73,27 @@ public class CanvasView extends View {
 
     public void undo() {
         final String lineID  = lineIDs.remove(lineIDs.size()-  1);
-        paths.remove(paths.size() - 1);
+//        paths.remove(paths.size() - 1);
+        mapIDtoPath.remove(lineID);
         invalidate();
 
-//        mRef.addListenerForSingleValueEvent(new ValueEventListener() {
-//                    @Override
-//                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                        Log.d("JJKL", "current line id is " + lineID);
-//
-//                        for (DataSnapshot d : dataSnapshot.getChildren()) {
-//                            String[] arr = d.getValue(Point.class).getLineID().split("@");
-//                            Log.d("JJKL", d.getRef().toString() + "\tline Sender is " + arr[0]+ " with line id " + arr[1]);
-//
-//                            if (arr[0].equals(userUID) && arr[1].equals(lineID.split("@")[1])) {
-//                                String key = d.getKey();
-//                                d.getRef().removeValue();
-//                            } else {
-//                                Log.d("JJKL", "NOPE");
-//                            }
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//                    }
-//                });
+        mRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                    Point point = ds.getValue(Point.class);
+                    if (point.getLineID().equals(lineID)) {
+                        point.setVisible(false);
+                        ds.getRef().setValue(point);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     public void setIDs(String userID, String friendID) {
@@ -129,40 +124,27 @@ public class CanvasView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
 //        super.onDraw(canvas);
-        for (Path p : paths){
+        for (Path p : mapIDtoPath.values()){
             canvas.drawPath(p, mPaint);
         }
-        canvas.drawPath(mPath, mPaint);
+//        canvas.drawPath(mPath, mPaint);
     }
 
     // when ACTION_DOWN start touch according to the x,y values
     private void startTouch(float x, float y) {
-//        mPath.moveTo(x, y);
-//        mX = x;
-//        mY = y;
-
         currentLineID = userUID + "@" + System.currentTimeMillis();
-
         mRef.child(System.currentTimeMillis() + "")
-                .setValue(new Point(x, y, userUID, currentLineID));
+                .setValue(new Point(x, y, userUID, currentLineID, true));
     }
 
     // when ACTION_MOVE move touch according to the x,y values
     private void moveTouch(float x, float y) {
-//        float dx = Math.abs(x - mX);
-//        float dy = Math.abs(y - mY);
-//        if (dx >= TOLERANCE || dy >= TOLERANCE) {
-//            mPath.quadTo(mX, mY, (x + mX) / 2, (y + mY) / 2);
-//            mX = x;
-//            mY = y;
-//        }
-
         mRef.child(System.currentTimeMillis() + "")
-                .setValue(new Point(x, y, userUID, currentLineID));
+                .setValue(new Point(x, y, userUID, currentLineID, true));
     }
 
     public void clearCanvas() {
-        paths.clear();
+        mapIDtoPath.clear();
         lineIDs.clear();
         mRef.removeValue();
         mPath.reset();
@@ -171,10 +153,8 @@ public class CanvasView extends View {
 
     // when ACTION_UP stop touch
     private void upTouch(float x, float y) {
-//        mPath.lineTo(mX, mY);
-
         mRef.child(System.currentTimeMillis() + "")
-                .setValue(new Point(-1, -1, userUID, currentLineID));
+                .setValue(new Point(-1, -1, userUID, currentLineID, true));
 
     }
 
@@ -189,15 +169,15 @@ public class CanvasView extends View {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 startTouch(x, y);
-//                invalidate();
+                invalidate();
                 break;
             case MotionEvent.ACTION_MOVE:
                 moveTouch(x, y);
-//                invalidate();
+                invalidate();
                 break;
             case MotionEvent.ACTION_UP:
                 upTouch(x, y);
-//                invalidate();
+                invalidate();
                 break;
         }
         return true;
@@ -221,22 +201,30 @@ public class CanvasView extends View {
                 float x = currPoint[0].getX();
                 float y  = currPoint[0].getY();
 
+                if (!currPoint[0].isVisible()) return;
+
                 if (!paints.containsKey(currPoint[0].getLineID())) {
                     // start of a new line
+                    Log.d(TAG, "start a new line");
                     paints.put(currPoint[0].getLineID(), mPaint);
                     lineIDs.add(currPoint[0].getLineID());
+                    mapIDtoPath.put(currPoint[0].getLineID(), mPath);
                     mPath.reset();
                     mPath.moveTo(x, y);
                     mX = x;
                     mY = y;
                 } else if (currPoint[0].getX() == -1) {
                     // line ended
+                    Log.d(TAG, "line ended");
+
                     paints.remove(currPoint[0].getLineID());
                     mPath.lineTo(mX, mY);
-                    paths.add(mPath);
+//                    paths.add(mPath);
                     mPath = new Path();
                 } else if (prevPoint[0] != null){
                     // middle points
+                    Log.d(TAG, "middle points");
+
                     float dx = Math.abs(x - mX);
                     float dy = Math.abs(y - mY);
                     if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
@@ -246,7 +234,6 @@ public class CanvasView extends View {
                     }
                 }
 
-
                 prevPoint[0] = currPoint[0];
                 invalidate();
 
@@ -255,15 +242,23 @@ public class CanvasView extends View {
             @Override
             public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 Log.d(TAG, "onChildChanged()");
+                Point point = dataSnapshot.getValue(Point.class);
+                if (point.isVisible()) {
 
+                } else {
+                    if (mapIDtoPath.containsKey(point.getLineID())) {
+                        mapIDtoPath.remove(point.getLineID());
+                    }
+                }
+                invalidate();
             }
 
             @Override
             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-                clearCanvas();
+                Log.d(TAG, "onChildRemoved()");
+                mapIDtoPath.clear();
+                lineIDs.clear();
                 invalidate();
-                getFromFirebase();
-                ref.removeEventListener(this);
             }
 
             @Override
@@ -280,5 +275,15 @@ public class CanvasView extends View {
 
         ref.addChildEventListener(mChildEventListener);
 
+    }
+
+    public void renewCanvas() {
+        mRef.removeEventListener(mChildEventListener);
+        clearCanvas();
+//        paths.clear();
+        mapIDtoPath.clear();
+        paints.clear();
+        lineIDs.clear();
+        getFromFirebase();
     }
 }
