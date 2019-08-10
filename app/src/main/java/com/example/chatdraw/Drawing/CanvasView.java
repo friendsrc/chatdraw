@@ -34,9 +34,12 @@ public class CanvasView extends View {
     public String friendsUID;
 
     private ArrayList<String> lineIDs = new ArrayList<>();
+    private ArrayList<String> removedLineIDs =  new ArrayList<>();
 //    private ArrayList<Path> paths = new ArrayList<>();
 
     private HashMap<String, Path> mapIDtoPath = new HashMap<>();
+    private HashMap<String, Path> mapIDtoRemovedPath = new HashMap<>();
+
 
     private String currentLineID;
     private HashMap<String, Paint> paints = new HashMap<>();
@@ -72,9 +75,11 @@ public class CanvasView extends View {
     }
 
     public void undo() {
+        if (lineIDs.isEmpty()) return;
         final String lineID  = lineIDs.remove(lineIDs.size()-  1);
-//        paths.remove(paths.size() - 1);
-        mapIDtoPath.remove(lineID);
+        removedLineIDs.add(lineID);
+        Path path  = mapIDtoPath.remove(lineID);
+        mapIDtoRemovedPath.put(lineID, path);
         invalidate();
 
         mRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -84,6 +89,33 @@ public class CanvasView extends View {
                     Point point = ds.getValue(Point.class);
                     if (point.getLineID().equals(lineID)) {
                         point.setVisible(false);
+                        ds.getRef().setValue(point);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public void redo() {
+        if (removedLineIDs.isEmpty()) return;
+        final String lineID  = removedLineIDs.remove(removedLineIDs.size() -  1);
+        lineIDs.add(lineID);
+        Path path = mapIDtoRemovedPath.remove(lineID);
+        mapIDtoPath.put(lineID, path);
+        invalidate();
+
+        mRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                    Point point = ds.getValue(Point.class);
+                    if (point.getLineID().equals(lineID)) {
+                        point.setVisible(true);
                         ds.getRef().setValue(point);
                     }
                 }
@@ -201,14 +233,18 @@ public class CanvasView extends View {
                 float x = currPoint[0].getX();
                 float y  = currPoint[0].getY();
 
-                if (!currPoint[0].isVisible()) return;
+
 
                 if (!paints.containsKey(currPoint[0].getLineID())) {
                     // start of a new line
                     Log.d(TAG, "start a new line");
                     paints.put(currPoint[0].getLineID(), mPaint);
                     lineIDs.add(currPoint[0].getLineID());
-                    mapIDtoPath.put(currPoint[0].getLineID(), mPath);
+                    if (currPoint[0].isVisible()) {
+                        mapIDtoPath.put(currPoint[0].getLineID(), mPath);
+                    } else {
+                        mapIDtoRemovedPath.put(currPoint[0].getLineID(), mPath);
+                    }
                     mPath.reset();
                     mPath.moveTo(x, y);
                     mX = x;
@@ -244,10 +280,15 @@ public class CanvasView extends View {
                 Log.d(TAG, "onChildChanged()");
                 Point point = dataSnapshot.getValue(Point.class);
                 if (point.isVisible()) {
+                    if (mapIDtoRemovedPath.containsKey(point.getLineID())) {
+                        Path path = mapIDtoRemovedPath.remove(point.getLineID());
+                        mapIDtoPath.put(point.getLineID(), path);
 
+                    }
                 } else {
                     if (mapIDtoPath.containsKey(point.getLineID())) {
-                        mapIDtoPath.remove(point.getLineID());
+                        Path path  = mapIDtoPath.remove(point.getLineID());
+                        mapIDtoRemovedPath.put(point.getLineID(), path);
                     }
                 }
                 invalidate();

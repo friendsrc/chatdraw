@@ -71,6 +71,15 @@ public class DrawActivity extends AppCompatActivity {
                 canvasView.undo();
             }
         });
+
+        // set redo button
+        final Button redoButton = findViewById(R.id.redo_drawing_button);
+        redoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                canvasView.redo();
+            }
+        });
     }
 
     @Override

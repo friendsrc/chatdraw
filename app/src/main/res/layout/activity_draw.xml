@@ -29,6 +29,14 @@
             android:text="Undo"/>
 
         <Button
+            android:id="@+id/redo_drawing_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:text="Redo"/>
+
+        <Button
             android:id="@+id/clear_drawing_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
