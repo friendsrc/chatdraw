@@ -1,28 +1,23 @@
 package com.example.chatdraw.Drawing;
-
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.view.MotionEventCompat;
 
 import android.content.Intent;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Region;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
-import android.view.MotionEvent;
-import android.view.VelocityTracker;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 
 import com.example.chatdraw.R;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.jaredrummler.android.colorpicker.ColorPickerDialog;
+import com.jaredrummler.android.colorpicker.ColorPickerDialogListener;
 
-public class DrawActivity extends AppCompatActivity {
+public class DrawActivity extends AppCompatActivity implements ColorPickerDialogListener {
 
     private static final String TAG = "DrawActivity";
     private String userUID;
@@ -30,6 +25,9 @@ public class DrawActivity extends AppCompatActivity {
 
     private DatabaseReference mRef;
     private CanvasView mCanvasView;
+
+    private ImageView mColorButton;
+    private ColorPickerDialog.Builder mColorPickerDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +87,29 @@ public class DrawActivity extends AppCompatActivity {
         setSupportActionBar(myToolbar);
         getSupportActionBar().setTitle("Canvas");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        // set color picker
+        mColorButton = findViewById(R.id.color_picker_imageview);
+        mColorButton.setColorFilter(Color.parseColor("#000000"), PorterDuff.Mode.MULTIPLY);
+        mColorButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int[] colorPresets = {Color.parseColor("#000000"),
+                        Color.parseColor("#293462"),
+                        Color.parseColor("#216583"),
+                        Color.parseColor("#f76262"),
+                        Color.parseColor("#fff1c1"),
+                };
+                mColorPickerDialog = ColorPickerDialog.newBuilder();
+                mColorPickerDialog
+                        .setShowAlphaSlider(true)
+                        .setColor(Color.parseColor("#000000"))
+                        .setPresets(colorPresets)
+                        .show(DrawActivity.this);
+            }
+        });
+
+
     }
 
 
@@ -106,4 +127,14 @@ public class DrawActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public void onColorSelected(int dialogId, int color) {
+        mColorButton.setColorFilter(color, PorterDuff.Mode.MULTIPLY);
+        mCanvasView.mPaint.setColor(color);
+    }
+
+    @Override
+    public void onDialogDismissed(int dialogId) {
+
+    }
 }

@@ -53,7 +53,7 @@ public class CanvasView extends View {
     private Canvas mCanvas;
     private Path mPath;
     Context context;
-    private Paint mPaint;
+    public Paint mPaint;
     private float mX, mY;
     private static final float TOUCH_TOLERANCE = 5;
 

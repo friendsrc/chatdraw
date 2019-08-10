@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:gravity="center_horizontal"
     android:layout_width="match_parent"
-    android:background="@color/bluegray100"
+    android:background="@color/white"
     android:layout_height="match_parent"
     tools:context=".Drawing.DrawActivity">
 
@@ -27,17 +27,42 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <SeekBar
+            android:id="@+id/brush_size"
+            android:layout_marginLeft="32dp"
+            android:layout_marginRight="16dp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:max="100"/>
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/color_picker_imageview"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@color/white"
+            android:layout_marginRight="32dp"
+            app:civ_border_width="0dp"
+            app:civ_border_color="@color/colorPrimaryDark"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
-        android:gravity="center_horizontal">
+        android:gravity="center">
 
         <Button
             android:id="@+id/undo_drawing_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
+            android:layout_gravity="left"
             android:text="Undo"/>
 
         <Button
@@ -52,12 +77,9 @@
             android:id="@+id/clear_drawing_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
+            android:layout_gravity="right"
             android:text="Clear"/>
 
     </LinearLayout>
-
-
 
 </LinearLayout>
