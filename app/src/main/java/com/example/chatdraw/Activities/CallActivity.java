@@ -30,8 +30,10 @@ import android.widget.Toast;
 
 import com.example.chatdraw.R;
 
-import org.linphone.core.AuthInfo;
-import org.linphone.core.Core;
+//import org.linphone.core.AuthInfo;
+//import org.linphone.core.Core;
+//import org.linphone.core.Factory;
+
 import org.linphone.core.Factory;
 
 import java.text.ParseException;
@@ -39,9 +41,9 @@ import java.text.ParseException;
 public class CallActivity extends AppCompatActivity implements View.OnClickListener {
     private final int REQUEST_USE_SIP = 109;
     private final String KEY = "password";
-    private final String USERNAME = "sacchirro";
+    private final String USERNAME = "hello";
     private final String DOMAIN = "sip.linphone.org";
-    private final String PASSWORD = "sacchirro11";
+    private final String PASSWORD = "helloworld11";
 
     private SipManager manager = null;
     private SipProfile profile = null;
@@ -156,7 +158,11 @@ public class CallActivity extends AppCompatActivity implements View.OnClickListe
         try {
             manager.close(profile.getUriString());
             call.close();
-            this.unregisterReceiver(receiver);
+            try {
+                this.unregisterReceiver(receiver);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            }
         } catch (SipException e) {
             e.printStackTrace();
         } catch (NullPointerException e) {

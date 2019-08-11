@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:gravity="top|center"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activities.TestingActivity">
+
+    <TextView
+        android:text="CREATE ACCOUNT"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:text="SELECT YOUR COUNTRY"
+        android:id="@+id/select_country"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_marginTop="5dp"
+        android:gravity="center" />
+
+    <ImageView
+        android:id="@+id/info_phone_number"
+        android:src="@drawable/ic_person"
+        android:layout_alignParentRight="true"
+        android:layout_width="20dp"
+        android:layout_height="20dp"/>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/dial_code"
+            android:inputType="phone"
+            android:text="+"
+            android:layout_marginRight="10sp"
+            android:layout_marginEnd="10sp"
+            android:gravity="center"
+            android:layout_width="65dp"
+            android:layout_height="wrap_content"
+            android:maxLines="1"/>
+
+        <EditText
+            android:id="@+id/phone_number"
+            android:inputType="phone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Phone number"
+            android:maxLines="1"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/phone_number_error"
+        android:text="Error"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"/>
+
+    <TextView
+        android:id="@+id/sip_uri"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:id="@+id/assistant_create"
+        android:text="CREATE ACCOUNT"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:padding="10dp"/>
+</LinearLayout>
+

@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.chatdraw">
-
     <!-- unallow people in playstore to download if there is no SIP feature -->
-    <uses-feature android:name="android.hardware.sip.voip" android:required="true"/>
+    <uses-feature
+        android:name="android.hardware.sip.voip"
+        android:required="true" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.USE_SIP" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -14,7 +16,7 @@
     <uses-permission android:name="android.permission.MANAGE_OWN_CALLS" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.CALL_PHONE"/>
+    <uses-permission android:name="android.permission.CALL_PHONE" />
 
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
@@ -27,7 +29,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
+        <activity android:name=".Activities.TestingActivity" />
         <activity android:name=".Activities.CallActivity" />
 
         <service
@@ -39,6 +41,8 @@
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-6617407029399736~9775527525" />
 
+        <activity android:name=".Activities.PhoneAccountValidationAssistantActivity" />
+        <activity android:name=".Activities.LinphoneLauncherActivity" />
         <activity android:name=".Credits.TransactionActivity" />
         <activity android:name=".Activities.ImagePreviewActivity" />
         <activity android:name=".Credits.CreditActivity" />
