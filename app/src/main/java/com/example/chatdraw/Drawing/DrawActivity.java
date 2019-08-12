@@ -91,7 +91,8 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
 
         // set color picker
         mColorButton = findViewById(R.id.color_picker_imageview);
-        mColorButton.setColorFilter(Color.parseColor("#000000"), PorterDuff.Mode.MULTIPLY);
+        mColorButton.setColorFilter(
+                Color.parseColor("#000000"), PorterDuff.Mode.MULTIPLY);
         mColorButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -133,7 +134,6 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
 
     @Override
     public boolean onSupportNavigateUp() {
-        // if the back button is pressed, go back to previous activity
         finish();
         return true;
     }

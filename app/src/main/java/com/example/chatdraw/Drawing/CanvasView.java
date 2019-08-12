@@ -30,50 +30,140 @@ public class CanvasView extends View {
 
     public static final String TAG = "CanvasView";
 
+    // User data
     public String userUID;
     public String friendsUID;
 
+    // Cached information
     private ArrayList<String> lineIDs = new ArrayList<>();
     private ArrayList<String> removedLineIDs =  new ArrayList<>();
-
     private HashMap<String, Path> mapIDtoPath = new HashMap<>();
     private HashMap<String, Path> mapIDtoRemovedPath = new HashMap<>();
-
     private HashMap<Path, Paint> mapPathToPaint = new HashMap<>();
+    private HashMap<String, Paint> paints = new HashMap<>();
+
+    // Paint
+    public Paint mPaint;
     public int currentColor = Color.BLACK;
     public float currentBrushSize = 6f;
 
-
+    // Path
+    private float mX, mY;
+    private Path mPath; //current path
+    Context context;
+    private static final float TOUCH_TOLERANCE = 5;
     private String currentLineID;
-    private HashMap<String, Paint> paints = new HashMap<>();
+
+    // Firebase
+    public DatabaseReference mRef;
     ChildEventListener mChildEventListener;
 
-    public DatabaseReference mRef;
-
+    // Canvas
     public int width;
     public int height;
-    private Bitmap mBitmap;
     private Canvas mCanvas;
-    private Path mPath;
-    Context context;
-    public Paint mPaint;
-    private float mX, mY;
-    private static final float TOUCH_TOLERANCE = 5;
+
+    // Generated bitmap
+    private Bitmap mBitmap;
+
 
     public CanvasView(Context c, AttributeSet attrs) {
         super(c, attrs);
+
         context = c;
 
-        // we set a new Path
+        // create a new Path
         mPath = new Path();
 
-        // and we set a new Paint with the desired attributes
+        // create a new Paint
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
         mPaint.setColor(currentColor);
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setStrokeJoin(Paint.Join.ROUND);
         mPaint.setStrokeWidth(currentBrushSize);
+
+    }
+
+    // set IDs for connection to Firebase, called directly after CanvasView is instantiated
+    public void setIDs(String userID, String friendID) {
+        userUID = userID;
+        friendsUID = friendID;
+        if (userUID.compareTo(friendsUID) > 0) {
+            mRef = FirebaseDatabase.getInstance().getReference()
+                    .child("Drawing")
+                    .child(userUID + "|" + friendsUID);
+        } else {
+            mRef = FirebaseDatabase.getInstance().getReference()
+                    .child("Drawing")
+                    .child(friendsUID + "|" + userUID);
+        }
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+//        super.onDraw(canvas);
+        for (Path p : mapIDtoPath.values()){
+            canvas.drawPath(p, mapPathToPaint.get(p));
+        }
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        mBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        mCanvas = new Canvas(mBitmap);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        float x = event.getX();
+        float y = event.getY();
+
+        Log.d(TAG, x + "," + y);
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                startTouch(x, y);
+                invalidate();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                moveTouch(x, y);
+                invalidate();
+                break;
+            case MotionEvent.ACTION_UP:
+                upTouch(x, y);
+                invalidate();
+                break;
+        }
+        return true;
+    }
+
+    // when ACTION_DOWN start touch according to the x,y values
+    private void startTouch(float x, float y) {
+        currentLineID = userUID + "@" + System.currentTimeMillis();
+        mRef.child(System.currentTimeMillis() + "")
+                .setValue(
+                        new Point(x, y, userUID, currentLineID,
+                                true, currentColor, currentBrushSize));
+    }
+
+    // when ACTION_MOVE move touch according to the x,y values
+    private void moveTouch(float x, float y) {
+        mRef.child(System.currentTimeMillis() + "")
+                .setValue(
+                        new Point(x, y, userUID, currentLineID,
+                                true, currentColor, currentBrushSize));
+    }
+
+
+
+    // when ACTION_UP stop touch
+    private void upTouch(float x, float y) {
+        mRef.child(System.currentTimeMillis() + "")
+                .setValue(
+                        new Point(-1, -1, userUID, currentLineID,
+                                true, currentColor, currentBrushSize));
 
     }
 
@@ -131,52 +221,6 @@ public class CanvasView extends View {
         });
     }
 
-    public void setIDs(String userID, String friendID) {
-        userUID = userID;
-        friendsUID = friendID;
-
-        if (userUID.compareTo(friendsUID) > 0) {
-            mRef = FirebaseDatabase.getInstance().getReference()
-                    .child("Drawing")
-                    .child(userUID + "|" + friendsUID);
-        } else {
-            mRef = FirebaseDatabase.getInstance().getReference()
-                    .child("Drawing")
-                    .child(friendsUID + "|" + userUID);
-        }
-    }
-
-    // override onSizeChanged
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-
-        // your Canvas will draw onto the defined Bitmap
-        mBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-        mCanvas = new Canvas(mBitmap);
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-//        super.onDraw(canvas);
-        for (Path p : mapIDtoPath.values()){
-            canvas.drawPath(p, mapPathToPaint.get(p));
-        }
-    }
-
-    // when ACTION_DOWN start touch according to the x,y values
-    private void startTouch(float x, float y) {
-        currentLineID = userUID + "@" + System.currentTimeMillis();
-        mRef.child(System.currentTimeMillis() + "")
-                .setValue(new Point(x, y, userUID, currentLineID, true, currentColor, currentBrushSize));
-    }
-
-    // when ACTION_MOVE move touch according to the x,y values
-    private void moveTouch(float x, float y) {
-        mRef.child(System.currentTimeMillis() + "")
-                .setValue(new Point(x, y, userUID, currentLineID, true, currentColor, currentBrushSize));
-    }
-
     public void clearCanvas() {
         mapIDtoPath.clear();
         lineIDs.clear();
@@ -184,39 +228,6 @@ public class CanvasView extends View {
         mPath.reset();
         invalidate();
     }
-
-    // when ACTION_UP stop touch
-    private void upTouch(float x, float y) {
-        mRef.child(System.currentTimeMillis() + "")
-                .setValue(new Point(-1, -1, userUID, currentLineID, true, currentColor, currentBrushSize));
-
-    }
-
-    //override the onTouchEvent
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        float x = event.getX();
-        float y = event.getY();
-
-        Log.d(TAG, x + "," + y);
-
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                startTouch(x, y);
-                invalidate();
-                break;
-            case MotionEvent.ACTION_MOVE:
-                moveTouch(x, y);
-                invalidate();
-                break;
-            case MotionEvent.ACTION_UP:
-                upTouch(x, y);
-                invalidate();
-                break;
-        }
-        return true;
-    }
-
 
     public void getFromFirebase() {
         final DatabaseReference ref = mRef;
@@ -260,15 +271,18 @@ public class CanvasView extends View {
                     mY = y;
                 } else if (currPoint[0].getX() == -1) {
                     // line ended
-                    paints.remove(currPoint[0].getLineID());
-                    mPath.lineTo(mX, mY);
+                    String lineID = currPoint[0].getLineID();
+                    paints.remove(lineID);
+                    Path path = mapIDtoPath.get(lineID);
+                    path.lineTo(mX, mY);
                     mPath = new Path();
                 } else if (prevPoint[0] != null){
                     // middle points
                     float dx = Math.abs(x - mX);
                     float dy = Math.abs(y - mY);
                     if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
-                        mPath.quadTo(mX, mY, (x + mX)/2, (y + mY)/2);
+                        mapIDtoPath.get(currPoint[0].getLineID())
+                                .quadTo(mX, mY, (x + mX)/2, (y + mY)/2);
                         mX = x;
                         mY = y;
                     }
