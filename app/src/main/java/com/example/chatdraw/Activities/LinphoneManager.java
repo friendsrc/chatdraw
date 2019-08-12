@@ -23,12 +23,22 @@ import android.content.Context;
 import android.util.Log;
 
 import org.linphone.core.Core;
+import org.linphone.core.CoreListenerStub;
+import org.linphone.core.Factory;
+import org.linphone.core.tools.H264Helper;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 /** Handles Linphone's Core lifecycle */
 public class LinphoneManager {
     private final String mBasePath;
     private final Context mContext;
     private Core mCore;
+    private Runnable mIterateRunnable;
+    private Timer mTimer;
+    private final LinphonePreferences mPrefs;
+    private CoreListenerStub mCoreListener;
 
     private boolean mExited;
 
@@ -37,6 +47,10 @@ public class LinphoneManager {
         mExited = false;
         mContext = c;
         mBasePath = c.getFilesDir().getAbsolutePath();
+        mPrefs = LinphonePreferences.instance();
+
+        Core core = Factory.instance().createCore(null, null, this);
+        core.start();
     }
 
     public static synchronized LinphoneManager getInstance() {
@@ -51,6 +65,51 @@ public class LinphoneManager {
                             + "Better use getCore and check returned value");
         }
         return manager;
+    }
+
+    public synchronized void startLibLinphone(boolean isPush) {
+        try {
+            mCore =
+                    Factory.instance()
+                            .createCore(
+                                    mPrefs.getLinphoneDefaultConfig(),
+                                    mPrefs.getLinphoneFactoryConfig(),
+                                    mContext);
+            mCore.addListener(mCoreListener);
+
+            if (isPush) {
+                org.linphone.core.tools.Log.w(
+                        "[Manager] We are here because of a received push notification, enter background mode before starting the Core");
+                mCore.enterBackground();
+            }
+
+            mCore.start();
+
+            mIterateRunnable =
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            if (mCore != null) {
+                                mCore.iterate();
+                            }
+                        }
+                    };
+            TimerTask lTask =
+                    new TimerTask() {
+                        @Override
+                        public void run() {
+                            LinphoneUtils.dispatchOnUIThread(mIterateRunnable);
+                        }
+                    };
+            /*use schedule instead of scheduleAtFixedRate to avoid iterate from being call in burst after cpu wake up*/
+            mTimer = new Timer("Linphone scheduler");
+            mTimer.schedule(lTask, 0, 20);
+        } catch (Exception e) {
+            org.linphone.core.tools.Log.e(e, "[Manager] Cannot start linphone");
+        }
+
+        // H264 codec Management - set to auto mode -> MediaCodec >= android 5.0 >= OpenH264
+        H264Helper.setH264Mode(H264Helper.MODE_AUTO, mCore);
     }
 
     // TODO IMPORTANT

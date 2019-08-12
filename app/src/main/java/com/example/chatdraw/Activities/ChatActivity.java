@@ -617,7 +617,7 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
                     ActivityCompat.requestPermissions(this, Permission_all, CALLING_REQUEST);
                 } else {
                     Toast.makeText(this, "Call", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(ChatActivity.this, TestingActivity.class);
+                    Intent intent = new Intent(ChatActivity.this, CallActivity.class);
                     startActivity(intent);
                 }
 

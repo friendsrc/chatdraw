@@ -41,9 +41,9 @@ import java.text.ParseException;
 public class CallActivity extends AppCompatActivity implements View.OnClickListener {
     private final int REQUEST_USE_SIP = 109;
     private final String KEY = "password";
-    private final String USERNAME = "hello";
+    private final String USERNAME = "sacchirro";
     private final String DOMAIN = "sip.linphone.org";
-    private final String PASSWORD = "helloworld11";
+    private final String PASSWORD = "sacchirro11";
 
     private SipManager manager = null;
     private SipProfile profile = null;

@@ -24,6 +24,9 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
+import org.linphone.core.Core;
+import org.linphone.core.Factory;
+
 public final class LinphoneService extends Service {
     private LinphoneManager mLinphoneManager;
     private static LinphoneService sInstance;
@@ -31,6 +34,14 @@ public final class LinphoneService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        LinphonePreferences.instance().setContext(this);
+        Factory.instance().setLogCollectionPath(getFilesDir().getAbsolutePath());
+        Factory.instance().setDebugMode(true, "Linphone");
+        // You must provide the Android app context as createCore last param !
+        Core core = Factory.instance().createCore(null, null, this);
+        core.start();
+
         LinphonePreferences.instance().setContext(this);
         mLinphoneManager = new LinphoneManager(this);
         sInstance = this;

@@ -35,6 +35,7 @@ import org.linphone.core.tools.Log;
 
 public class LinphonePreferences {
     private static final String LINPHONE_DEFAULT_RC = "/.linphonerc";
+    private static final String LINPHONE_FACTORY_RC = "/linphonerc";
     private static final String DEFAULT_ASSISTANT_RC = "/default_assistant_create.rc";
     private static final String LINPHONE_ASSISTANT_RC = "/linphone_assistant_create.rc";
 
@@ -68,6 +69,10 @@ public class LinphonePreferences {
     // TODO IMPORTANT
     public String getLinphoneDynamicConfigFile() {
         return mBasePath + LINPHONE_ASSISTANT_RC;
+    }
+
+    public String getLinphoneFactoryConfig() {
+        return mBasePath + LINPHONE_FACTORY_RC;
     }
 
     // TODO IMPORTANT
