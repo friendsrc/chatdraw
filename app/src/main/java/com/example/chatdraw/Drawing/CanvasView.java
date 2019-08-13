@@ -260,13 +260,15 @@ public class CanvasView extends View {
                     paints.put(currPoint[0].getLineID(), mPaint);
                     mapPathToPaint.put(mPath, mPaint);
                     lineIDs.add(currPoint[0].getLineID());
+
+                    // TODO: remove reset
+//                    mPath.reset();
+                    mPath.moveTo(x, y);
                     if (currPoint[0].isVisible()) {
                         mapIDtoPath.put(currPoint[0].getLineID(), mPath);
                     } else {
                         mapIDtoRemovedPath.put(currPoint[0].getLineID(), mPath);
                     }
-                    mPath.reset();
-                    mPath.moveTo(x, y);
                     mX = x;
                     mY = y;
                 } else if (currPoint[0].getX() == -1) {
