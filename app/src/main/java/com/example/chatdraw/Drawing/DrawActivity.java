@@ -104,7 +104,7 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
                 };
                 mColorPickerDialog = ColorPickerDialog.newBuilder();
                 mColorPickerDialog
-                        .setShowAlphaSlider(true)
+                        .setShowAlphaSlider(false)
                         .setColor(Color.parseColor("#000000"))
                         .setPresets(colorPresets)
                         .show(DrawActivity.this);

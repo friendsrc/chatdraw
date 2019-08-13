@@ -7,10 +7,10 @@
         <!--android:icon="@drawable/settings"-->
         <!--android:title="Call"-->
         <!--app:showAsAction="ifRoom"/>-->
-    <item
-        android:id="@+id/draw_export"
-        android:icon="@drawable/export"
-        android:title="Draw"
-        app:showAsAction="ifRoom"/>
+    <!--<item-->
+        <!--android:id="@+id/draw_export"-->
+        <!--android:icon="@drawable/export"-->
+        <!--android:title="Draw"-->
+        <!--app:showAsAction="ifRoom"/>-->
 
 </menu>

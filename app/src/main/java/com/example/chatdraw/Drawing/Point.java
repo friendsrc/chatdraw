@@ -19,8 +19,7 @@ public class Point {
         this.brushSize = 0;
     }
 
-    public Point(float x, float y, String senderID, String lineID,
-                 boolean isVisible, int color, float brushSize) {
+    public Point(float x, float y, String senderID, String lineID, boolean isVisible, int color, float brushSize) {
         this.x = x;
         this.y = y;
         this.senderID = senderID;

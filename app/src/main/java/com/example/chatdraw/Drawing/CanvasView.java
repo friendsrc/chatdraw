@@ -10,10 +10,12 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.android.gms.internal.ads.zzagm;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -41,6 +43,8 @@ public class CanvasView extends View {
     private HashMap<String, Path> mapIDtoRemovedPath = new HashMap<>();
     private HashMap<Path, Paint> mapPathToPaint = new HashMap<>();
     private HashMap<String, Paint> paints = new HashMap<>();
+
+
 
     // Paint
     public Paint mPaint;
@@ -104,7 +108,9 @@ public class CanvasView extends View {
     protected void onDraw(Canvas canvas) {
 //        super.onDraw(canvas);
         for (Path p : mapIDtoPath.values()){
-            canvas.drawPath(p, mapPathToPaint.get(p));
+            if (mapPathToPaint.containsKey(p)) {
+                canvas.drawPath(p, mapPathToPaint.get(p));
+            }
         }
     }
 
@@ -125,21 +131,20 @@ public class CanvasView extends View {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 startTouch(x, y);
-                invalidate();
+//                invalidate();
                 break;
             case MotionEvent.ACTION_MOVE:
                 moveTouch(x, y);
-                invalidate();
+//                invalidate();
                 break;
             case MotionEvent.ACTION_UP:
                 upTouch(x, y);
-                invalidate();
+//                invalidate();
                 break;
         }
         return true;
     }
 
-    // when ACTION_DOWN start touch according to the x,y values
     private void startTouch(float x, float y) {
         currentLineID = userUID + "@" + System.currentTimeMillis();
         mRef.child(System.currentTimeMillis() + "")
@@ -148,7 +153,6 @@ public class CanvasView extends View {
                                 true, currentColor, currentBrushSize));
     }
 
-    // when ACTION_MOVE move touch according to the x,y values
     private void moveTouch(float x, float y) {
         mRef.child(System.currentTimeMillis() + "")
                 .setValue(
@@ -157,8 +161,6 @@ public class CanvasView extends View {
     }
 
 
-
-    // when ACTION_UP stop touch
     private void upTouch(float x, float y) {
         mRef.child(System.currentTimeMillis() + "")
                 .setValue(
@@ -261,8 +263,6 @@ public class CanvasView extends View {
                     mapPathToPaint.put(mPath, mPaint);
                     lineIDs.add(currPoint[0].getLineID());
 
-                    // TODO: remove reset
-//                    mPath.reset();
                     mPath.moveTo(x, y);
                     if (currPoint[0].isVisible()) {
                         mapIDtoPath.put(currPoint[0].getLineID(), mPath);
@@ -275,7 +275,13 @@ public class CanvasView extends View {
                     // line ended
                     String lineID = currPoint[0].getLineID();
                     paints.remove(lineID);
-                    Path path = mapIDtoPath.get(lineID);
+                    Path path;
+                    if (mapIDtoPath.containsKey(lineID)) {
+                        path = mapIDtoPath.get(lineID);
+                    } else {
+                        path = mapIDtoRemovedPath.get(lineID);
+                    }
+
                     path.lineTo(mX, mY);
                     mPath = new Path();
                 } else if (prevPoint[0] != null){
@@ -283,8 +289,15 @@ public class CanvasView extends View {
                     float dx = Math.abs(x - mX);
                     float dy = Math.abs(y - mY);
                     if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
-                        mapIDtoPath.get(currPoint[0].getLineID())
-                                .quadTo(mX, mY, (x + mX)/2, (y + mY)/2);
+                        String key = currPoint[0].getLineID();
+                        if (mapIDtoPath.containsKey(key)) {
+                            mapIDtoPath.get(currPoint[0].getLineID())
+                                    .quadTo(mX, mY, (x + mX)/2, (y + mY)/2);
+                        } else {
+                            mapIDtoRemovedPath.get(currPoint[0].getLineID())
+                                    .quadTo(mX, mY, (x + mX)/2, (y + mY)/2);
+                        }
+
                         mX = x;
                         mY = y;
                     }
@@ -337,4 +350,6 @@ public class CanvasView extends View {
         ref.addChildEventListener(mChildEventListener);
 
     }
+
+
 }
