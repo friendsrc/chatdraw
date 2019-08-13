@@ -116,7 +116,7 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
         sizePicker.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                mCanvasView.currentBrushSize = (float) progress / 10;
+                mCanvasView.myCurrentBrushSize = (float) progress / 10;
             }
 
             @Override
@@ -148,7 +148,7 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
     @Override
     public void onColorSelected(int dialogId, int color) {
         mColorButton.setColorFilter(color, PorterDuff.Mode.MULTIPLY);
-        mCanvasView.currentColor = color;
+        mCanvasView.myCurrentColor = color;
     }
 
     @Override

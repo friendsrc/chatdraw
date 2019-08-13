@@ -44,6 +44,9 @@ public class CanvasView extends View {
     private HashMap<Path, Paint> mapPathToPaint = new HashMap<>();
     private HashMap<String, Paint> paints = new HashMap<>();
 
+    public Paint myPaint;
+    public int myCurrentColor = Color.BLACK;
+    public float myCurrentBrushSize = 6f;
 
 
     // Paint
@@ -150,14 +153,14 @@ public class CanvasView extends View {
         mRef.child(System.currentTimeMillis() + "")
                 .setValue(
                         new Point(x, y, userUID, currentLineID,
-                                true, currentColor, currentBrushSize));
+                                true, myCurrentColor, myCurrentBrushSize));
     }
 
     private void moveTouch(float x, float y) {
         mRef.child(System.currentTimeMillis() + "")
                 .setValue(
                         new Point(x, y, userUID, currentLineID,
-                                true, currentColor, currentBrushSize));
+                                true, myCurrentColor, myCurrentBrushSize));
     }
 
 
@@ -165,7 +168,7 @@ public class CanvasView extends View {
         mRef.child(System.currentTimeMillis() + "")
                 .setValue(
                         new Point(-1, -1, userUID, currentLineID,
-                                true, currentColor, currentBrushSize));
+                                true, myCurrentColor, myCurrentBrushSize));
 
     }
 
