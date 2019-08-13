@@ -1,56 +1,53 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".Activities.CallActivity">
-
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:src="@color/colorPrimary" />
+    android:padding="0dip"
+    tools:context=".Callers.CallActivity">
 
     <LinearLayout
-        android:id="@+id/new_call_linear_layout"
-        android:layout_width="match_parent"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_centerVertical="true"
+        android:orientation="vertical"
+        android:paddingLeft="40dp"
+        android:paddingRight="40dp">
 
-        <ImageView
-            android:id="@+id/call_button"
-            android:layout_width="48dp"
-            android:layout_weight="1"
-            android:layout_height="48dp"
-            android:layout_margin="24dp"
-            android:src="@drawable/accept_call" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:text="Enter your name"
+            android:textAllCaps="true"
+            android:id="@+id/textView" android:layout_gravity="center_horizontal"
+            android:textColor="@color/sinch_purple" android:textSize="20sp"/>
+        <EditText
+            android:id="@+id/loginName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:inputType="textPersonName"
+            android:textSize="32sp"
+            android:padding="10dp"
+            android:textColor="@color/sinch_purple"
+            android:background="@drawable/inputbox">
 
-        <ImageView
-            android:id="@+id/reject_button"
-            android:layout_width="48dp"
-            android:layout_weight="1"
-            android:layout_height="48dp"
-            android:layout_margin="24dp"
-            android:src="@drawable/end_call" />
+            <requestFocus/>
+        </EditText>
 
     </LinearLayout>
 
-    <!--<LinearLayout-->
-        <!--android:id="@+id/on_call_linear_layout"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:orientation="horizontal">-->
+    <Button
+        android:id="@+id/loginButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="40dp"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/button_login"
+        android:minHeight="56dp"
+        android:minWidth="132dp"
+        android:textColor="@color/off_white"
+        android:textSize="22sp"
+        android:textStyle="bold" android:layout_alignParentBottom="true" android:layout_centerHorizontal="true"/>
 
-        <!--<ImageView-->
-            <!--android:id="@+id/end_call_button"-->
-            <!--android:layout_width="48dp"-->
-            <!--android:layout_weight="1"-->
-            <!--android:layout_height="48dp"-->
-            <!--android:layout_margin="24dp"-->
-            <!--android:src="@drawable/end_call" />-->
-
-    <!--</LinearLayout>-->
-
-</LinearLayout>
+</RelativeLayout>
