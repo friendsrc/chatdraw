@@ -44,6 +44,7 @@ public class CanvasView extends View {
     private HashMap<Path, Paint> mapPathToPaint = new HashMap<>();
     private HashMap<String, Paint> paints = new HashMap<>();
 
+    // Paint currently chosen by the user
     public Paint myPaint;
     public int myCurrentColor = Color.BLACK;
     public float myCurrentBrushSize = 6f;
@@ -70,20 +71,12 @@ public class CanvasView extends View {
 
     public CanvasView(Context c, AttributeSet attrs) {
         super(c, attrs);
-
         context = c;
 
         // create a new Path
         mPath = new Path();
 
         // create a new Paint
-//        mPaint = new Paint();
-//        mPaint.setAntiAlias(true);
-//        mPaint.setColor(currentColor);
-//        mPaint.setStyle(Paint.Style.STROKE);
-//        mPaint.setStrokeJoin(Paint.Join.ROUND);
-//        mPaint.setStrokeWidth(currentBrushSize);
-
         myPaint = new Paint();
         myPaint.setAntiAlias(true);
         myPaint.setColor(myCurrentColor);
@@ -110,7 +103,6 @@ public class CanvasView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-//        super.onDraw(canvas);
         for (Path p : mapIDtoPath.values()){
             if (mapPathToPaint.containsKey(p)) {
                 canvas.drawPath(p, mapPathToPaint.get(p));
@@ -119,6 +111,7 @@ public class CanvasView extends View {
     }
 
     @Override
+    // called when the size of this CanvasView is changed
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         mBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
@@ -129,28 +122,25 @@ public class CanvasView extends View {
     public boolean onTouchEvent(MotionEvent event) {
         float x = event.getX();
         float y = event.getY();
-
-        Log.d(TAG, x + "," + y);
-
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 startTouch(x, y);
-//                invalidate();
                 break;
             case MotionEvent.ACTION_MOVE:
                 moveTouch(x, y);
-//                invalidate();
                 break;
             case MotionEvent.ACTION_UP:
                 upTouch(x, y);
-//                invalidate();
                 break;
         }
         return true;
     }
 
     private void startTouch(float x, float y) {
+        // create a unique line id
         currentLineID = userUID + "@" + System.currentTimeMillis();
+
+        // send point to firebase
         mRef.child(System.currentTimeMillis() + "")
                 .setValue(
                         new Point(x, y, userUID, currentLineID,
@@ -166,6 +156,7 @@ public class CanvasView extends View {
 
 
     private void upTouch(float x, float y) {
+        // points with value x = -1 and y = -1 indicates the end of a line
         mRef.child(System.currentTimeMillis() + "")
                 .setValue(
                         new Point(-1, -1, userUID, currentLineID,
@@ -175,12 +166,19 @@ public class CanvasView extends View {
 
     public void undo() {
         if (lineIDs.isEmpty()) return;
+
+        // remove line id
         final String lineID  = lineIDs.remove(lineIDs.size()-  1);
+
+        // add the removed path to the collection of removed path
         removedLineIDs.add(lineID);
         Path path  = mapIDtoPath.remove(lineID);
         mapIDtoRemovedPath.put(lineID, path);
+
+        // update the drawing
         invalidate();
 
+        // set the points in firebase to be invisible
         mRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -202,12 +200,19 @@ public class CanvasView extends View {
 
     public void redo() {
         if (removedLineIDs.isEmpty()) return;
+
+        // remove line id from removedLineIDs collection
         final String lineID  = removedLineIDs.remove(removedLineIDs.size() -  1);
+
+        // add to the visible path collection
         lineIDs.add(lineID);
         Path path = mapIDtoRemovedPath.remove(lineID);
         mapIDtoPath.put(lineID, path);
+
+        // update the canvas
         invalidate();
 
+        // set the points in firebase to be visible
         mRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -228,10 +233,21 @@ public class CanvasView extends View {
     }
 
     public void clearCanvas() {
+        // remove collection values
         mapIDtoPath.clear();
+        mapIDtoRemovedPath.clear();
         lineIDs.clear();
+        removedLineIDs.clear();
+        paints.clear();
+        mapPathToPaint.clear();
+
+        // remove data in firebase
         mRef.removeValue();
+
+        // reset path
         mPath.reset();
+
+        // set the canvas to be blank
         invalidate();
     }
 
@@ -245,16 +261,14 @@ public class CanvasView extends View {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 Log.d(TAG, "onChildAdded");
-                currPoint[0] =  dataSnapshot.getValue(Point.class);
 
+                currPoint[0] =  dataSnapshot.getValue(Point.class);
                 if (currPoint[0] == null) return;
 
                 float x = currPoint[0].getX();
                 float y  = currPoint[0].getY();
 
-                if (!paints.containsKey(currPoint[0].getLineID())) {
-                    // start of a new line
-
+                if (!paints.containsKey(currPoint[0].getLineID())) { // start of a new line
                     int color = currPoint[0].getColor();
                     Float size =  currPoint[0].getBrushSize();
                     mPath = new Path();
@@ -277,8 +291,7 @@ public class CanvasView extends View {
                     }
                     mX = x;
                     mY = y;
-                } else if (currPoint[0].getX() == -1) {
-                    // line ended
+                } else if (currPoint[0].getX() == -1) { // end of line
                     String lineID = currPoint[0].getLineID();
                     paints.remove(lineID);
                     Path path;
@@ -290,8 +303,7 @@ public class CanvasView extends View {
 
                     path.lineTo(mX, mY);
                     mPath = new Path();
-                } else if (prevPoint[0] != null){
-                    // middle points
+                } else if (prevPoint[0] != null){ // middle of the line
                     float dx = Math.abs(x - mX);
                     float dy = Math.abs(y - mY);
                     if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
@@ -351,7 +363,6 @@ public class CanvasView extends View {
 
             }
         };
-
 
         ref.addChildEventListener(mChildEventListener);
 
