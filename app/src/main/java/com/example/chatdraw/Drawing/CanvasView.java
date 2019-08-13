@@ -48,12 +48,6 @@ public class CanvasView extends View {
     public int myCurrentColor = Color.BLACK;
     public float myCurrentBrushSize = 6f;
 
-
-    // Paint
-    public Paint mPaint;
-    public int currentColor = Color.BLACK;
-    public float currentBrushSize = 6f;
-
     // Path
     private float mX, mY;
     private Path mPath; //current path
@@ -83,12 +77,19 @@ public class CanvasView extends View {
         mPath = new Path();
 
         // create a new Paint
-        mPaint = new Paint();
-        mPaint.setAntiAlias(true);
-        mPaint.setColor(currentColor);
-        mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setStrokeJoin(Paint.Join.ROUND);
-        mPaint.setStrokeWidth(currentBrushSize);
+//        mPaint = new Paint();
+//        mPaint.setAntiAlias(true);
+//        mPaint.setColor(currentColor);
+//        mPaint.setStyle(Paint.Style.STROKE);
+//        mPaint.setStrokeJoin(Paint.Join.ROUND);
+//        mPaint.setStrokeWidth(currentBrushSize);
+
+        myPaint = new Paint();
+        myPaint.setAntiAlias(true);
+        myPaint.setColor(myCurrentColor);
+        myPaint.setStyle(Paint.Style.STROKE);
+        myPaint.setStrokeJoin(Paint.Join.ROUND);
+        myPaint.setStrokeWidth(myCurrentBrushSize);
 
     }
 
@@ -253,17 +254,19 @@ public class CanvasView extends View {
 
                 if (!paints.containsKey(currPoint[0].getLineID())) {
                     // start of a new line
-                    currentColor = currPoint[0].getColor();
-                    currentBrushSize =  currPoint[0].getBrushSize();
 
-                    mPaint = new Paint();
-                    mPaint.setAntiAlias(true);
-                    mPaint.setColor(currentColor);
-                    mPaint.setStyle(Paint.Style.STROKE);
-                    mPaint.setStrokeJoin(Paint.Join.ROUND);
-                    mPaint.setStrokeWidth(currentBrushSize);
-                    paints.put(currPoint[0].getLineID(), mPaint);
-                    mapPathToPaint.put(mPath, mPaint);
+                    int color = currPoint[0].getColor();
+                    Float size =  currPoint[0].getBrushSize();
+                    mPath = new Path();
+
+                    Paint paint = new Paint();
+                    paint.setAntiAlias(true);
+                    paint.setColor(color);
+                    paint.setStyle(Paint.Style.STROKE);
+                    paint.setStrokeJoin(Paint.Join.ROUND);
+                    paint.setStrokeWidth(size);
+                    paints.put(currPoint[0].getLineID(), paint);
+                    mapPathToPaint.put(mPath, paint);
                     lineIDs.add(currPoint[0].getLineID());
 
                     mPath.moveTo(x, y);
