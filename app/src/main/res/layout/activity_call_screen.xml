@@ -3,15 +3,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:weightSum="5"
-    android:background="#ffffffff">
+    android:weightSum="6"
+    android:background="@color/colorPrimary">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:orientation="vertical"
         android:layout_weight="1"
-        android:background="#fffafafa"
+        android:background="@color/colorPrimary"
         >
 
         <TextView
@@ -21,7 +21,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_margin="10dp"
             android:text=""
-            android:textColor="@color/sinch_purple"
+            android:textColor="@color/white"
             android:textSize="28sp"/>
 
         <TextView
@@ -30,8 +30,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:text="Ringing"
-            android:textColor="@color/sinch_purple"
-            android:textSize="16sp"
+            android:textColor="@color/white"
+            android:textSize="18sp"
             android:textAllCaps="true"
             />
 
@@ -44,8 +44,8 @@
             android:layout_marginTop="4dp"
             android:text="00:00"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="@color/sinch_purple"
-            android:textSize="16sp"/>
+            android:textColor="@color/white"
+            android:textSize="18sp"/>
 
     </LinearLayout>
 
@@ -54,7 +54,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:padding="0dip"
-        android:layout_weight="3"
+        android:layout_weight="4"
         android:contentDescription="Call background">
 
     </ImageView>
