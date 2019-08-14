@@ -10,7 +10,6 @@ import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -37,6 +36,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.chatdraw.Drawing.DrawActivity;
 import com.example.chatdraw.Callers.BaseActivity;
 import com.example.chatdraw.Callers.CallScreenActivity;
 import com.example.chatdraw.Callers.SinchService;
@@ -174,7 +174,6 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         Intent intent = getIntent();
         friendsUID = intent.getStringExtra("uID");
 
-        Log.d("HEY", friendsUID);
 
         // check if this activity is from ChatService
         isFromService = intent.getBooleanExtra("isFromService", false);
@@ -229,9 +228,11 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                 EditText editText = findViewById(R.id.chat_edittext);
                 String message = editText.getText().toString();
                 // create a new ChatItem
-                ChatItem newChatItem = addMessageToAdapter(message);
-                sendMessage(newChatItem); // send the ChatItem to Firebase
-                editText.setText(""); // erase the content of the EditText
+                if (!message.trim().equals("")) {
+                    ChatItem newChatItem = addMessageToAdapter(message);
+                    sendMessage(newChatItem); // send the ChatItem to Firebase
+                    editText.setText(""); // erase the content of the EditText
+                }
             }
         });
 
@@ -577,7 +578,16 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         switch (item.getItemId()) {
             case R.id.draw:
                 // Go to draw activity
-                Toast.makeText(this, "Draw", Toast.LENGTH_SHORT).show();
+                if (isGroup) {
+                    Toast.makeText(this,
+                            "Drawing for groups not yet supported", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    Intent intent = new Intent(ChatActivity.this, DrawActivity.class);
+                    intent.putExtra("userUID", userUID);
+                    intent.putExtra("friendsUID", friendsUID);
+                    startActivity(intent);
+                }
                 return true;
 
             case R.id.call:
