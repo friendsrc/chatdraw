@@ -1,8 +1,13 @@
 package com.example.chatdraw.Drawing;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
@@ -12,6 +17,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.Toast;
 
 import com.example.chatdraw.R;
 import com.google.firebase.database.DatabaseReference;
@@ -170,9 +176,35 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
                 mCanvasView.clearCanvas();
                 break;
             case R.id.draw_export:
-                mCanvasView.exportDrawing();
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    // Permission is not granted
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            909);
+                } else {
+                    mCanvasView.exportDrawing();
+                }
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 909) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // permission was granted, yay! Do the
+                // contacts-related task you need to do.
+                mCanvasView.exportDrawing();
+            } else {
+                // permission denied, boo! Disable the
+                // functionality that depends on this permission.
+                Toast.makeText(this, "Permission not granted", Toast.LENGTH_SHORT).show();
+            }
+            return;
+        }
     }
 }

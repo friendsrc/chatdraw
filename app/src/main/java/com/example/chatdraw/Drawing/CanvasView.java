@@ -1,7 +1,9 @@
 package com.example.chatdraw.Drawing;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -9,6 +11,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -18,6 +21,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.internal.ads.zzagm;
 import com.google.firebase.database.ChildEventListener;
@@ -271,6 +276,7 @@ public class CanvasView extends View {
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
         stream.flush();
         stream.close();
+        Toast.makeText(context, "Image saved", Toast.LENGTH_SHORT).show();
     }
 
     public void clearCanvas() {
