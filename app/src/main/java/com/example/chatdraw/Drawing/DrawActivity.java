@@ -170,6 +170,7 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
                 mCanvasView.clearCanvas();
                 break;
             case R.id.draw_export:
+                mCanvasView.exportDrawing();
                 break;
         }
         return super.onOptionsItemSelected(item);

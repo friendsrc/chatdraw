@@ -1,11 +1,15 @@
 package com.example.chatdraw.Drawing;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
+import android.os.Environment;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -23,10 +27,13 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.TreeMap;
+import java.util.UUID;
 
 
 public class CanvasView extends View {
@@ -85,6 +92,9 @@ public class CanvasView extends View {
         myPaint.setStrokeJoin(Paint.Join.ROUND);
         myPaint.setStrokeWidth(myCurrentBrushSize);
 
+//        mBitmap = Bitmap.createBitmap(400, 400, Bitmap.Config.ARGB_8888);
+//        mCanvas = new Canvas(mBitmap);
+
     }
 
     // set IDs for connection to Firebase, called directly after CanvasView is instantiated
@@ -104,21 +114,19 @@ public class CanvasView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-//        for (Path p: orderedPaths) {
-//            if (mapPathToPaint.containsValue(p)) {
-//                canvas.drawPath(p, mapPathToPaint.get(p));
-//            }
-//        }
+        mBitmap = Bitmap.createBitmap(canvas.getWidth(), canvas.getHeight(), Bitmap.Config.ARGB_8888);
+        mCanvas = new Canvas(mBitmap);
+        mCanvas.drawColor(Color.WHITE);
 
         for (Path p : mapIDtoPath.values()){
             if (mapPathToPaint.containsKey(p)) {
+                mCanvas.drawPath(p, mapPathToPaint.get(p));
                 canvas.drawPath(p, mapPathToPaint.get(p));
             }
         }
     }
 
     @Override
-    // called when the size of this CanvasView is changed
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         mBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
@@ -237,6 +245,32 @@ public class CanvasView extends View {
 
             }
         });
+    }
+
+    public void exportDrawing() {
+        File folder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        folder.mkdirs();
+        File imageFile = new File(folder, UUID.randomUUID() + ".png");
+        try {
+            storeBitmap(imageFile, mBitmap);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        MediaScannerConnection.scanFile(
+                context,
+                new String[]{},
+                new String[]{"image/png"},
+                null);
+        context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(imageFile)));
+    }
+
+    private void storeBitmap(File file, Bitmap bitmap) throws Exception {
+        if (!file.exists() && !file.createNewFile())
+            throw new Exception("Not able to create " + file.getPath());
+        FileOutputStream stream = new FileOutputStream(file);
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        stream.flush();
+        stream.close();
     }
 
     public void clearCanvas() {
