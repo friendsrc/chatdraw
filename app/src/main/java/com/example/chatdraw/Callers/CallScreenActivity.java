@@ -1,5 +1,10 @@
 package com.example.chatdraw.Callers;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.sinch.android.rtc.AudioController;
 import com.sinch.android.rtc.PushPair;
 import com.sinch.android.rtc.calling.Call;
@@ -14,6 +19,8 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 
 import java.util.List;
 import java.util.Locale;
@@ -72,9 +79,22 @@ public class CallScreenActivity extends BaseActivity {
     public void onServiceConnected() {
         Call call = getSinchServiceInterface().getCall(mCallId);
         if (call != null) {
-            call.addCallListener(new SinchCallListener());
-            mCallerName.setText(call.getRemoteUserId());
-            mCallState.setText(call.getState().toString());
+            DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
+            mDatabaseRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    call.addCallListener(new SinchCallListener());
+                    String userUID = call.getRemoteUserId();
+                    String name = (String) dataSnapshot.child(userUID).child("name").getValue();
+
+                    mCallerName.setText(name);
+                    mCallState.setText(call.getState().toString());
+                }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Toast.makeText(CallScreenActivity.this, "Failed to place a call. Error code: 801", Toast.LENGTH_SHORT).show();
+                }
+            });
         } else {
             Log.e(TAG, "Started with invalid callId, aborting.");
             finish();

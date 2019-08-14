@@ -1,5 +1,11 @@
 package com.example.chatdraw.Callers;
 
+import com.example.chatdraw.Activities.MainActivity;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.sinch.android.rtc.MissingPermissionException;
 import com.sinch.android.rtc.PushPair;
 import com.sinch.android.rtc.calling.Call;
@@ -16,6 +22,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 
 import java.util.List;
@@ -37,6 +44,9 @@ public class IncomingCallScreenActivity extends BaseActivity {
         Button decline = (Button) findViewById(R.id.declineButton);
         decline.setOnClickListener(mClickListener);
 
+        TextView remoteUser = (TextView) findViewById(R.id.remoteUser);
+        remoteUser.setText("Victor");
+
         mAudioPlayer = new AudioPlayer(this);
         mAudioPlayer.playRingtone();
         mCallId = getIntent().getStringExtra(SinchService.CALL_ID);
@@ -46,9 +56,23 @@ public class IncomingCallScreenActivity extends BaseActivity {
     protected void onServiceConnected() {
         Call call = getSinchServiceInterface().getCall(mCallId);
         if (call != null) {
-            call.addCallListener(new SinchCallListener());
-            TextView remoteUser = (TextView) findViewById(R.id.remoteUser);
-            remoteUser.setText(call.getRemoteUserId());
+            DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
+            mDatabaseRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    call.addCallListener(new SinchCallListener());
+                    TextView remoteUser = (TextView) findViewById(R.id.remoteUser);
+
+                    String userUID = call.getRemoteUserId();
+                    String name = (String) dataSnapshot.child(userUID).child("name").getValue();
+
+                    remoteUser.setText(name);
+                }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Toast.makeText(IncomingCallScreenActivity.this, "Failed to place a call. Error code: 800", Toast.LENGTH_SHORT).show();
+                }
+            });
         } else {
             Log.e(TAG, "Started with invalid callId, aborting");
             finish();
