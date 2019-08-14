@@ -38,9 +38,9 @@
     </LinearLayout>
 
     <ImageView
+        android:id="@+id/profileImageID"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:src="@drawable/friends_icon"
         android:padding="0dip"
         android:layout_weight="3"
         android:contentDescription="Call background">

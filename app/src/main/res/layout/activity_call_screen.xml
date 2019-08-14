@@ -50,9 +50,9 @@
     </LinearLayout>
 
     <ImageView
+        android:id="@+id/profileImgID"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:src="@drawable/ic_person"
         android:padding="0dip"
         android:layout_weight="3"
         android:contentDescription="Call background">

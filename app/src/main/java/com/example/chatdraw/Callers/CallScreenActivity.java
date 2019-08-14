@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +29,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import com.example.chatdraw.R;
+import com.squareup.picasso.Picasso;
 
 public class CallScreenActivity extends BaseActivity {
     static final String TAG = CallScreenActivity.class.getSimpleName();
@@ -41,6 +43,8 @@ public class CallScreenActivity extends BaseActivity {
     private TextView mCallDuration;
     private TextView mCallState;
     private TextView mCallerName;
+
+    private ImageView mImageCall;
 
     private class UpdateCallDurationTask extends TimerTask {
 
@@ -64,6 +68,7 @@ public class CallScreenActivity extends BaseActivity {
         mCallDuration = (TextView) findViewById(R.id.callDuration);
         mCallerName = (TextView) findViewById(R.id.remoteUser);
         mCallState = (TextView) findViewById(R.id.callState);
+        mImageCall = (ImageView) findViewById(R.id.profileImgID);
         Button endCallButton = (Button) findViewById(R.id.hangupButton);
 
         endCallButton.setOnClickListener(new OnClickListener() {
@@ -86,6 +91,12 @@ public class CallScreenActivity extends BaseActivity {
                     call.addCallListener(new SinchCallListener());
                     String userUID = call.getRemoteUserId();
                     String name = (String) dataSnapshot.child(userUID).child("name").getValue();
+                    String imageURL = (String) dataSnapshot.child(userUID).child("imageUrl").getValue();
+
+                    Picasso.get()
+                            .load(imageURL)
+                            .fit()
+                            .into(mImageCall);
 
                     mCallerName.setText(name);
                     mCallState.setText(call.getState().toString());

@@ -14,11 +14,13 @@ import com.sinch.android.rtc.calling.CallListener;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,11 +30,13 @@ import androidx.core.app.ActivityCompat;
 import java.util.List;
 
 import com.example.chatdraw.R;
+import com.squareup.picasso.Picasso;
 
 public class IncomingCallScreenActivity extends BaseActivity {
     static final String TAG = IncomingCallScreenActivity.class.getSimpleName();
     private String mCallId;
     private AudioPlayer mAudioPlayer;
+    private ImageView mImageProfile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,8 +48,7 @@ public class IncomingCallScreenActivity extends BaseActivity {
         Button decline = (Button) findViewById(R.id.declineButton);
         decline.setOnClickListener(mClickListener);
 
-        TextView remoteUser = (TextView) findViewById(R.id.remoteUser);
-        remoteUser.setText("Victor");
+        mImageProfile = (ImageView) findViewById(R.id.profileImageID);
 
         mAudioPlayer = new AudioPlayer(this);
         mAudioPlayer.playRingtone();
@@ -65,6 +68,12 @@ public class IncomingCallScreenActivity extends BaseActivity {
 
                     String userUID = call.getRemoteUserId();
                     String name = (String) dataSnapshot.child(userUID).child("name").getValue();
+                    String imageURL = (String) dataSnapshot.child(userUID).child("imageUrl").getValue();
+
+                    Picasso.get()
+                            .load(imageURL)
+                            .fit()
+                            .into(mImageProfile);
 
                     remoteUser.setText(name);
                 }
