@@ -2,15 +2,33 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <!-- "Mark Favorite", should appear as action button if possible -->
-    <!--<item-->
-        <!--android:id="@+id/draw_settings"-->
-        <!--android:icon="@drawable/settings"-->
-        <!--android:title="Call"-->
-        <!--app:showAsAction="ifRoom"/>-->
-    <!--<item-->
-        <!--android:id="@+id/draw_export"-->
-        <!--android:icon="@drawable/export"-->
-        <!--android:title="Draw"-->
-        <!--app:showAsAction="ifRoom"/>-->
+    <item
+        android:id="@+id/draw_undo"
+        android:icon="@drawable/undo"
+        android:title="Undo"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/draw_redo"
+        android:icon="@drawable/redo"
+        android:title="Redo"
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/draw_clear"
+        android:icon="@drawable/clear"
+        android:title="Clear drawing"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/draw_export"
+        android:icon="@drawable/export"
+        android:title="Export"
+        app:showAsAction="always"/>
+
+    <item android:id="@+id/action_settings"
+        android:title="Draw Setting 1"
+        app:showAsAction="never"/>
+    <item android:id="@+id/action_settings2"
+        android:title="Draw Setting 2"
+        app:showAsAction="never"/>
 
 </menu>

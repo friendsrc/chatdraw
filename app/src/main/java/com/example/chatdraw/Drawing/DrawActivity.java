@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -56,37 +57,37 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
                     .child(friendsUID + "|" + userUID);
         }
 
-        // set clear canvas button
-        Button clearButton = findViewById(R.id.clear_drawing_button);
-        clearButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                canvasView.clearCanvas();
-            }
-        });
-
-        // set undo button
-        final Button undoButton = findViewById(R.id.undo_drawing_button);
-        undoButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                canvasView.undo();
-            }
-        });
-
-        // set redo button
-        final Button redoButton = findViewById(R.id.redo_drawing_button);
-        redoButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                canvasView.redo();
-            }
-        });
+//        // set clear canvas button
+//        Button clearButton = findViewById(R.id.clear_drawing_button);
+//        clearButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                canvasView.clearCanvas();
+//            }
+//        });
+//
+//        // set undo button
+//        final Button undoButton = findViewById(R.id.undo_drawing_button);
+//        undoButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                canvasView.undo();
+//            }
+//        });
+//
+//        // set redo button
+//        final Button redoButton = findViewById(R.id.redo_drawing_button);
+//        redoButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                canvasView.redo();
+//            }
+//        });
 
         // set the action bar
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
-        getSupportActionBar().setTitle("Canvas");
+        getSupportActionBar().setTitle("");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // set color picker
@@ -104,7 +105,7 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
                 };
                 mColorPickerDialog = ColorPickerDialog.newBuilder();
                 mColorPickerDialog
-                        .setShowAlphaSlider(false)
+                        .setShowAlphaSlider(true)
                         .setColor(Color.parseColor("#000000"))
                         .setPresets(colorPresets)
                         .show(DrawActivity.this);
@@ -154,5 +155,23 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
     @Override
     public void onDialogDismissed(int dialogId) {
 
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.draw_undo:
+                mCanvasView.undo();
+                break;
+            case R.id.draw_redo:
+                mCanvasView.redo();
+                break;
+            case R.id.draw_clear:
+                mCanvasView.clearCanvas();
+                break;
+            case R.id.draw_export:
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
