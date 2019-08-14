@@ -26,6 +26,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.TreeMap;
 
 
 public class CanvasView extends View {
@@ -39,7 +40,7 @@ public class CanvasView extends View {
     // Cached information
     private ArrayList<String> lineIDs = new ArrayList<>();
     private ArrayList<String> removedLineIDs =  new ArrayList<>();
-    private HashMap<String, Path> mapIDtoPath = new HashMap<>();
+    private TreeMap<String, Path> mapIDtoPath = new TreeMap<>();
     private HashMap<String, Path> mapIDtoRemovedPath = new HashMap<>();
     private HashMap<Path, Paint> mapPathToPaint = new HashMap<>();
     private HashMap<String, Paint> paints = new HashMap<>();
@@ -103,6 +104,12 @@ public class CanvasView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
+//        for (Path p: orderedPaths) {
+//            if (mapPathToPaint.containsValue(p)) {
+//                canvas.drawPath(p, mapPathToPaint.get(p));
+//            }
+//        }
+
         for (Path p : mapIDtoPath.values()){
             if (mapPathToPaint.containsKey(p)) {
                 canvas.drawPath(p, mapPathToPaint.get(p));
@@ -130,7 +137,7 @@ public class CanvasView extends View {
                 moveTouch(x, y);
                 break;
             case MotionEvent.ACTION_UP:
-                upTouch(x, y);
+                upTouch();
                 break;
         }
         return true;
@@ -155,7 +162,7 @@ public class CanvasView extends View {
     }
 
 
-    private void upTouch(float x, float y) {
+    private void upTouch() {
         // points with value x = -1 and y = -1 indicates the end of a line
         mRef.child(System.currentTimeMillis() + "")
                 .setValue(
