@@ -10,6 +10,8 @@ import androidx.annotation.Nullable;
 import com.example.chatdraw.AccountActivity.LoginActivity;
 import com.example.chatdraw.AccountActivity.ProfileEditActivity;
 import com.example.chatdraw.AccountActivity.SettingsActivity;
+import com.example.chatdraw.Callers.BaseActivity;
+import com.example.chatdraw.Callers.SinchService;
 import com.example.chatdraw.Credits.CreditActivity;
 import com.example.chatdraw.Items.ChatItem;
 import com.example.chatdraw.Services.ChatService;
@@ -55,14 +57,14 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.sinch.android.rtc.SinchError;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-
+public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, SinchService.StartFailedListener {
     private static final String TAG = "MainActivity";
 
     private static final int FIND_FRIEND_REQUEST_CODE = 101;
@@ -188,6 +190,44 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 //        String ns = Context.NOTIFICATION_SERVICE;
 //        NotificationManager nMgr = (NotificationManager) getSystemService(ns);
 //        nMgr.cancelAll();
+    }
+
+    @Override
+    protected void onServiceConnected() {
+        getSinchServiceInterface().setStartListener(this);
+        loginClicked();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    public void onStartFailed(SinchError error) {
+        Toast.makeText(this, error.toString(), Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onStarted() {
+        Toast.makeText(this, "SERVICE IS READY", Toast.LENGTH_SHORT).show();
+    }
+
+    private void loginClicked() {
+        String userName = userUID;
+
+        if (userName.isEmpty()) {
+            Toast.makeText(this, "[MAIN] Username empty", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        if (!userName.equals(getSinchServiceInterface().getUserName())) {
+            getSinchServiceInterface().stopClient();
+        }
+
+        if (!getSinchServiceInterface().isStarted()) {
+            getSinchServiceInterface().startClient(userName);
+        }
     }
 
     @Override

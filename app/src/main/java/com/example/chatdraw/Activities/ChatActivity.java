@@ -3,10 +3,7 @@ package com.example.chatdraw.Activities;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.NotificationManager;
 import android.app.ProgressDialog;
-import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 
@@ -29,7 +26,6 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.util.Log;
@@ -37,16 +33,13 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.chatdraw.AccountActivity.ProfileEditActivity;
-import com.example.chatdraw.AccountActivity.Upload;
+import com.example.chatdraw.Callers.BaseActivity;
+import com.example.chatdraw.Callers.CallScreenActivity;
+import com.example.chatdraw.Callers.SinchService;
 import com.example.chatdraw.Items.ChatItem;
 import com.example.chatdraw.R;
 import com.example.chatdraw.Adapters.ChatRecyclerViewAdapter;
@@ -71,19 +64,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.sinch.android.rtc.MissingPermissionException;
+import com.sinch.android.rtc.calling.Call;
 import com.squareup.picasso.Picasso;
-import com.tonyodev.fetch2.Download;
-import com.tonyodev.fetch2.Error;
-import com.tonyodev.fetch2.Fetch;
-import com.tonyodev.fetch2.FetchConfiguration;
-import com.tonyodev.fetch2.FetchListener;
-import com.tonyodev.fetch2.NetworkType;
-import com.tonyodev.fetch2.Priority;
-import com.tonyodev.fetch2.Request;
-import com.tonyodev.fetch2core.DownloadBlock;
-import com.tonyodev.fetch2core.Func;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -92,15 +75,16 @@ import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 
 import javax.annotation.Nullable;
 
-public class ChatActivity extends AppCompatActivity implements RecyclerViewClickListener, SwipeRefreshLayout.OnRefreshListener {
+public class ChatActivity extends BaseActivity implements RecyclerViewClickListener, SwipeRefreshLayout.OnRefreshListener {
     private static final int SELECT_FILE = 0;
     private static final int REQUEST_CAMERA = 1;
     private static final int REQUEST_DOCUMENT = 2;
+    public static final int REQUEST_MICROPHONE = 3;
     private static String TAG = "ChatActivity";
+    private boolean isServiceReady = false;
 
     // this user's information
     private String userUID;
@@ -337,6 +321,8 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
             intent.setType("application/pdf");
             startActivityForResult(intent, REQUEST_DOCUMENT);
+        } else if (requestCode == REQUEST_MICROPHONE && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "You may now place a call", Toast.LENGTH_LONG).show();
         } else {
             Toast.makeText(this, "Permission is not granted!", Toast.LENGTH_SHORT).show();
         }
@@ -596,7 +582,15 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
 
             case R.id.call:
                 // make a call
-                Toast.makeText(this, "Call", Toast.LENGTH_SHORT).show();
+                // Toast.makeText(this, "Call", Toast.LENGTH_SHORT).show();
+                // Intent intent  = new Intent(this, PlaceCallActivity.class);
+                // intent.putExtra("recipient", friendsUID);
+                // startActivity(intent);
+
+                if (isServiceReady) {
+                    callButtonClicked();
+                }
+
                 return true;
 
             default:
@@ -607,6 +601,37 @@ public class ChatActivity extends AppCompatActivity implements RecyclerViewClick
         }
     }
 
+    @Override
+    protected void onServiceConnected() {
+        isServiceReady = true;
+    }
+
+    private void callButtonClicked() {
+        String userName = friendsUID;
+
+        if (userName.isEmpty()) {
+            Toast.makeText(this, "Please enter a user to call", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        try {
+            Call call = getSinchServiceInterface().callUser(userName);
+            if (call == null) {
+                // Service failed for some reason, show a Toast and abort
+                Toast.makeText(this, "Service is not started. Try stopping the service and starting it again before "
+                        + "placing a call.", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            String callId = call.getCallId();
+            Intent callScreen = new Intent(this, CallScreenActivity.class);
+            callScreen.putExtra(SinchService.CALL_ID, callId);
+            startActivity(callScreen);
+        } catch (MissingPermissionException e) {
+            ActivityCompat.requestPermissions(this, new String[]{e.getRequiredPermission()}, REQUEST_MICROPHONE);
+        }
+
+    }
 
     // send the ChatItem to Firebase
     private void sendMessage(ChatItem chatItem) {
