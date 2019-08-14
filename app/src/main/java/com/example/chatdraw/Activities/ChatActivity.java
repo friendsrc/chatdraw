@@ -591,16 +591,13 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                 return true;
 
             case R.id.call:
-                // make a call
-                // Toast.makeText(this, "Call", Toast.LENGTH_SHORT).show();
-                // Intent intent  = new Intent(this, PlaceCallActivity.class);
-                // intent.putExtra("recipient", friendsUID);
-                // startActivity(intent);
-
-                if (isServiceReady) {
-                    callButtonClicked();
+                if (isGroup) {
+                    Toast.makeText(this, "Calling for groups not yet supported", Toast.LENGTH_SHORT).show();
+                } else {
+                    if (isServiceReady) {
+                        callButtonClicked();
+                    }
                 }
-
                 return true;
 
             default:
