@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -50,6 +51,15 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
         // set up canvas
         final CanvasView canvasView = findViewById(R.id.canvas);
         mCanvasView = canvasView;
+
+        // set drawing scale
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int height = displayMetrics.heightPixels;
+        int width = displayMetrics.widthPixels;
+        canvasView.widthMultiplier = 2048 / width;
+        canvasView.heightMultiplier = 2048 / height;
+
         canvasView.setIDs(userUID, friendsUID);
         canvasView.getFromFirebase();
 

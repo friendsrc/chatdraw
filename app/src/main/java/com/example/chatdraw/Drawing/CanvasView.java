@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -48,6 +49,10 @@ public class CanvasView extends View {
     // User data
     public String userUID;
     public String friendsUID;
+
+    // Drawing scale
+    public float widthMultiplier;
+    public float heightMultiplier;
 
     // Cached information
     private ArrayList<String> lineIDs = new ArrayList<>();
@@ -97,9 +102,6 @@ public class CanvasView extends View {
         myPaint.setStrokeJoin(Paint.Join.ROUND);
         myPaint.setStrokeWidth(myCurrentBrushSize);
 
-//        mBitmap = Bitmap.createBitmap(400, 400, Bitmap.Config.ARGB_8888);
-//        mCanvas = new Canvas(mBitmap);
-
     }
 
     // set IDs for connection to Firebase, called directly after CanvasView is instantiated
@@ -123,7 +125,8 @@ public class CanvasView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        mBitmap = Bitmap.createBitmap(canvas.getWidth(), canvas.getHeight(), Bitmap.Config.ARGB_8888);
+        //TODO: edit back to size
+        mBitmap = Bitmap.createBitmap(2048, 2048, Bitmap.Config.ARGB_8888);
         mCanvas = new Canvas(mBitmap);
         mCanvas.drawColor(Color.WHITE);
 
@@ -144,8 +147,12 @@ public class CanvasView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        float x = event.getX();
-        float y = event.getY();
+        int[] outLocation = new int[2];
+        getLocationOnScreen(outLocation);
+
+        float x = (event.getX() - outLocation[0]) * widthMultiplier;
+        float y = (event.getY() - outLocation[1]) * heightMultiplier;
+
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 startTouch(x, y);
