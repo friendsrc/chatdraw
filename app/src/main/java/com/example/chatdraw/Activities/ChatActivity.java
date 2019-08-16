@@ -592,7 +592,9 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
 
             case R.id.call:
                 if (isGroup) {
-                    Toast.makeText(this, "Calling for groups not yet supported", Toast.LENGTH_SHORT).show();
+                    if (isServiceReady) {
+                        groupCallButtonClicked();
+                    }
                 } else {
                     if (isServiceReady) {
                         callButtonClicked();
@@ -611,6 +613,33 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
     @Override
     protected void onServiceConnected() {
         isServiceReady = true;
+    }
+
+    private void groupCallButtonClicked() {
+        String userName = friendsUID;
+
+        if (userName.isEmpty()) {
+            Toast.makeText(this, "Please enter a user to call", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        try {
+            Call call = getSinchServiceInterface().callUser("Hello");
+            if (call == null) {
+                // Service failed for some reason, show a Toast and abort
+                Toast.makeText(this, "Service is not started. Try stopping the service and starting it again before "
+                        + "placing a call.", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            String callId = call.getCallId();
+            Intent callScreen = new Intent(this, CallScreenActivity.class);
+            callScreen.putExtra(SinchService.CALL_ID, callId);
+            startActivity(callScreen);
+        } catch (MissingPermissionException e) {
+            ActivityCompat.requestPermissions(this, new String[]{e.getRequiredPermission()}, REQUEST_MICROPHONE);
+        }
+
     }
 
     private void callButtonClicked() {

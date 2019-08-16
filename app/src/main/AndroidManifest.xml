@@ -4,7 +4,7 @@
 
     <uses-feature
         android:name="android.hardware.microphone"
-        android:required="false"/>
+        android:required="false" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -17,7 +17,7 @@
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
-    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.BLUETOOTH" />
 
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
@@ -30,12 +30,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
-        <activity android:name=".Drawing.DrawActivity"></activity>
+        <activity android:name=".GroupCallers.GroupScreenActivity"></activity>
+        <activity android:name=".Drawing.DrawActivity" />
         <activity android:name=".Callers.IncomingCallScreenActivity" />
         <activity android:name=".Callers.CallScreenActivity" />
-        <service android:name=".Callers.SinchService"></service>
 
+        <service android:name=".Callers.SinchService" />
         <service
             android:name=".Services.ChatService"
             android:enabled="true"
