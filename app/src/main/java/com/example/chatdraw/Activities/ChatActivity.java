@@ -40,6 +40,7 @@ import com.example.chatdraw.Drawing.DrawActivity;
 import com.example.chatdraw.Callers.BaseActivity;
 import com.example.chatdraw.Callers.CallScreenActivity;
 import com.example.chatdraw.Callers.SinchService;
+import com.example.chatdraw.GroupCallers.GroupCallActivity;
 import com.example.chatdraw.Items.ChatItem;
 import com.example.chatdraw.R;
 import com.example.chatdraw.Adapters.ChatRecyclerViewAdapter;
@@ -581,7 +582,6 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                 if (isGroup) {
                     Toast.makeText(this,
                             "Drawing for groups not yet supported", Toast.LENGTH_SHORT).show();
-
                 } else {
                     Intent intent = new Intent(ChatActivity.this, DrawActivity.class);
                     intent.putExtra("userUID", userUID);
@@ -593,7 +593,8 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
             case R.id.call:
                 if (isGroup) {
                     if (isServiceReady) {
-                        groupCallButtonClicked();
+                        Intent intent = new Intent(ChatActivity.this, GroupCallActivity.class);
+                        startActivity(intent);
                     }
                 } else {
                     if (isServiceReady) {
