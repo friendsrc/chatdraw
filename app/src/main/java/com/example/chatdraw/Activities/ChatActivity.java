@@ -578,16 +578,10 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         switch (item.getItemId()) {
             case R.id.draw:
                 // Go to draw activity
-                if (isGroup) {
-                    Toast.makeText(this,
-                            "Drawing for groups not yet supported", Toast.LENGTH_SHORT).show();
-
-                } else {
-                    Intent intent = new Intent(ChatActivity.this, DrawActivity.class);
-                    intent.putExtra("userUID", userUID);
-                    intent.putExtra("friendsUID", friendsUID);
-                    startActivity(intent);
-                }
+                Intent intent = new Intent(ChatActivity.this, DrawActivity.class);
+                intent.putExtra("userUID", userUID);
+                intent.putExtra("friendsUID", friendsUID);
+                startActivity(intent);
                 return true;
 
             case R.id.call:

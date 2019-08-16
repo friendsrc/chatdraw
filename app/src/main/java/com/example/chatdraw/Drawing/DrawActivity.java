@@ -53,7 +53,11 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
         canvasView.setIDs(userUID, friendsUID);
         canvasView.getFromFirebase();
 
-        if (userUID.compareTo(friendsUID) > 0) {
+        if (friendsUID.startsWith("GROUP_")) {
+            mRef = FirebaseDatabase.getInstance().getReference()
+                    .child("Drawing")
+                    .child(friendsUID);
+        } else if (userUID.compareTo(friendsUID) > 0) {
             mRef = FirebaseDatabase.getInstance().getReference()
                     .child("Drawing")
                     .child(userUID + "|" + friendsUID);
@@ -63,32 +67,6 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
                     .child(friendsUID + "|" + userUID);
         }
 
-//        // set clear canvas button
-//        Button clearButton = findViewById(R.id.clear_drawing_button);
-//        clearButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                canvasView.clearCanvas();
-//            }
-//        });
-//
-//        // set undo button
-//        final Button undoButton = findViewById(R.id.undo_drawing_button);
-//        undoButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                canvasView.undo();
-//            }
-//        });
-//
-//        // set redo button
-//        final Button redoButton = findViewById(R.id.redo_drawing_button);
-//        redoButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                canvasView.redo();
-//            }
-//        });
 
         // set the action bar
         Toolbar myToolbar = findViewById(R.id.my_toolbar);

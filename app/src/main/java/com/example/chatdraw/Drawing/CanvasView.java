@@ -106,7 +106,11 @@ public class CanvasView extends View {
     public void setIDs(String userID, String friendID) {
         userUID = userID;
         friendsUID = friendID;
-        if (userUID.compareTo(friendsUID) > 0) {
+        if (friendsUID.startsWith("GROUP_")) {
+            mRef = FirebaseDatabase.getInstance().getReference()
+                    .child("Drawing")
+                    .child(friendsUID);
+        } else if (userUID.compareTo(friendsUID) > 0) {
             mRef = FirebaseDatabase.getInstance().getReference()
                     .child("Drawing")
                     .child(userUID + "|" + friendsUID);
