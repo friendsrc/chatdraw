@@ -174,12 +174,8 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
         if (requestCode == 909) {
             if (grantResults.length > 0
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // permission was granted, yay! Do the
-                // contacts-related task you need to do.
                 mCanvasView.exportDrawing();
             } else {
-                // permission denied, boo! Disable the
-                // functionality that depends on this permission.
                 Toast.makeText(this, "Permission not granted", Toast.LENGTH_SHORT).show();
             }
             return;
