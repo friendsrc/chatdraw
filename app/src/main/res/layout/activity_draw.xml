@@ -18,6 +18,7 @@
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
 
     <com.otaliastudios.zoom.ZoomLayout
+        android:id="@+id/zoom_layout"
         android:background="#09344955"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -46,11 +47,19 @@
 
         <!-- Content here. -->
 
-        <com.example.chatdraw.Drawing.CanvasView
-            android:id="@+id/canvas"
-            android:background="@color/white"
-            android:layout_width="2048px"
-            android:layout_height="2048px" />
+
+        <LinearLayout
+            android:id="@+id/canvas_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <com.example.chatdraw.Drawing.CanvasView
+                android:id="@+id/canvas"
+                android:background="@color/white"
+                android:layout_width="2048px"
+                android:layout_height="2048px" />
+        </LinearLayout>
+
+
 
     </com.otaliastudios.zoom.ZoomLayout>
 

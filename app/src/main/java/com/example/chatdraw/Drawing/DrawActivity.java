@@ -6,15 +6,19 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -25,6 +29,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.jaredrummler.android.colorpicker.ColorPickerDialog;
 import com.jaredrummler.android.colorpicker.ColorPickerDialogListener;
+import com.otaliastudios.zoom.ZoomLayout;
 
 public class DrawActivity extends AppCompatActivity implements ColorPickerDialogListener {
 
@@ -48,19 +53,53 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
         userUID = intent.getStringExtra("userUID");
         friendsUID = intent.getStringExtra("friendsUID");
 
+        // set the action bar
+        Toolbar myToolbar = findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
+        getSupportActionBar().setTitle("");
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         // set up canvas
         final CanvasView canvasView = findViewById(R.id.canvas);
         mCanvasView = canvasView;
 
-        // set drawing scale
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int height = displayMetrics.heightPixels;
-        int width = displayMetrics.widthPixels;
-        canvasView.widthMultiplier = 2048 / width;
-        canvasView.heightMultiplier = 2048 / height;
+        ZoomLayout zoomLayout = findViewById(R.id.zoom_layout);
+        canvasView.actionBar = myToolbar;
 
-        canvasView.setIDs(userUID, friendsUID);
+
+        WindowManager windowManager =
+                (WindowManager) getApplication().getSystemService(Context.WINDOW_SERVICE);
+        final Display display = windowManager.getDefaultDisplay();
+        android.graphics.Point outPoint = new android.graphics.Point();
+        float mRealSizeHeight;
+        float mRealSizeWidth;
+        if (Build.VERSION.SDK_INT >= 19) {
+            // include navigation bar
+            display.getRealSize(outPoint);
+        } else {
+            // exclude navigation bar
+            display.getSize(outPoint);
+        }
+        if (outPoint.y > outPoint.x) {
+            mRealSizeHeight = outPoint.y;
+            mRealSizeWidth = outPoint.x;
+        } else {
+            mRealSizeHeight = outPoint.x;
+            mRealSizeWidth = outPoint.y;
+        }
+
+        canvasView.widthMultiplier = 2048f / mRealSizeWidth;
+        canvasView.heightMultiplier = 2048f / mRealSizeHeight;
+
+
+        // set drawing scale
+//        DisplayMetrics displayMetrics = new DisplayMetrics();
+//        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+//        int height = displayMetrics.heightPixels;
+//        int width = displayMetrics.widthPixels;
+//        canvasView.widthMultiplier = 2048f / width;
+//        canvasView.heightMultiplier = 2048f / (height);
+        canvasView.setIDs(userUID, friendsUID, findViewById(R.id.canvas_container), zoomLayout);
         canvasView.getFromFirebase();
 
         if (friendsUID.startsWith("GROUP_")) {
@@ -77,12 +116,6 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
                     .child(friendsUID + "|" + userUID);
         }
 
-
-        // set the action bar
-        Toolbar myToolbar = findViewById(R.id.my_toolbar);
-        setSupportActionBar(myToolbar);
-        getSupportActionBar().setTitle("");
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // set color picker
         mColorButton = findViewById(R.id.color_picker_imageview);

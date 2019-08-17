@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -32,6 +33,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.otaliastudios.zoom.ZoomLayout;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -51,6 +53,9 @@ public class CanvasView extends View {
     public String friendsUID;
 
     // Drawing scale
+    ZoomLayout zoomLayout;
+    View canvasContainer;
+    Toolbar actionBar;
     public float widthMultiplier;
     public float heightMultiplier;
 
@@ -105,7 +110,7 @@ public class CanvasView extends View {
     }
 
     // set IDs for connection to Firebase, called directly after CanvasView is instantiated
-    public void setIDs(String userID, String friendID) {
+    public void setIDs(String userID, String friendID, View view, ZoomLayout layout) {
         userUID = userID;
         friendsUID = friendID;
         if (friendsUID.startsWith("GROUP_")) {
@@ -121,14 +126,18 @@ public class CanvasView extends View {
                     .child("Drawing")
                     .child(friendsUID + "|" + userUID);
         }
+
+        canvasContainer = view;
+        zoomLayout = layout;
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         //TODO: edit back to size
-        mBitmap = Bitmap.createBitmap(2048, 2048, Bitmap.Config.ARGB_8888);
+        mBitmap = Bitmap.createBitmap(2548, 2548, Bitmap.Config.ARGB_8888);
         mCanvas = new Canvas(mBitmap);
         mCanvas.drawColor(Color.WHITE);
+
 
         for (Path p : mapIDtoPath.values()){
             if (mapPathToPaint.containsKey(p)) {
@@ -147,11 +156,13 @@ public class CanvasView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        int[] outLocation = new int[2];
-        getLocationOnScreen(outLocation);
+        int[] viewLocation = new int[2];
+        getLocationOnScreen(viewLocation);
 
-        float x = (event.getX() - outLocation[0]) * widthMultiplier;
-        float y = (event.getY() - outLocation[1]) * heightMultiplier;
+        float x = (event.getX() - viewLocation[0]) * widthMultiplier ;
+        float y = (event.getY() - viewLocation[1]) * widthMultiplier ;
+//        float x = (event.getX() - viewLocation[0]) * widthMultiplier * zoomLayout.getZoom() + zoomLayout.getScaledPanX();
+//        float y = (event.getY() - viewLocation[1]) * widthMultiplier * zoomLayout.getZoom() + zoomLayout.getScaledPanY() - actionBar.getHeight();
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
