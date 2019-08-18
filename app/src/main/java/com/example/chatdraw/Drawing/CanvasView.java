@@ -70,7 +70,7 @@ public class CanvasView extends View {
     // Paint currently chosen by the user
     public Paint myPaint;
     public int myCurrentColor = Color.BLACK;
-    public float myCurrentBrushSize = 6f;
+    public float myCurrentBrushSize = 20f;
 
     // Path
     private float mX, mY;
@@ -158,22 +158,6 @@ public class CanvasView extends View {
     public boolean onTouchEvent(MotionEvent event) {
         int[] viewLocation = new int[2];
         getLocationOnScreen(viewLocation);
-
-        Log.d ("JKL", event.getX() + ", " + event.getY());
-
-//        Log.d ("JKL", zoomLayout.getPanX() + " ,   " + zoomLayout.getPanY());
-//        Log.d ("JKL", "Scaled : " + zoomLayout.getScaledPanX() + " ,   " + zoomLayout.getScaledPanY());
-
-        Log.d("JKL", "zoom is " + zoomLayout.getZoom() +  " with location (" + zoomLayout.getPanX() + ",  " + zoomLayout.getPanY() + ")");
-
-        /*
-        ALL IN PX
-        Canvas size = 2048 * 2048
-        Screen size = w * h
-        Cursor location = x * y
-        Canvas starting position = viewLocation[0], viewLocation[1]
-
-         */
 
 
 //        float x = (event.getX() - viewLocation[0]) * widthMultiplier ;

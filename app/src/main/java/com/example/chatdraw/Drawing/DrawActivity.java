@@ -221,13 +221,11 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
                 break;
             case R.id.draw_scroll_toggle:
                 if (item.getTitle().equals("Disable scroll")) {
-                    mZoomLayout.setFlingEnabled(false);
                     mZoomLayout.setScrollEnabled(false);
                     mZoomLayout.setTwoFingersScrollEnabled(false);
                     mZoomLayout.setThreeFingersScrollEnabled(false);
                     item.setTitle("Enable scroll");
                 } else {
-                    mZoomLayout.setFlingEnabled(true);
                     mZoomLayout.setScrollEnabled(true);
                     mZoomLayout.setTwoFingersScrollEnabled(true);
                     mZoomLayout.setThreeFingersScrollEnabled(true);
