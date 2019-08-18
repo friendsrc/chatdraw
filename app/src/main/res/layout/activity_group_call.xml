@@ -3,54 +3,72 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
-    android:gravity="top|center"
+    android:gravity="center"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorPrimary"
     tools:context=".GroupCallers.GroupCallActivity">
 
-
-    <TextView
-        android:layout_marginTop="20sp"
-        android:id="@+id/num_participant"
-        android:text=". . . LOADING . . ."
-        android:textColor="@color/white"
-        android:textSize="24sp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <TextView
-        android:id="@+id/callStatus"
-        android:text="status here"
+    <Chronometer
+        android:id="@+id/chronometer"
+        android:visibility="gone"
         android:textColor="@color/white"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:textSize="40sp" />
 
     <LinearLayout
+        android:id="@+id/confirmLayout"
+        android:background="@color/white"
+        android:layout_marginRight="22sp"
+        android:layout_marginLeft="22sp"
         android:gravity="center"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <Button
-            android:background="@color/orange_red"
-            android:id="@+id/btnCancel"
-            android:text="Cancel"
-            android:textSize="16sp"
-            android:padding="16sp"
-            android:layout_margin="20sp"
-            android:layout_width="150sp"
+        <TextView
+            android:layout_marginTop="20sp"
+            android:id="@+id/num_participant"
+            android:layout_gravity="center"
+            android:text=". . . LOADING . . ."
+            android:textSize="24sp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
-        <Button
-            android:background="@color/btn_login"
-            android:id="@+id/btnCall"
-            android:text="Start/Join"
-            android:textSize="16sp"
-            android:padding="16sp"
-            android:layout_margin="20sp"
-            android:layout_width="150sp"
+        <TextView
+            android:id="@+id/callStatus"
+            android:text="load"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
+
+        <LinearLayout
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:background="@color/orange_red"
+                android:id="@+id/btnCancel"
+                android:text="Cancel"
+                android:textSize="16sp"
+                android:padding="16sp"
+                android:layout_margin="20sp"
+                android:layout_width="150sp"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:background="@color/btn_login"
+                android:id="@+id/btnCall"
+                android:text="Start/Join"
+                android:textSize="16sp"
+                android:padding="16sp"
+                android:layout_margin="20sp"
+                android:layout_width="150sp"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

@@ -3,11 +3,13 @@ package com.example.chatdraw.GroupCallers;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.Chronometer;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,10 +48,12 @@ public class GroupCallActivity extends AppCompatActivity {
 
     Button btnStartClient;
     Button btnCall;
+    Button btnCancel;
     private String userID;
+    private Chronometer chronometer;
     private String groupID;
     TextView tvCallStatus;
-    private Call call;
+    protected Call call;
     SinchClient sinchClient;
     String authorization = "";
     private boolean isNewCall = false;
@@ -136,12 +140,25 @@ public class GroupCallActivity extends AppCompatActivity {
 
         tvCallStatus = (TextView)findViewById(R.id.callStatus);
 
-        btnCall = (Button)findViewById(R.id.btnCall);
+        chronometer = findViewById(R.id.chronometer);
+        chronometer.setFormat("Time: %s");
+        chronometer.setBase(SystemClock.elapsedRealtime());
+        chronometer.start();
+
+        btnCancel = (Button) findViewById(R.id.btnCancel);
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
+
+        btnCall = (Button) findViewById(R.id.btnCall);
         btnCall.setOnClickListener(new View.OnClickListener() {
             String userToCall;
             @Override
             public void onClick(View v) {
-                if(call == null){
+                if (call == null){
                     userToCall = groupID;
                     Log.d("CallListener", "Calling user: "+userToCall);
                     call = sinchClient.getCallClient().callConference(userToCall);
@@ -156,6 +173,10 @@ public class GroupCallActivity extends AppCompatActivity {
                         public void onCallEstablished(Call call) {
                             Log.d("CallListener", "Call established");
                             tvCallStatus.setText("connected");
+
+                            LinearLayout textbox = (LinearLayout) findViewById(R.id.confirmLayout);
+                            textbox.setVisibility(View.GONE);
+
                             setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
                         }
 
@@ -212,8 +233,8 @@ public class GroupCallActivity extends AppCompatActivity {
                             }
 
                             Log.e("Rest Response error", "" + error.networkResponse.statusCode);
-                        } catch (NullPointerException e) {
-
+                        } catch (Exception e) {
+                            Toast.makeText(GroupCallActivity.this, "Unknown error occurred [804]", Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
