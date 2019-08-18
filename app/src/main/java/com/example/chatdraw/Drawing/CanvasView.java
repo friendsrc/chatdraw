@@ -159,8 +159,38 @@ public class CanvasView extends View {
         int[] viewLocation = new int[2];
         getLocationOnScreen(viewLocation);
 
-        float x = (event.getX() - viewLocation[0]) * widthMultiplier ;
-        float y = (event.getY() - viewLocation[1]) * widthMultiplier ;
+        Log.d ("JKL", event.getX() + ", " + event.getY());
+
+//        Log.d ("JKL", zoomLayout.getPanX() + " ,   " + zoomLayout.getPanY());
+//        Log.d ("JKL", "Scaled : " + zoomLayout.getScaledPanX() + " ,   " + zoomLayout.getScaledPanY());
+
+        Log.d("JKL", "zoom is " + zoomLayout.getZoom() +  " with location (" + zoomLayout.getPanX() + ",  " + zoomLayout.getPanY() + ")");
+
+        /*
+        ALL IN PX
+        Canvas size = 2048 * 2048
+        Screen size = w * h
+        Cursor location = x * y
+        Canvas starting position = viewLocation[0], viewLocation[1]
+
+         */
+
+
+//        float x = (event.getX() - viewLocation[0]) * widthMultiplier ;
+//        float y = (event.getY() - viewLocation[1]) * widthMultiplier ;
+
+        float x = (event.getX() - viewLocation[0]) * widthMultiplier  / zoomLayout.getZoom() - zoomLayout.getPanX() ;
+        float y = (event.getY() - viewLocation[1]) * widthMultiplier / zoomLayout.getZoom() - (zoomLayout.getPanY() - viewLocation[1]) ;
+
+//        float x = (event.getX() - viewLocation[0]) * zoomLayout.getRealZoom() ;
+//        float y = (event.getY() - viewLocation[1]) * zoomLayout.getRealZoom() ;
+
+//        float x = (event.getX() - zoomLayout.getPanX()) / zoomLayout.getRealZoom() ;
+//        float y = (event.getY() - zoomLayout.getPanY() ) / zoomLayout.getRealZoom() ;
+
+//        float x = (event.getX() - zoomLayout.getPanX()) * widthMultiplier ;
+//        float y = (event.getY() - zoomLayout.getPanY() / 2) * widthMultiplier ;
+
 //        float x = (event.getX() - viewLocation[0]) * widthMultiplier * zoomLayout.getZoom() + zoomLayout.getScaledPanX();
 //        float y = (event.getY() - viewLocation[1]) * widthMultiplier * zoomLayout.getZoom() + zoomLayout.getScaledPanY() - actionBar.getHeight();
 

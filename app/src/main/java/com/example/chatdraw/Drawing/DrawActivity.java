@@ -99,7 +99,7 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
 //        int width = displayMetrics.widthPixels;
 //        canvasView.widthMultiplier = 2048f / width;
 //        canvasView.heightMultiplier = 2048f / (height);
-        canvasView.setIDs(userUID, friendsUID, findViewById(R.id.canvas_container), zoomLayout);
+        canvasView.setIDs(userUID, friendsUID, findViewById(R.id.canvas), zoomLayout);
         canvasView.getFromFirebase();
 
         if (friendsUID.startsWith("GROUP_")) {
