@@ -1,13 +1,23 @@
 package com.example.chatdraw.GroupCallers;
 
+import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.chatdraw.R;
 import com.sinch.android.rtc.ClientRegistration;
 import com.sinch.android.rtc.PushPair;
@@ -20,9 +30,14 @@ import com.sinch.android.rtc.calling.CallClient;
 import com.sinch.android.rtc.calling.CallClientListener;
 import com.sinch.android.rtc.calling.CallListener;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class GroupCallActivity extends AppCompatActivity {
     private static final String APP_KEY = "9d0ed01f-2dc2-4c26-a683-9c7e93a90029";
@@ -31,23 +46,34 @@ public class GroupCallActivity extends AppCompatActivity {
 
     Button btnStartClient;
     Button btnCall;
-    EditText etAppUser, etCallUser;
+    private String userID;
+    private String groupID;
     TextView tvCallStatus;
     private Call call;
     SinchClient sinchClient;
+    String authorization = "";
+    private boolean isNewCall = false;
+    TextView num_participant;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_call);
 
+        num_participant = (TextView) findViewById(R.id.num_participant);
         // setAppUser = (EditText)findViewById(R.id.appUser);
+
+        Intent intent = getIntent();
+        userID = intent.getStringExtra("userID");
+        groupID = intent.getStringExtra("groupID");
+
+        Toast.makeText(this, "" + userID, Toast.LENGTH_SHORT).show();
 
         sinchClient = Sinch.getSinchClientBuilder().context(getApplicationContext())
                 .applicationKey(APP_KEY)
                 .applicationSecret(APP_SECRET)
                 .environmentHost(ENVIRONMENT)
-                .userId("momo")
+                .userId(userID)
                 .build();
         sinchClient.setSupportCalling(true);
         sinchClient.setSupportActiveConnectionInBackground(true);
@@ -109,7 +135,6 @@ public class GroupCallActivity extends AppCompatActivity {
         sinchClient.start();
 
         tvCallStatus = (TextView)findViewById(R.id.callStatus);
-        etCallUser = (EditText)findViewById(R.id.callUser);
 
         btnCall = (Button)findViewById(R.id.btnCall);
         btnCall.setOnClickListener(new View.OnClickListener() {
@@ -117,7 +142,7 @@ public class GroupCallActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(call == null){
-                    userToCall = etCallUser.getText().toString();
+                    userToCall = groupID;
                     Log.d("CallListener", "Calling user: "+userToCall);
                     call = sinchClient.getCallClient().callConference(userToCall);
                     call.addCallListener(new CallListener() {
@@ -148,13 +173,67 @@ public class GroupCallActivity extends AppCompatActivity {
                     });
 
                     btnCall.setText("HANG UP");
-                }else{
+                } else {
                     call.hangup();
                     call = null;
                     btnCall.setText("CALL");
                 }
             }
         });
+
+
+        String myURL = "https://callingapi.sinch.com/v1/conferences/id/" + groupID;
+
+        RequestQueue requestQueue = Volley.newRequestQueue(GroupCallActivity.this);
+        JsonObjectRequest objectRequest = new JsonObjectRequest(
+                Request.Method.GET,
+                myURL,
+                null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.e("QPO", "" + response);
+                        try {
+                            num_participant.setText("Number of people in the conference call: " + response.getJSONArray("participants").length() + ". Join?");
+                        } catch (JSONException e) {
+                            Toast.makeText(GroupCallActivity.this, "Unknown error occurred [802]", Toast.LENGTH_SHORT).show();
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        try {
+                            if (error.networkResponse.statusCode == 404) {
+                                num_participant.setText("There is no conference call currently. Start a new one?");
+                                isNewCall = true;
+                                Toast.makeText(GroupCallActivity.this, "No call before", Toast.LENGTH_SHORT).show();
+                            }
+
+                            Log.e("Rest Response error", "" + error.networkResponse.statusCode);
+                        } catch (NullPointerException e) {
+
+                        }
+                    }
+                }
+        ){
+            //This is for Headers If You Needed
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/json");
+                String namePassword = APP_KEY + ":" + APP_SECRET;
+                String auth = Base64.encodeToString(namePassword.getBytes(), Base64.NO_WRAP);
+
+                authorization = "Basic" + " " + auth;
+
+                params.put("Authorization", authorization);
+                return params;
+            }
+        };
+
+        requestQueue.add(objectRequest);
     }
 }
 

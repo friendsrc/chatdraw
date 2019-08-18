@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 
@@ -23,6 +24,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -591,18 +594,32 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                 return true;
 
             case R.id.call:
-                if (isGroup) {
-                    if (isServiceReady) {
-                        Intent intent = new Intent(ChatActivity.this, GroupCallActivity.class);
-                        startActivity(intent);
+                ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                        connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+                    // we are connected to a network
+
+                    if (isGroup) {
+                        if (isServiceReady) {
+                            Intent intent = new Intent(ChatActivity.this, GroupCallActivity.class);
+                            intent.putExtra("userID", userUID);
+                            intent.putExtra("groupID", friendsUID);
+                            startActivity(intent);
+                        } else {
+                            Toast.makeText(this, "Calling service not ready", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        if (isServiceReady) {
+                            callButtonClicked();
+                        } else {
+                            Toast.makeText(this, "Calling service not ready", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 } else {
-                    if (isServiceReady) {
-                        callButtonClicked();
-                    }
+                    Toast.makeText(this, "No internet connection detected", Toast.LENGTH_SHORT).show();
                 }
-                return true;
 
+                return true;
             default:
                 // If we got here, the user's action was not recognized.
                 // Invoke the superclass to handle it.
@@ -614,33 +631,6 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
     @Override
     protected void onServiceConnected() {
         isServiceReady = true;
-    }
-
-    private void groupCallButtonClicked() {
-        String userName = friendsUID;
-
-        if (userName.isEmpty()) {
-            Toast.makeText(this, "Please enter a user to call", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        try {
-            Call call = getSinchServiceInterface().callUser("Hello");
-            if (call == null) {
-                // Service failed for some reason, show a Toast and abort
-                Toast.makeText(this, "Service is not started. Try stopping the service and starting it again before "
-                        + "placing a call.", Toast.LENGTH_LONG).show();
-                return;
-            }
-
-            String callId = call.getCallId();
-            Intent callScreen = new Intent(this, CallScreenActivity.class);
-            callScreen.putExtra(SinchService.CALL_ID, callId);
-            startActivity(callScreen);
-        } catch (MissingPermissionException e) {
-            ActivityCompat.requestPermissions(this, new String[]{e.getRequiredPermission()}, REQUEST_MICROPHONE);
-        }
-
     }
 
     private void callButtonClicked() {
