@@ -38,6 +38,7 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
     private String friendsUID;
 
     private DatabaseReference mRef;
+    private ZoomLayout mZoomLayout;
     private CanvasView mCanvasView;
 
     private ImageView mColorButton;
@@ -63,7 +64,7 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
         final CanvasView canvasView = findViewById(R.id.canvas);
         mCanvasView = canvasView;
 
-        ZoomLayout zoomLayout = findViewById(R.id.zoom_layout);
+        mZoomLayout = findViewById(R.id.zoom_layout);
         canvasView.actionBar = myToolbar;
 
 
@@ -99,7 +100,7 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
 //        int width = displayMetrics.widthPixels;
 //        canvasView.widthMultiplier = 2048f / width;
 //        canvasView.heightMultiplier = 2048f / (height);
-        canvasView.setIDs(userUID, friendsUID, findViewById(R.id.canvas), zoomLayout);
+        canvasView.setIDs(userUID, friendsUID, findViewById(R.id.canvas), mZoomLayout);
         canvasView.getFromFirebase();
 
         if (friendsUID.startsWith("GROUP_")) {
@@ -205,6 +206,32 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
                             909);
                 } else {
                     mCanvasView.exportDrawing();
+                }
+                break;
+            case R.id.draw_pinch_toggle:
+                if (item.getTitle().equals("Disable pinch")) {
+                    mZoomLayout.setZoomEnabled(false);
+                    mZoomLayout.setZoomEnabled(false);
+                    item.setTitle("Enable pinch");
+                } else {
+                    mZoomLayout.setZoomEnabled(true);
+                    mZoomLayout.setZoomEnabled(true);
+                    item.setTitle("Disable pinch");
+                }
+                break;
+            case R.id.draw_scroll_toggle:
+                if (item.getTitle().equals("Disable scroll")) {
+                    mZoomLayout.setFlingEnabled(false);
+                    mZoomLayout.setScrollEnabled(false);
+                    mZoomLayout.setTwoFingersScrollEnabled(false);
+                    mZoomLayout.setThreeFingersScrollEnabled(false);
+                    item.setTitle("Enable scroll");
+                } else {
+                    mZoomLayout.setFlingEnabled(true);
+                    mZoomLayout.setScrollEnabled(true);
+                    mZoomLayout.setTwoFingersScrollEnabled(true);
+                    mZoomLayout.setThreeFingersScrollEnabled(true);
+                    item.setTitle("Disable scroll");
                 }
                 break;
         }

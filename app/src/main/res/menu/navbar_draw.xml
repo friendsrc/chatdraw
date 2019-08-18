@@ -18,11 +18,24 @@
         android:icon="@drawable/clear"
         android:title="Clear drawing"
         app:showAsAction="never"/>
+
     <item
         android:id="@+id/draw_export"
         android:icon="@drawable/export"
         android:title="Export"
         app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/draw_pinch_toggle"
+        android:icon="@drawable/export"
+        android:title="Disable pinch"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/draw_scroll_toggle"
+        android:icon="@drawable/export"
+        android:title="Disable scroll"
+        app:showAsAction="never"/>
 
 
 </menu>
