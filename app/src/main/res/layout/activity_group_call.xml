@@ -3,42 +3,67 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
-    android:gravity="center"
+    android:gravity="top|center"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorPrimary"
     tools:context=".GroupCallers.GroupCallActivity">
 
-    <Chronometer
-        android:id="@+id/chronometer"
-        android:visibility="gone"
-        android:textColor="@color/white"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="40sp" />
+    <LinearLayout
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="start|center"
+        android:background="@color/white"
+        android:layout_width="match_parent"
+        android:layout_height="0dp">
+
+        <TextView
+            android:id="@+id/groupDetails"
+            android:text="Group title"
+            android:textSize="20sp"
+            android:layout_marginLeft="10sp"
+            android:layout_marginRight="10sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="10">
+
+        <GridLayout
+            android:id="@+id/mainGrid"
+            android:layout_width="match_parent"
+            android:layout_height="0sp"
+            android:columnCount="2"
+            android:columnOrderPreserved="false"
+            android:rowCount="2">
+
+        </GridLayout>
+    </ScrollView>
 
     <LinearLayout
+        android:layout_weight="2"
         android:id="@+id/confirmLayout"
         android:background="@color/white"
-        android:layout_marginRight="22sp"
-        android:layout_marginLeft="22sp"
         android:gravity="center"
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="0dp">
 
-        <TextView
-            android:layout_marginTop="20sp"
-            android:id="@+id/num_participant"
-            android:layout_gravity="center"
-            android:text=". . . LOADING . . ."
-            android:textSize="24sp"
+        <Chronometer
+            android:id="@+id/chronometer"
+            android:layout_marginTop="5sp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/callStatus"
             android:text="load"
+            android:textSize="14sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
@@ -48,28 +73,33 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+            <ImageButton
+                android:background="@color/s"
+                android:src="@drawable/ic_mic_off_black"
+                android:padding="11sp"
+                android:layout_marginLeft="5sp"
+                android:layout_marginRight="5sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <ImageButton
+                android:background="@color/btn_logut_bg"
+                android:src="@drawable/ic_volume_up_black"
+                android:padding="11sp"
+                android:layout_marginLeft="5sp"
+                android:layout_marginRight="5sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
             <Button
                 android:background="@color/orange_red"
                 android:id="@+id/btnCancel"
-                android:text="Cancel"
+                android:text="End Call"
                 android:textSize="16sp"
-                android:padding="16sp"
-                android:layout_margin="20sp"
-                android:layout_width="150sp"
-                android:layout_height="wrap_content" />
-
-            <Button
-                android:background="@color/btn_login"
-                android:id="@+id/btnCall"
-                android:text="Start/Join"
-                android:textSize="16sp"
-                android:padding="16sp"
-                android:layout_margin="20sp"
-                android:layout_width="150sp"
+                android:layout_margin="10sp"
+                android:layout_width="130sp"
                 android:layout_height="wrap_content" />
 
         </LinearLayout>
-
     </LinearLayout>
-
 </LinearLayout>

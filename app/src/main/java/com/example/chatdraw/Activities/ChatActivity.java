@@ -30,6 +30,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -39,6 +40,13 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.chatdraw.Drawing.DrawActivity;
 import com.example.chatdraw.Callers.BaseActivity;
 import com.example.chatdraw.Callers.CallScreenActivity;
@@ -54,6 +62,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -72,13 +81,18 @@ import com.sinch.android.rtc.MissingPermissionException;
 import com.sinch.android.rtc.calling.Call;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -89,6 +103,10 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
     public static final int REQUEST_MICROPHONE = 3;
     private static String TAG = "ChatActivity";
     private boolean isServiceReady = false;
+
+    private static final String APP_KEY = "9d0ed01f-2dc2-4c26-a683-9c7e93a90029";
+    private static final String APP_SECRET = "awRjs8Mowkq63iR1iFGAgA==";
+    private int num_participant = -1;
 
     // this user's information
     private String userUID;
@@ -212,6 +230,13 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         if (actionBar != null) {
             actionBar.setTitle(intent.getStringExtra("name"));
             actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+            // we are connected to a network
+            checkForConferenceDetails();
         }
 
         // set onCLickListener on the 'More option' button
@@ -594,29 +619,58 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                 return true;
 
             case R.id.call:
-                ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-                if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
-                        connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
-                    // we are connected to a network
+                if (num_participant != -1) {
+                    ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                    if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                            connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+                        // we are connected to a network
 
-                    if (isGroup) {
-                        if (isServiceReady) {
-                            Intent intent = new Intent(ChatActivity.this, GroupCallActivity.class);
-                            intent.putExtra("userID", userUID);
-                            intent.putExtra("groupID", friendsUID);
-                            startActivity(intent);
+                        checkForConferenceDetails();
+
+                        if (isGroup) {
+                            if (isServiceReady) {
+                                String text = "";
+
+                                if (num_participant == 0) {
+                                    text = "Start a new conference call?";
+                                } else if (num_participant == 1) {
+                                    text = "Join the ongoing conference call?";
+                                } else {
+                                    Toast.makeText(this, "Unknown error occurred [805]", Toast.LENGTH_SHORT).show();
+                                    return false;
+                                }
+
+                                AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
+
+                                new AlertDialog.Builder(ChatActivity.this)
+                                        .setTitle("Confirm")
+                                        .setMessage(text)
+                                        .setIcon(R.drawable.ic_call)
+                                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int whichButton) {
+                                                Intent intent = new Intent(ChatActivity.this, GroupCallActivity.class);
+                                                intent.putExtra("participant", num_participant);
+                                                intent.putExtra("userID", userUID);
+                                                intent.putExtra("groupID", friendsUID);
+                                                startActivity(intent);
+                                            }
+                                        })
+                                        .setNegativeButton(android.R.string.no, null).show();
+                            } else {
+                                Toast.makeText(this, "Calling service not ready", Toast.LENGTH_SHORT).show();
+                            }
                         } else {
-                            Toast.makeText(this, "Calling service not ready", Toast.LENGTH_SHORT).show();
+                            if (isServiceReady) {
+                                callButtonClicked();
+                            } else {
+                                Toast.makeText(this, "Calling service not ready", Toast.LENGTH_SHORT).show();
+                            }
                         }
                     } else {
-                        if (isServiceReady) {
-                            callButtonClicked();
-                        } else {
-                            Toast.makeText(this, "Calling service not ready", Toast.LENGTH_SHORT).show();
-                        }
+                        Toast.makeText(this, "No internet connection detected", Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    Toast.makeText(this, "No internet connection detected", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Please wait for a few seconds for the service to load", Toast.LENGTH_SHORT).show();
                 }
 
                 return true;
@@ -624,8 +678,58 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                 // If we got here, the user's action was not recognized.
                 // Invoke the superclass to handle it.
                 return super.onOptionsItemSelected(item);
-
         }
+    }
+
+    public void checkForConferenceDetails() {
+        String myURL = "https://callingapi.sinch.com/v1/conferences/id/" + groupID;
+
+        RequestQueue requestQueue = Volley.newRequestQueue(ChatActivity.this);
+        JsonObjectRequest objectRequest = new JsonObjectRequest(
+                Request.Method.GET,
+                myURL,
+                null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            num_participant = response.getJSONArray("participants").length();
+                        } catch (JSONException e) {
+                            Toast.makeText(ChatActivity.this, "Unknown error occurred [802]", Toast.LENGTH_SHORT).show();
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        try {
+                            if (error.networkResponse.statusCode == 404) {
+                                num_participant = 0;
+                                Toast.makeText(ChatActivity.this, "No call before", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (Exception e) {
+                            Toast.makeText(ChatActivity.this, "Unknown error occurred [804]", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+        ){
+            //This is for Headers If You Needed
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/json");
+                String namePassword = APP_KEY + ":" + APP_SECRET;
+                String auth = Base64.encodeToString(namePassword.getBytes(), Base64.NO_WRAP);
+
+                String authorization = "Basic" + " " + auth;
+
+                params.put("Authorization", authorization);
+                return params;
+            }
+        };
+
+        requestQueue.add(objectRequest);
     }
 
     @Override

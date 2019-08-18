@@ -50,6 +50,7 @@ public class GroupCallActivity extends AppCompatActivity {
     Button btnCall;
     Button btnCancel;
     private String userID;
+    private String participant;
     private Chronometer chronometer;
     private String groupID;
     TextView tvCallStatus;
@@ -57,17 +58,17 @@ public class GroupCallActivity extends AppCompatActivity {
     SinchClient sinchClient;
     String authorization = "";
     private boolean isNewCall = false;
-    TextView num_participant;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_call);
 
-        num_participant = (TextView) findViewById(R.id.num_participant);
         // setAppUser = (EditText)findViewById(R.id.appUser);
 
         Intent intent = getIntent();
+
+        participant = intent.getStringExtra("participant");
         userID = intent.getStringExtra("userID");
         groupID = intent.getStringExtra("groupID");
 
@@ -84,7 +85,7 @@ public class GroupCallActivity extends AppCompatActivity {
         sinchClient.startListeningOnActiveConnection();
         sinchClient.addSinchClientListener(new SinchClientListener() {
             public void onClientStarted(SinchClient client) {
-                Log.d("onClientStarted",client.toString());
+                Log.d("onClientStarted", client.toString());
             }
 
             public void onClientStopped(SinchClient client) {
@@ -102,43 +103,10 @@ public class GroupCallActivity extends AppCompatActivity {
                 Log.d("onLogMessage", message);
             }
         });
-        sinchClient.getCallClient().addCallClientListener(new CallClientListener() {
-            @Override
-            public void onIncomingCall(CallClient callClient, Call incomingCall) {
-                call = incomingCall;
-                call.answer();
-                call.addCallListener(new CallListener() {
-                    @Override
-                    public void onCallProgressing(Call call) {
-                        Log.d("CallListener", "Call progressing");
-                        tvCallStatus.setText("connecting");
-                    }
 
-                    @Override
-                    public void onCallEstablished(Call call) {
-                        Log.d("CallListener", "Call established");
-                        tvCallStatus.setText("connected");
-                        setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
-                    }
-
-                    @Override
-                    public void onCallEnded(Call call) {
-                        Log.d("CallListener", "Call ended");
-                        tvCallStatus.setText("disconnected");
-                        setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
-                    }
-
-                    @Override
-                    public void onShouldSendPushNotification(Call call, List<PushPair> list) {
-
-                    }
-                });
-                btnCall.setText("HANG UP");
-            }
-        });
         sinchClient.start();
 
-        tvCallStatus = (TextView)findViewById(R.id.callStatus);
+        tvCallStatus = (TextView) findViewById(R.id.callStatus);
 
         chronometer = findViewById(R.id.chronometer);
         chronometer.setFormat("Time: %s");
@@ -156,17 +124,17 @@ public class GroupCallActivity extends AppCompatActivity {
         btnCall = (Button) findViewById(R.id.btnCall);
         btnCall.setOnClickListener(new View.OnClickListener() {
             String userToCall;
+
             @Override
             public void onClick(View v) {
-                if (call == null){
+                if (call == null) {
                     userToCall = groupID;
-                    Log.d("CallListener", "Calling user: "+userToCall);
+                    Log.d("CallListener", "Calling user: " + userToCall);
                     call = sinchClient.getCallClient().callConference(userToCall);
                     call.addCallListener(new CallListener() {
                         @Override
                         public void onCallProgressing(Call call) {
                             Log.d("CallListener", "Call progressing");
-                            tvCallStatus.setText("connecting");
                         }
 
                         @Override
@@ -175,7 +143,7 @@ public class GroupCallActivity extends AppCompatActivity {
                             tvCallStatus.setText("connected");
 
                             LinearLayout textbox = (LinearLayout) findViewById(R.id.confirmLayout);
-                            textbox.setVisibility(View.GONE);
+                            textbox.setAlpha(0.5f);
 
                             setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
                         }
@@ -201,60 +169,5 @@ public class GroupCallActivity extends AppCompatActivity {
                 }
             }
         });
-
-
-        String myURL = "https://callingapi.sinch.com/v1/conferences/id/" + groupID;
-
-        RequestQueue requestQueue = Volley.newRequestQueue(GroupCallActivity.this);
-        JsonObjectRequest objectRequest = new JsonObjectRequest(
-                Request.Method.GET,
-                myURL,
-                null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.e("QPO", "" + response);
-                        try {
-                            num_participant.setText("Number of people in the conference call: " + response.getJSONArray("participants").length() + ". Join?");
-                        } catch (JSONException e) {
-                            Toast.makeText(GroupCallActivity.this, "Unknown error occurred [802]", Toast.LENGTH_SHORT).show();
-                            e.printStackTrace();
-                        }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        try {
-                            if (error.networkResponse.statusCode == 404) {
-                                num_participant.setText("There is no conference call currently. Start a new one?");
-                                isNewCall = true;
-                                Toast.makeText(GroupCallActivity.this, "No call before", Toast.LENGTH_SHORT).show();
-                            }
-
-                            Log.e("Rest Response error", "" + error.networkResponse.statusCode);
-                        } catch (Exception e) {
-                            Toast.makeText(GroupCallActivity.this, "Unknown error occurred [804]", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                }
-        ){
-            //This is for Headers If You Needed
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                HashMap<String, String> params = new HashMap<String, String>();
-                params.put("Content-Type", "application/json");
-                String namePassword = APP_KEY + ":" + APP_SECRET;
-                String auth = Base64.encodeToString(namePassword.getBytes(), Base64.NO_WRAP);
-
-                authorization = "Basic" + " " + auth;
-
-                params.put("Authorization", authorization);
-                return params;
-            }
-        };
-
-        requestQueue.add(objectRequest);
     }
 }
-
