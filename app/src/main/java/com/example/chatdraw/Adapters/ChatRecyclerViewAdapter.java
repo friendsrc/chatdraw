@@ -164,7 +164,7 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                     @Override
                     public boolean onLongClick(View v) {
                         Dialog dialog = new Dialog(context);
-                        dialog.setContentView(R.layout.messageoptionpopup);
+                        dialog.setContentView(R.layout.nontextmessagepopup);
                         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                         dialog.setCancelable(true);
 
@@ -211,7 +211,7 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                     @Override
                     public boolean onLongClick(View v) {
                         Dialog dialog = new Dialog(context);
-                        dialog.setContentView(R.layout.messageoptionpopup);
+                        dialog.setContentView(R.layout.nontextmessagepopup);
                         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                         dialog.setCancelable(true);
 
