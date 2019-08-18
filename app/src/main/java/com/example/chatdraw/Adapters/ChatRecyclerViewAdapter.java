@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.chatdraw.Activities.ChatActivity;
@@ -22,7 +23,12 @@ import com.example.chatdraw.R;
 import com.example.chatdraw.Listeners.RecyclerViewClickListener;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
 import java.util.LinkedList;
@@ -32,6 +38,7 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
     private Context context;
     private static RecyclerViewClickListener itemListener;
     private String userId;
+    private String friendId;
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
@@ -172,7 +179,10 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                     copy.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            Toast.makeText(context, message.getText().toString(), Toast.LENGTH_SHORT).show();
+                            android.content.ClipboardManager clipboard = (android.content.ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+                            android.content.ClipData clip = android.content.ClipData.newPlainText("text label",message.getText().toString());
+                            clipboard.setPrimaryClip(clip);
+                            Toast.makeText(context, "Message copied to clipboard", Toast.LENGTH_SHORT).show();
                         }
                     });
 
@@ -180,7 +190,29 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                     delete.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            Toast.makeText(context, "Nananannanana", Toast.LENGTH_SHORT).show();
+                            FirebaseFirestore.getInstance()
+                                    .collection("Messages")
+                                    .document(chatItem.getSenderID())
+                                    .collection("Friends")
+                                    .document(chatItem.getReceiverID())
+                                    .collection("ChatHistory")
+                                    .whereEqualTo("timestamp", chatItem.getTimestamp())
+                                    .whereEqualTo("messageBody", chatItem.getMessageBody())
+                                    .get()
+                                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                        @Override
+                                        public void onSuccess(QuerySnapshot snapshots) {
+                                            for (DocumentSnapshot d: snapshots.getDocuments()) {
+                                                d.getReference().delete()
+                                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                            @Override
+                                                            public void onSuccess(Void aVoid) {
+                                                                Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
+                                                            }
+                                                        });
+                                            }
+                                        }
+                                    });
                         }
                     });
 
