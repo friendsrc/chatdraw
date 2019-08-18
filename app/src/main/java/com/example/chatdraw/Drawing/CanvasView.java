@@ -133,11 +133,9 @@ public class CanvasView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        //TODO: edit back to size
         mBitmap = Bitmap.createBitmap(2548, 2548, Bitmap.Config.ARGB_8888);
         mCanvas = new Canvas(mBitmap);
         mCanvas.drawColor(Color.WHITE);
-
 
         for (Path p : mapIDtoPath.values()){
             if (mapPathToPaint.containsKey(p)) {
@@ -159,33 +157,8 @@ public class CanvasView extends View {
         int[] viewLocation = new int[2];
         getLocationOnScreen(viewLocation);
 
-        int[] zoomViewLocation = new int[2];
-        zoomLayout.getLocationOnScreen(zoomViewLocation); // is the same as view location
-
-        Log.d("TESS", "EVENT = " + event.getX() + " , " + event.getY());
-        Log.d("TESS", "ZOOM = " + zoomLayout.getZoom());
-        Log.d("TESS", "VIEW LOCATION = " + viewLocation[0] + " , " + viewLocation[1]);
-        Log.d("TESS", "ZoomLayout.getPan = " + zoomLayout.getPanX() + " , " + zoomLayout.getPanY());
-        Log.d("TESS", "ZoomLayout.getScaledPan = " + zoomLayout.getScaledPanX() + " , " + zoomLayout.getScaledPanY());
-
-
-//        float x = (event.getX() - viewLocation[0]) * widthMultiplier ;
-//        float y = (event.getY() - viewLocation[1]) * widthMultiplier ;
-
         float x = event.getX() * widthMultiplier  / zoomLayout.getZoom() - zoomLayout.getPanX();
         float y = event.getY()  * widthMultiplier / zoomLayout.getZoom() - zoomLayout.getPanY();
-
-//        float x = (event.getX() - viewLocation[0]) * zoomLayout.getRealZoom() ;
-//        float y = (event.getY() - viewLocation[1]) * zoomLayout.getRealZoom() ;
-
-//        float x = (event.getX() - zoomLayout.getPanX()) / zoomLayout.getRealZoom() ;
-//        float y = (event.getY() - zoomLayout.getPanY() ) / zoomLayout.getRealZoom() ;
-
-//        float x = (event.getX() - zoomLayout.getPanX()) * widthMultiplier ;
-//        float y = (event.getY() - zoomLayout.getPanY() / 2) * widthMultiplier ;
-
-//        float x = (event.getX() - viewLocation[0]) * widthMultiplier * zoomLayout.getZoom() + zoomLayout.getScaledPanX();
-//        float y = (event.getY() - viewLocation[1]) * widthMultiplier * zoomLayout.getZoom() + zoomLayout.getScaledPanY() - actionBar.getHeight();
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
@@ -195,7 +168,7 @@ public class CanvasView extends View {
                 moveTouch(x, y);
                 break;
             case MotionEvent.ACTION_UP:
-                upTouch();
+                upTouch(x, y);
                 break;
         }
         return true;
@@ -220,8 +193,13 @@ public class CanvasView extends View {
     }
 
 
-    private void upTouch() {
+    private void upTouch(float x, float y) {
         // points with value x = -1 and y = -1 indicates the end of a line
+        mRef.child(System.currentTimeMillis() + "")
+                .setValue(
+                        new Point(x, y, userUID, currentLineID,
+                                true, myCurrentColor, myCurrentBrushSize));
+
         mRef.child(System.currentTimeMillis() + "")
                 .setValue(
                         new Point(-1, -1, userUID, currentLineID,
@@ -361,6 +339,7 @@ public class CanvasView extends View {
                 float y  = currPoint[0].getY();
 
                 if (!paints.containsKey(currPoint[0].getLineID())) { // start of a new line
+                    removedLineIDs.clear();
                     int color = currPoint[0].getColor();
                     Float size =  currPoint[0].getBrushSize();
                     mPath = new Path();
@@ -455,9 +434,7 @@ public class CanvasView extends View {
 
             }
         };
-
         ref.addChildEventListener(mChildEventListener);
-
     }
 
 
