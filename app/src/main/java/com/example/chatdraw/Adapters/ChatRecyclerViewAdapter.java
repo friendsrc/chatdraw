@@ -1,7 +1,11 @@
 package com.example.chatdraw.Adapters;
 
+import android.app.Dialog;
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +16,7 @@ import android.widget.Toolbar;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.chatdraw.Activities.ChatActivity;
 import com.example.chatdraw.Items.ChatItem;
 import com.example.chatdraw.R;
 import com.example.chatdraw.Listeners.RecyclerViewClickListener;
@@ -155,6 +160,35 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
         } else {
             TextView message = holder.view.findViewById(R.id.text_message_body);
             message.setText(mDataset.get(position).getMessageBody());
+            message.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    Dialog dialog = new Dialog(context);
+                    dialog.setContentView(R.layout.messageoptionpopup);
+                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                    dialog.setCancelable(true);
+
+                    TextView copy = dialog.findViewById(R.id.copy_message_textview);
+                    copy.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Toast.makeText(context, message.getText().toString(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                    TextView delete = dialog.findViewById(R.id.delete_message_textview);
+                    delete.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Toast.makeText(context, "Nananannanana", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                    dialog.show();
+                    dialog.getWindow().setGravity(Gravity.CENTER);
+                    return true;
+                }
+            });
         }
 
         ImageView profilePicture = holder.view.findViewById(R.id.image_message_profile);
@@ -166,6 +200,12 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                         .fit()
                         .into(profilePicture);
             }
+            profilePicture.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(context, " Profile photo clicked", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
 
         TextView time = holder.view.findViewById(R.id.text_message_time);
