@@ -159,12 +159,21 @@ public class CanvasView extends View {
         int[] viewLocation = new int[2];
         getLocationOnScreen(viewLocation);
 
+        int[] zoomViewLocation = new int[2];
+        zoomLayout.getLocationOnScreen(zoomViewLocation); // is the same as view location
+
+        Log.d("TESS", "EVENT = " + event.getX() + " , " + event.getY());
+        Log.d("TESS", "ZOOM = " + zoomLayout.getZoom());
+        Log.d("TESS", "VIEW LOCATION = " + viewLocation[0] + " , " + viewLocation[1]);
+        Log.d("TESS", "ZoomLayout.getPan = " + zoomLayout.getPanX() + " , " + zoomLayout.getPanY());
+        Log.d("TESS", "ZoomLayout.getScaledPan = " + zoomLayout.getScaledPanX() + " , " + zoomLayout.getScaledPanY());
+
 
 //        float x = (event.getX() - viewLocation[0]) * widthMultiplier ;
 //        float y = (event.getY() - viewLocation[1]) * widthMultiplier ;
 
-        float x = (event.getX() - viewLocation[0]) * widthMultiplier  / zoomLayout.getZoom() - zoomLayout.getPanX() ;
-        float y = (event.getY() - viewLocation[1]) * widthMultiplier / zoomLayout.getZoom() - (zoomLayout.getPanY() - viewLocation[1]) ;
+        float x = event.getX() * widthMultiplier  / zoomLayout.getZoom() - zoomLayout.getPanX();
+        float y = event.getY()  * widthMultiplier / zoomLayout.getZoom() - zoomLayout.getPanY();
 
 //        float x = (event.getX() - viewLocation[0]) * zoomLayout.getRealZoom() ;
 //        float y = (event.getY() - viewLocation[1]) * zoomLayout.getRealZoom() ;
