@@ -52,8 +52,11 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -187,15 +190,32 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         }
 
         // get user's display name and profile picture
-        FirebaseFirestore.getInstance().collection("Users")
-                .document(userUID)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+//        FirebaseFirestore.getInstance().collection("Users")
+//                .document(userUID)
+//                .get()
+//                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+//                        userName[0] = task.getResult().getString("name");
+//                        userUsername[0] = task.getResult().getString("username");
+//                        userImageUrl[0] = task.getResult().getString("imageUrl");
+//                    }
+//                });
+        FirebaseDatabase.getInstance().getReference()
+                .child("Users")
+                .child(userUID)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        userName[0] = task.getResult().getString("name");
-                        userUsername[0] = task.getResult().getString("username");
-                        userImageUrl[0] = task.getResult().getString("imageUrl");
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                        userName[0] = dataSnapshot.child("name").getValue(String.class);
+                        userUsername[0] = dataSnapshot.child("username").getValue(String.class);
+                        userImageUrl[0] = dataSnapshot.child("imageUrl").getValue(String.class);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
                     }
                 });
 
@@ -257,16 +277,34 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         } else {
             isGroup = false;
             // get friends's display name and profile picture
-            FirebaseFirestore.getInstance().collection("Users")
-                    .document(friendsUID)
-                    .get()
-                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+//            FirebaseFirestore.getInstance().collection("Users")
+//                    .document(friendsUID)
+//                    .get()
+//                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+//                        @Override
+//                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+//                            friendName[0] = task.getResult().getString("name");
+//                            friendUsername[0] = task.getResult().getString("username");
+//                            friendImageUrl[0] = task.getResult().getString("imageUrl");
+//                            getMessages();
+//                        }
+//                    });
+
+            FirebaseDatabase.getInstance().getReference()
+                    .child("Users")
+                    .child(friendsUID)
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            friendName[0] = task.getResult().getString("name");
-                            friendUsername[0] = task.getResult().getString("username");
-                            friendImageUrl[0] = task.getResult().getString("imageUrl");
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            friendName[0] = dataSnapshot.child("name").getValue(String.class);
+                            friendUsername[0] = dataSnapshot.child("username").getValue(String.class);
+                            friendImageUrl[0] = dataSnapshot.child("imageUrl").getValue(String.class);
                             getMessages();
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
                         }
                     });
         }
