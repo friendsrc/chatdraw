@@ -28,14 +28,14 @@
                 android:text="Copy"
                 android:layout_width="200dp"
                 android:layout_height="wrap_content"
-                android:padding="8dp"/>
+                android:padding="16dp"/>
 
             <TextView
                 android:id="@+id/delete_message_textview"
                 android:text="Delete"
                 android:layout_width="200dp"
                 android:layout_height="wrap_content"
-                android:padding="8dp"/>
+                android:padding="16dp"/>
 
         </LinearLayout>
 
