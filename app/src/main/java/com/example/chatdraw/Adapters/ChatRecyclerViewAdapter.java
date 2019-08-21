@@ -307,6 +307,9 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
 
     public void deleteMessage(String senderID, String receiverID, Date timestamp,
                               String messageBody, Dialog dialog, int position) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // remove from firebase
         if (receiverID.startsWith("GROUP_")) {
             FirebaseFirestore.getInstance()
                     .collection("GroupMessages")
@@ -356,6 +359,49 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                         }
                     });
         }
+
+        // check if firebase message preview should be updated
+        if (position == mDataset.size() - 1) {
+            // the deleted message is  the last sent message
+            // update preview to second to last message
+
+            ChatItem chatItem = mDataset.get(mDataset.size() - 2);
+            if (chatItem.getMessageBody().startsWith(userId)) {
+                String[] arr = chatItem.getMessageBody().split("\t");
+                if (arr[1].equals("IMAGE")) {
+                    chatItem.setMessageBody("[Image]");
+                } else if (arr[1].equals("PDF")) {
+                    chatItem.setMessageBody("[Pdf]");
+                } else {
+                    chatItem.setMessageBody("[Unknown file type]");
+                }
+            }
+            if (mDataset.size() >= 2) {
+                // Send to user's message preview collection
+                db.collection("Previews").document(senderID)
+                        .collection("ChatPreviews").document(receiverID)
+                        .set(mDataset.get(mDataset.size() - 2));
+
+                // Send to the receiver's message preview collection
+                db.collection("Previews").document(receiverID)
+                        .collection("ChatPreviews").document(senderID)
+                        .set(mDataset.get(mDataset.size() - 2));
+            } else {
+                chatItem.setMessageBody("");
+                // Send to user's message preview collection
+                db.collection("Previews").document(senderID)
+                        .collection("ChatPreviews").document(receiverID)
+                        .set(chatItem);
+
+                // Send to the receiver's message preview collection
+                db.collection("Previews").document(receiverID)
+                        .collection("ChatPreviews").document(senderID)
+                        .set(chatItem);
+            }
+        }
+
+        // remove from dataset
+        mDataset.remove(position);
     }
 
 }
