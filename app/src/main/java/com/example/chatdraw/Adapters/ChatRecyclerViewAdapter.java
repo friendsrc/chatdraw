@@ -38,7 +38,6 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
     private Context context;
     private static RecyclerViewClickListener itemListener;
     private String userId;
-    private String friendId;
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
@@ -163,39 +162,67 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                 message.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
                     public boolean onLongClick(View v) {
+                        if (!chatItem.getSenderID().equals(userId))  return true;
                         Dialog dialog = new Dialog(context);
                         dialog.setContentView(R.layout.nontextmessagepopup);
                         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                         dialog.setCancelable(true);
 
+
+
                         TextView delete = dialog.findViewById(R.id.delete_message_textview);
                         delete.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                FirebaseFirestore.getInstance()
-                                        .collection("Messages")
-                                        .document(chatItem.getSenderID())
-                                        .collection("Friends")
-                                        .document(chatItem.getReceiverID())
-                                        .collection("ChatHistory")
-                                        .whereEqualTo("timestamp", chatItem.getTimestamp())
-                                        .whereEqualTo("messageBody", chatItem.getMessageBody())
-                                        .get()
-                                        .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                                            @Override
-                                            public void onSuccess(QuerySnapshot snapshots) {
-                                                for (DocumentSnapshot d: snapshots.getDocuments()) {
-                                                    d.getReference().delete()
-                                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                                @Override
-                                                                public void onSuccess(Void aVoid) {
-                                                                    dialog.dismiss();
-                                                                    Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
-                                                                }
-                                                            });
+                                if (chatItem.getReceiverID().startsWith("GROUP_")) {
+                                    FirebaseFirestore.getInstance()
+                                            .collection("GroupMessages")
+                                            .document(chatItem.getReceiverID())
+                                            .collection("ChatHistory")
+                                            .whereEqualTo("timestamp", chatItem.getTimestamp())
+                                            .whereEqualTo("messageBody", chatItem.getMessageBody())
+                                            .get()
+                                            .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                                @Override
+                                                public void onSuccess(QuerySnapshot snapshots) {
+                                                    for (DocumentSnapshot d: snapshots.getDocuments()) {
+                                                        d.getReference().delete()
+                                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                    @Override
+                                                                    public void onSuccess(Void aVoid) {
+                                                                        dialog.dismiss();
+                                                                        Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
+                                                                    }
+                                                                });
+                                                    }
                                                 }
-                                            }
-                                        });
+                                            });
+                                } else {
+                                    FirebaseFirestore.getInstance()
+                                            .collection("Messages")
+                                            .document(chatItem.getSenderID())
+                                            .collection("Friends")
+                                            .document(chatItem.getReceiverID())
+                                            .collection("ChatHistory")
+                                            .whereEqualTo("timestamp", chatItem.getTimestamp())
+                                            .whereEqualTo("messageBody", chatItem.getMessageBody())
+                                            .get()
+                                            .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                                @Override
+                                                public void onSuccess(QuerySnapshot snapshots) {
+                                                    for (DocumentSnapshot d: snapshots.getDocuments()) {
+                                                        d.getReference().delete()
+                                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                    @Override
+                                                                    public void onSuccess(Void aVoid) {
+                                                                        dialog.dismiss();
+                                                                        Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
+                                                                    }
+                                                                });
+                                                    }
+                                                }
+                                            });
+                                }
                             }
                         });
 
@@ -205,11 +232,14 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                     }
                 });
             } else if (arr[1].equals("PDF")) {
+                if (!chatItem.getSenderID().equals(userId));
                 TextView message = holder.view.findViewById(R.id.text_message_body);
                 message.setText(arr[2]);
                 message.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
                     public boolean onLongClick(View v) {
+                        if (!chatItem.getSenderID().equals(userId))  return true;
+
                         Dialog dialog = new Dialog(context);
                         dialog.setContentView(R.layout.nontextmessagepopup);
                         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -219,30 +249,55 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                         delete.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                FirebaseFirestore.getInstance()
-                                        .collection("Messages")
-                                        .document(chatItem.getSenderID())
-                                        .collection("Friends")
-                                        .document(chatItem.getReceiverID())
-                                        .collection("ChatHistory")
-                                        .whereEqualTo("timestamp", chatItem.getTimestamp())
-                                        .whereEqualTo("messageBody", chatItem.getMessageBody())
-                                        .get()
-                                        .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                                            @Override
-                                            public void onSuccess(QuerySnapshot snapshots) {
-                                                for (DocumentSnapshot d: snapshots.getDocuments()) {
-                                                    d.getReference().delete()
-                                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                                @Override
-                                                                public void onSuccess(Void aVoid) {
-                                                                    dialog.dismiss();
-                                                                    Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
-                                                                }
-                                                            });
+                                if (chatItem.getReceiverID().startsWith("GROUP_")) {
+                                    FirebaseFirestore.getInstance()
+                                            .collection("GroupMessages")
+                                            .document(chatItem.getReceiverID())
+                                            .collection("ChatHistory")
+                                            .whereEqualTo("timestamp", chatItem.getTimestamp())
+                                            .whereEqualTo("messageBody", chatItem.getMessageBody())
+                                            .get()
+                                            .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                                @Override
+                                                public void onSuccess(QuerySnapshot snapshots) {
+                                                    for (DocumentSnapshot d: snapshots.getDocuments()) {
+                                                        d.getReference().delete()
+                                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                    @Override
+                                                                    public void onSuccess(Void aVoid) {
+                                                                        dialog.dismiss();
+                                                                        Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
+                                                                    }
+                                                                });
+                                                    }
                                                 }
-                                            }
-                                        });
+                                            });
+                                } else {
+                                    FirebaseFirestore.getInstance()
+                                            .collection("Messages")
+                                            .document(chatItem.getSenderID())
+                                            .collection("Friends")
+                                            .document(chatItem.getReceiverID())
+                                            .collection("ChatHistory")
+                                            .whereEqualTo("timestamp", chatItem.getTimestamp())
+                                            .whereEqualTo("messageBody", chatItem.getMessageBody())
+                                            .get()
+                                            .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                                @Override
+                                                public void onSuccess(QuerySnapshot snapshots) {
+                                                    for (DocumentSnapshot d: snapshots.getDocuments()) {
+                                                        d.getReference().delete()
+                                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                    @Override
+                                                                    public void onSuccess(Void aVoid) {
+                                                                        dialog.dismiss();
+                                                                        Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
+                                                                    }
+                                                                });
+                                                    }
+                                                }
+                                            });
+                                }
                             }
                         });
 
@@ -258,6 +313,8 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
             message.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
+                    if (!chatItem.getSenderID().equals(userId))  return true;
+
                     Dialog dialog = new Dialog(context);
                     dialog.setContentView(R.layout.messageoptionpopup);
                     dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -279,30 +336,55 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                     delete.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            FirebaseFirestore.getInstance()
-                                    .collection("Messages")
-                                    .document(chatItem.getSenderID())
-                                    .collection("Friends")
-                                    .document(chatItem.getReceiverID())
-                                    .collection("ChatHistory")
-                                    .whereEqualTo("timestamp", chatItem.getTimestamp())
-                                    .whereEqualTo("messageBody", chatItem.getMessageBody())
-                                    .get()
-                                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                                        @Override
-                                        public void onSuccess(QuerySnapshot snapshots) {
-                                            for (DocumentSnapshot d: snapshots.getDocuments()) {
-                                                d.getReference().delete()
-                                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                            @Override
-                                                            public void onSuccess(Void aVoid) {
-                                                                dialog.dismiss();
-                                                                Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
-                                                            }
-                                                        });
+                            if (chatItem.getReceiverID().startsWith("GROUP_")) {
+                                FirebaseFirestore.getInstance()
+                                        .collection("GroupMessages")
+                                        .document(chatItem.getReceiverID())
+                                        .collection("ChatHistory")
+                                        .whereEqualTo("timestamp", chatItem.getTimestamp())
+                                        .whereEqualTo("messageBody", chatItem.getMessageBody())
+                                        .get()
+                                        .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                            @Override
+                                            public void onSuccess(QuerySnapshot snapshots) {
+                                                for (DocumentSnapshot d: snapshots.getDocuments()) {
+                                                    d.getReference().delete()
+                                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                @Override
+                                                                public void onSuccess(Void aVoid) {
+                                                                    dialog.dismiss();
+                                                                    Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
+                                                                }
+                                                            });
+                                                }
                                             }
-                                        }
-                                    });
+                                        });
+                            } else {
+                                FirebaseFirestore.getInstance()
+                                        .collection("Messages")
+                                        .document(chatItem.getSenderID())
+                                        .collection("Friends")
+                                        .document(chatItem.getReceiverID())
+                                        .collection("ChatHistory")
+                                        .whereEqualTo("timestamp", chatItem.getTimestamp())
+                                        .whereEqualTo("messageBody", chatItem.getMessageBody())
+                                        .get()
+                                        .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                            @Override
+                                            public void onSuccess(QuerySnapshot snapshots) {
+                                                for (DocumentSnapshot d: snapshots.getDocuments()) {
+                                                    d.getReference().delete()
+                                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                @Override
+                                                                public void onSuccess(Void aVoid) {
+                                                                    dialog.dismiss();
+                                                                    Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
+                                                                }
+                                                            });
+                                                }
+                                            }
+                                        });
+                            }
                         }
                     });
 
@@ -332,9 +414,8 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
 
         TextView time = holder.view.findViewById(R.id.text_message_time);
         time.setText(mDataset.get(position).getTimeSent());
-
-
     }
+
 
     // Return the size of your dataset (invoked by the layout manager)
     @Override
@@ -353,4 +434,5 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
     }
 
     public ChatItem getItem(int position) { return  mDataset.get(position); }
+
 }
