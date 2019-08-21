@@ -190,17 +190,6 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         }
 
         // get user's display name and profile picture
-//        FirebaseFirestore.getInstance().collection("Users")
-//                .document(userUID)
-//                .get()
-//                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-//                        userName[0] = task.getResult().getString("name");
-//                        userUsername[0] = task.getResult().getString("username");
-//                        userImageUrl[0] = task.getResult().getString("imageUrl");
-//                    }
-//                });
         FirebaseDatabase.getInstance().getReference()
                 .child("Users")
                 .child(userUID)
@@ -221,14 +210,29 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
 
 
         // set the action bar title
-        Toolbar myToolbar = findViewById(R.id.my_toolbar);
-        setSupportActionBar(myToolbar);
+        Toolbar toolbar = findViewById(R.id.my_toolbar);
+        setSupportActionBar(toolbar);
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setTitle(intent.getStringExtra("name"));
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+
+        View v = findViewById(R.id.my_toolbar);
+        v.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent  intent = new Intent(ChatActivity.this, GroupInfoActivity.class);
+                if (isGroup) {
+                    intent.putExtra("id", groupID);
+                } else {
+                    intent.putExtra("id", friendsUID);
+                }
+                startActivity(intent);
+            }
+        });
+
 
         // set onCLickListener on the 'More option' button
         ImageView fileImageView = findViewById(R.id.chat_attach_imageView);
@@ -277,18 +281,6 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         } else {
             isGroup = false;
             // get friends's display name and profile picture
-//            FirebaseFirestore.getInstance().collection("Users")
-//                    .document(friendsUID)
-//                    .get()
-//                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-//                        @Override
-//                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-//                            friendName[0] = task.getResult().getString("name");
-//                            friendUsername[0] = task.getResult().getString("username");
-//                            friendImageUrl[0] = task.getResult().getString("imageUrl");
-//                            getMessages();
-//                        }
-//                    });
 
             FirebaseDatabase.getInstance().getReference()
                     .child("Users")
@@ -633,8 +625,7 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                 return true;
 
             default:
-                // If we got here, the user's action was not recognized.
-                // Invoke the superclass to handle it.
+
                 return super.onOptionsItemSelected(item);
 
         }
