@@ -1,0 +1,14 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/group_info_edit"
+        android:icon="@drawable/edit"
+        android:title="Edit group info"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/group_info_add_member"
+        android:icon="@drawable/add_person_white"
+        android:title="Draw"
+        app:showAsAction="ifRoom"/>
+</menu>

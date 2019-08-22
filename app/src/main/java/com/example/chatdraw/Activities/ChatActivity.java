@@ -223,13 +223,13 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         v.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent  intent = new Intent(ChatActivity.this, GroupInfoActivity.class);
                 if (isGroup) {
+                    Intent  intent = new Intent(ChatActivity.this, GroupInfoActivity.class);
                     intent.putExtra("id", groupID);
+                    startActivity(intent);
                 } else {
-                    intent.putExtra("id", friendsUID);
+                    // TODO
                 }
-                startActivity(intent);
             }
         });
 
