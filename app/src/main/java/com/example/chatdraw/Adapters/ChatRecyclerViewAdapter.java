@@ -160,8 +160,28 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
             name.setText(nameString);
         }
 
+        String[] arr = chatItem.getMessageBody().split("\t");
+
+        if (arr[1].equals("IMAGE")) {
+            ImageView message = holder.view.findViewById(R.id.text_message_body_image);
+            message.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    ((ChatActivity) context).goToImagePreview(chatItem);
+                }
+            });
+        } else if (arr[1].equals("PDF")) {
+            TextView message = holder.view.findViewById(R.id.text_message_body);
+            message.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String url = chatItem.getMessageBody().split("\t")[3];
+                    ((ChatActivity) context).viewPdf(url);
+                }
+            });
+        }
+
         if (chatItem.getMessageBody().startsWith(chatItem.getSenderID())) {
-            String[] arr = chatItem.getMessageBody().split("\t");
             if (arr[1].equals("IMAGE")) {
                 ImageView message = holder.view.findViewById(R.id.text_message_body_image);
                 Picasso.get()

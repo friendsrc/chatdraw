@@ -820,25 +820,31 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         ChatItem chatItem = mAdapter.getItem(position);
 
         if (v.findViewById(R.id.text_message_cardview) != null) {
-            Intent intent = new Intent(ChatActivity.this, ImagePreviewActivity.class);
-            String[] arr = chatItem.getMessageBody().split("\t");
-            intent.putExtra("imageUrl", arr[2]);
-            String senderName;
-            if (chatItem.getSenderID().equals(userUID)) {
-                senderName = "You";
-            } else {
-                senderName = chatItem.getSenderName();
-            }
-            intent.putExtra("senderName", senderName);
-            startActivity(intent);
+            goToImagePreview(chatItem);
         } else if (v.findViewById(R.id.pdf_icon_imageview) != null) {
             String url = chatItem.getMessageBody().split("\t")[3];
-
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            startActivity(browserIntent);
-
+            viewPdf(url);
         }
 
+    }
+
+    public void goToImagePreview(ChatItem chatItem) {
+        Intent intent = new Intent(ChatActivity.this, ImagePreviewActivity.class);
+        String[] arr = chatItem.getMessageBody().split("\t");
+        intent.putExtra("imageUrl", arr[2]);
+        String senderName;
+        if (chatItem.getSenderID().equals(userUID)) {
+            senderName = "You";
+        } else {
+            senderName = chatItem.getSenderName();
+        }
+        intent.putExtra("senderName", senderName);
+        startActivity(intent);
+    }
+
+    public void viewPdf(String url) {
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        startActivity(browserIntent);
     }
 
     public void getOlderMessages() {
