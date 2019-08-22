@@ -652,6 +652,7 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                                                 intent.putExtra("participant", num_participant);
                                                 intent.putExtra("userID", userUID);
                                                 intent.putExtra("groupID", friendsUID);
+                                                intent.putExtra("groupName", groupName);
                                                 startActivity(intent);
                                             }
                                         })

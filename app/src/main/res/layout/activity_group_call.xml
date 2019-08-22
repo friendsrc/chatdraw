@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/onGoingCallLayout"
     android:orientation="vertical"
     android:gravity="top|center"
     android:layout_width="match_parent"
@@ -12,7 +13,7 @@
     <LinearLayout
         android:layout_weight="1"
         android:orientation="horizontal"
-        android:gravity="start|center"
+        android:gravity="center"
         android:background="@color/white"
         android:layout_width="match_parent"
         android:layout_height="0dp">
@@ -21,8 +22,21 @@
             android:id="@+id/groupDetails"
             android:text="Group title"
             android:textSize="20sp"
-            android:layout_marginLeft="10sp"
-            android:layout_marginRight="10sp"
+            android:layout_marginLeft="15sp"
+            android:layout_marginRight="15sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <View
+            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:background="@color/white"
+            android:padding="10sp"
+            android:src="@drawable/ic_exit_to_app_black"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
@@ -40,7 +54,6 @@
             android:columnCount="2"
             android:columnOrderPreserved="false"
             android:rowCount="2">
-
         </GridLayout>
     </ScrollView>
 
@@ -74,6 +87,7 @@
             android:layout_height="wrap_content">
 
             <ImageButton
+                android:id="@+id/btnMute"
                 android:background="@color/s"
                 android:src="@drawable/ic_mic_off_black"
                 android:padding="11sp"
@@ -83,6 +97,7 @@
                 android:layout_height="wrap_content" />
 
             <ImageButton
+                android:id="@+id/btnSpeaker"
                 android:background="@color/btn_logut_bg"
                 android:src="@drawable/ic_volume_up_black"
                 android:padding="11sp"
