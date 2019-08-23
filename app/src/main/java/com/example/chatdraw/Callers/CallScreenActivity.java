@@ -203,6 +203,7 @@ public class CallScreenActivity extends BaseActivity {
             getSinchServiceInterface().setIsOnGoingCall(false);
             getSinchServiceInterface().setFriendUserName(null);
             getSinchServiceInterface().setCurrentUserCallID(null);
+            getSinchServiceInterface().stopForegroundActivity();
 
             CallEndCause cause = call.getDetails().getEndCause();
             Log.d(TAG, "Call ended. Reason: " + cause.toString());
@@ -218,6 +219,7 @@ public class CallScreenActivity extends BaseActivity {
             getSinchServiceInterface().setIsOnGoingCall(true);
             getSinchServiceInterface().setFriendUserName(mFriendCallID);
             getSinchServiceInterface().setCurrentUserCallID(mCallId);
+            getSinchServiceInterface().startForegroundActivity();
 
             Log.d(TAG, "Call established");
             mAudioPlayer.stopProgressTone();

@@ -79,11 +79,6 @@ public class SinchService extends Service {
         super.onCreate();
         mSettings = new PersistedSettings(getApplicationContext());
         attemptAutoStart();
-
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O)
-            startMyOwnForeground();
-        else
-            startForeground(1, new Notification());
     }
 
     private void attemptAutoStart() {
@@ -203,6 +198,25 @@ public class SinchService extends Service {
                 return null;
             }
             return mSinchClient.getCallClient().callUser(userId);
+        }
+
+        public Call callConference(String conferenceId) {
+            if (mSinchClient == null) {
+                return null;
+            }
+            return mSinchClient.getCallClient().callUser(conferenceId);
+        }
+
+        public void startForegroundActivity() {
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O)
+                startMyOwnForeground();
+            else
+                startForeground(1, new Notification());
+        }
+
+        public void stopForegroundActivity() {
+            stopForeground(true);
+            stopSelf();
         }
 
         public void setIsOnGoingCall(boolean input) {
