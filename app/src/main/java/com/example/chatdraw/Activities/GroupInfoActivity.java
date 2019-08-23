@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,6 +19,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -35,14 +38,6 @@ public class GroupInfoActivity extends AppCompatActivity {
         Intent intent = getIntent();
         groupUID = intent.getStringExtra("id");
 
-        Toolbar myToolbar = findViewById(R.id.my_toolbar);
-        setSupportActionBar(myToolbar);
-
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
-
         FirebaseFirestore.getInstance()
                 .collection("Groups")
                 .document(groupUID)
@@ -50,14 +45,22 @@ public class GroupInfoActivity extends AppCompatActivity {
                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        // get group data
                         groupName = documentSnapshot.get("groupName").toString();
-                        actionBar.setTitle(groupName);
-
                         if (documentSnapshot.get("groupImageUrl") != null) {
                             groupImageUrl = documentSnapshot.get("groupImageUrl").toString();
                         }
                         groupMembers = (ArrayList<String>) documentSnapshot.get("members");
 
+                        // set the toolbar
+                        Toolbar myToolbar = findViewById(R.id.my_toolbar);
+                        setSupportActionBar(myToolbar);
+
+                        ActionBar actionBar = getSupportActionBar();
+                        if (actionBar != null) {
+                            actionBar.setDisplayHomeAsUpEnabled(true);
+                            actionBar.setTitle(groupName);
+                        }
                     }
                 });
 
@@ -84,7 +87,11 @@ public class GroupInfoActivity extends AppCompatActivity {
                 Toast.makeText(this, "add", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.group_info_edit:
-                Toast.makeText(this, "edit", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(GroupInfoActivity.this, GroupInfoEditActivity.class);
+                intent.putExtra("groupName", groupName);
+                intent.putExtra("groupUID", groupUID);
+                intent.putExtra("groupImageUrl", groupImageUrl);
+                startActivity(intent);
                 break;
         }
         return super.onOptionsItemSelected(item);
