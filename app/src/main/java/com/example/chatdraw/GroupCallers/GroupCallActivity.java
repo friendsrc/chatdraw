@@ -1,7 +1,6 @@
 package com.example.chatdraw.GroupCallers;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.SystemClock;

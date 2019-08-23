@@ -12,11 +12,13 @@ import com.sinch.android.rtc.calling.CallEndCause;
 import com.sinch.android.rtc.calling.CallListener;
 
 import android.media.AudioManager;
+import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,12 +41,14 @@ public class CallScreenActivity extends BaseActivity {
     private UpdateCallDurationTask mDurationTask;
 
     private String mCallId;
+    private String mFriendCallID;
 
     private TextView mCallDuration;
     private TextView mCallState;
     private TextView mCallerName;
 
     private ImageView mImageCall;
+    private ImageButton mCallBack;
 
     private class UpdateCallDurationTask extends TimerTask {
 
@@ -69,6 +73,7 @@ public class CallScreenActivity extends BaseActivity {
         mCallerName = (TextView) findViewById(R.id.remoteUser);
         mCallState = (TextView) findViewById(R.id.callState);
         mImageCall = (ImageView) findViewById(R.id.profileImgID);
+        mCallBack = (ImageButton) findViewById(R.id.btnCallBack);
         Button endCallButton = (Button) findViewById(R.id.hangupButton);
 
         endCallButton.setOnClickListener(new OnClickListener() {
@@ -77,13 +82,46 @@ public class CallScreenActivity extends BaseActivity {
                 endCall();
             }
         });
+
         mCallId = getIntent().getStringExtra(SinchService.CALL_ID);
+        mFriendCallID = getIntent().getStringExtra("FriendID");
+
+        mCallBack.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
     }
 
     @Override
     public void onServiceConnected() {
         Call call = getSinchServiceInterface().getCall(mCallId);
-        if (call != null) {
+
+        if (getSinchServiceInterface().getIsOnGoingCall()) {
+            DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
+            mDatabaseRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    call.addCallListener(new SinchCallListener());
+                    String userUID = call.getRemoteUserId();
+                    String name = (String) dataSnapshot.child(userUID).child("name").getValue();
+                    String imageURL = (String) dataSnapshot.child(userUID).child("imageUrl").getValue();
+
+                    Picasso.get()
+                            .load(imageURL)
+                            .fit()
+                            .into(mImageCall);
+
+                    mCallerName.setText(name);
+                    mCallState.setText(call.getState().toString());
+                }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Toast.makeText(CallScreenActivity.this, "Failed to place a call. Error code: 801", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else if (call != null) {
             DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
             mDatabaseRef.addValueEventListener(new ValueEventListener() {
                 @Override
@@ -130,9 +168,13 @@ public class CallScreenActivity extends BaseActivity {
     @Override
     public void onBackPressed() {
         // User should exit activity by ending call, not by going back.
+        finish();
     }
 
     private void endCall() {
+        getSinchServiceInterface().setIsOnGoingCall(false);
+        getSinchServiceInterface().setCurrentUserCallID(null);
+
         mAudioPlayer.stopProgressTone();
         Call call = getSinchServiceInterface().getCall(mCallId);
         if (call != null) {
@@ -158,6 +200,10 @@ public class CallScreenActivity extends BaseActivity {
 
         @Override
         public void onCallEnded(Call call) {
+            getSinchServiceInterface().setIsOnGoingCall(false);
+            getSinchServiceInterface().setFriendUserName(null);
+            getSinchServiceInterface().setCurrentUserCallID(null);
+
             CallEndCause cause = call.getDetails().getEndCause();
             Log.d(TAG, "Call ended. Reason: " + cause.toString());
             mAudioPlayer.stopProgressTone();
@@ -169,6 +215,10 @@ public class CallScreenActivity extends BaseActivity {
 
         @Override
         public void onCallEstablished(Call call) {
+            getSinchServiceInterface().setIsOnGoingCall(true);
+            getSinchServiceInterface().setFriendUserName(mFriendCallID);
+            getSinchServiceInterface().setCurrentUserCallID(mCallId);
+
             Log.d(TAG, "Call established");
             mAudioPlayer.stopProgressTone();
             mCallState.setText(call.getState().toString());

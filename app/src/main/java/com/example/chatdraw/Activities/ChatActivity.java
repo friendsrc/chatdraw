@@ -739,30 +739,45 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
     }
 
     private void callButtonClicked() {
-        String userName = friendsUID;
+        if (getSinchServiceInterface().getIsOnGoingCall()) {
+            if (getSinchServiceInterface().getFriendUserName().equals(friendsUID)) {
+                Toast.makeText(this, "Is on going call", Toast.LENGTH_SHORT).show();
 
-        if (userName.isEmpty()) {
-            Toast.makeText(this, "Please enter a user to call", Toast.LENGTH_LONG).show();
-            return;
-        }
+                String tempCallID = getSinchServiceInterface().getCurrentUserCallID();
 
-        try {
-            Call call = getSinchServiceInterface().callUser(userName);
-            if (call == null) {
-                // Service failed for some reason, show a Toast and abort
-                Toast.makeText(this, "Service is not started. Try stopping the service and starting it again before "
-                        + "placing a call.", Toast.LENGTH_LONG).show();
+                Intent callScreen = new Intent(this, CallScreenActivity.class);
+                callScreen.putExtra(SinchService.CALL_ID, tempCallID);
+                callScreen.putExtra("FriendID", friendsUID);
+                startActivity(callScreen);
+            } else {
+                Toast.makeText(this, "Cannot call others while talking with others", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            String userName = friendsUID;
+
+            if (userName.isEmpty()) {
+                Toast.makeText(this, "Please enter a user to call", Toast.LENGTH_LONG).show();
                 return;
             }
 
-            String callId = call.getCallId();
-            Intent callScreen = new Intent(this, CallScreenActivity.class);
-            callScreen.putExtra(SinchService.CALL_ID, callId);
-            startActivity(callScreen);
-        } catch (MissingPermissionException e) {
-            ActivityCompat.requestPermissions(this, new String[]{e.getRequiredPermission()}, REQUEST_MICROPHONE);
-        }
+            try {
+                Call call = getSinchServiceInterface().callUser(userName);
+                if (call == null) {
+                    // Service failed for some reason, show a Toast and abort
+                    Toast.makeText(this, "Service is not started. Try stopping the service and starting it again before "
+                            + "placing a call.", Toast.LENGTH_LONG).show();
+                    return;
+                }
 
+                String callId = call.getCallId();
+                Intent callScreen = new Intent(this, CallScreenActivity.class);
+                callScreen.putExtra(SinchService.CALL_ID, callId);
+                callScreen.putExtra("FriendID", friendsUID);
+                startActivity(callScreen);
+            } catch (MissingPermissionException e) {
+                ActivityCompat.requestPermissions(this, new String[]{e.getRequiredPermission()}, REQUEST_MICROPHONE);
+            }
+        }
     }
 
     // send the ChatItem to Firebase

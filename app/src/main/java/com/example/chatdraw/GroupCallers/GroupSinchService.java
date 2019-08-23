@@ -1,4 +1,4 @@
-package com.example.chatdraw.Callers;
+package com.example.chatdraw.GroupCallers;
 
 import com.sinch.android.rtc.AudioController;
 import com.sinch.android.rtc.ClientRegistration;
@@ -12,15 +12,11 @@ import com.sinch.android.rtc.calling.CallClientListener;
 import com.sinch.android.rtc.MissingPermissionException;
 
 import android.Manifest;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Binder;
-import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 import android.content.pm.PackageManager;
@@ -29,10 +25,7 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 
-import androidx.annotation.RequiresApi;
-import androidx.core.app.NotificationCompat;
-
-public class SinchService extends Service {
+public class GroupSinchService extends Service {
 
     /*
      IMPORTANT!
@@ -62,15 +55,13 @@ public class SinchService extends Service {
     public static final String MESSENGER = "MESSENGER";
     private Messenger messenger;
 
-    public static final String CALL_ID = "CALL_ID";
-    static final String TAG = SinchService.class.getSimpleName();
+    static final String TAG = GroupSinchService.class.getSimpleName();
 
     private SinchServiceInterface mSinchServiceInterface = new SinchServiceInterface();
     private SinchClient mSinchClient;
-    private String mUserId, mFriendUserId;
-    private String currentUserCallID = null;
-    private boolean isOnGoingCall = false;
+    private String mUserId;
 
+    protected Call call;
     private StartFailedListener mListener;
     private PersistedSettings mSettings;
 
@@ -79,11 +70,6 @@ public class SinchService extends Service {
         super.onCreate();
         mSettings = new PersistedSettings(getApplicationContext());
         attemptAutoStart();
-
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O)
-            startMyOwnForeground();
-        else
-            startForeground(1, new Notification());
     }
 
     private void attemptAutoStart() {
@@ -91,27 +77,6 @@ public class SinchService extends Service {
         if (!userName.isEmpty() && messenger != null) {
             start(userName);
         }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private void startMyOwnForeground()
-    {
-        String NOTIFICATION_CHANNEL_ID = "example.permanence";
-        String channelName = "Background Service";
-        NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
-        chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
-
-        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        assert manager != null;
-        manager.createNotificationChannel(chan);
-
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
-        Notification notification = notificationBuilder.setOngoing(true)
-                .setContentTitle("App is running in background")
-                .setPriority(NotificationManager.IMPORTANCE_MIN)
-                .setCategory(Notification.CATEGORY_SERVICE)
-                .build();
-        startForeground(2, notification);
     }
 
     @Override
@@ -152,6 +117,7 @@ public class SinchService extends Service {
                 }
             }
         }
+
         if (permissionsGranted) {
             Log.d(TAG, "Starting SinchClient");
             mSinchClient.start();
@@ -160,18 +126,18 @@ public class SinchService extends Service {
 
     private void createClient(String userName) {
         mUserId = userName;
-        mSinchClient = Sinch.getSinchClientBuilder().context(getApplicationContext()).userId(userName)
+        mSinchClient = Sinch.getSinchClientBuilder().context(getApplicationContext())
                 .applicationKey(APP_KEY)
                 .applicationSecret(APP_SECRET)
-                .environmentHost(ENVIRONMENT).build();
+                .environmentHost(ENVIRONMENT)
+                .userId(mUserId)
+                .build();
 
         mSinchClient.setSupportCalling(true);
+        mSinchClient.setSupportActiveConnectionInBackground(true);
         mSinchClient.startListeningOnActiveConnection();
 
         mSinchClient.addSinchClientListener(new MySinchClientListener());
-        // Permission READ_PHONE_STATE is needed to respect native calls.
-        mSinchClient.getCallClient().setRespectNativeCalls(false);
-        mSinchClient.getCallClient().addCallClientListener(new SinchCallClientListener());
     }
 
     private void stop() {
@@ -205,39 +171,15 @@ public class SinchService extends Service {
             return mSinchClient.getCallClient().callUser(userId);
         }
 
-        public void setIsOnGoingCall(boolean input) {
-            isOnGoingCall = input;
-        }
-
-        public boolean getIsOnGoingCall() {
-            return isOnGoingCall;
-        }
-
         public String getUserName() {
             return mUserId;
         }
 
-        public String getFriendUserName() {
-            return mFriendUserId;
-        }
-
-        public void setFriendUserName(String friendId) {
-            mFriendUserId = friendId;
-        }
-
-        public void setCurrentUserCallID (String callID) {
-            currentUserCallID = callID;
-        }
-
-        public String getCurrentUserCallID () {
-            return currentUserCallID;
-        }
-
         public boolean isStarted() {
-            return SinchService.this.isStarted();
+            return GroupSinchService.this.isStarted();
         }
 
-        public void retryStartAfterPermissionGranted() { SinchService.this.attemptAutoStart(); }
+        public void retryStartAfterPermissionGranted() { GroupSinchService.this.attemptAutoStart(); }
 
         public void startClient(String userName) {
             start(userName);
@@ -282,7 +224,7 @@ public class SinchService extends Service {
 
         @Override
         public void onClientStarted(SinchClient client) {
-            Log.d(TAG, "SinchClient started");
+            Log.d(TAG, "SinchClient started " + client);
             if (mListener != null) {
                 mListener.onStarted();
             }
@@ -290,28 +232,12 @@ public class SinchService extends Service {
 
         @Override
         public void onClientStopped(SinchClient client) {
-            Log.d(TAG, "SinchClient stopped");
+            Log.d(TAG, "SinchClient stopped" + client);
         }
 
         @Override
         public void onLogMessage(int level, String area, String message) {
-            switch (level) {
-                case Log.DEBUG:
-                    Log.d(area, message);
-                    break;
-                case Log.ERROR:
-                    Log.e(area, message);
-                    break;
-                case Log.INFO:
-                    Log.i(area, message);
-                    break;
-                case Log.VERBOSE:
-                    Log.v(area, message);
-                    break;
-                case Log.WARN:
-                    Log.w(area, message);
-                    break;
-            }
+            Log.d("onLogMessage", message);
         }
 
         @Override
@@ -320,20 +246,7 @@ public class SinchService extends Service {
         }
     }
 
-    private class SinchCallClientListener implements CallClientListener {
-
-        @Override
-        public void onIncomingCall(CallClient callClient, Call call) {
-            Log.d(TAG, "Incoming call");
-            Intent intent = new Intent(SinchService.this, IncomingCallScreenActivity.class);
-            intent.putExtra(CALL_ID, call.getCallId());
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            SinchService.this.startActivity(intent);
-        }
-    }
-
     private class PersistedSettings {
-
         private SharedPreferences mStore;
 
         private static final String PREF_KEY = "Sinch";
@@ -351,14 +264,5 @@ public class SinchService extends Service {
             editor.putString("Username", username);
             editor.commit();
         }
-    }
-
-    // not sure if this is useful
-    @Override
-    public void onTaskRemoved(Intent rootIntent) {
-        super.onTaskRemoved(rootIntent);
-
-        Intent intent = new Intent("com.example.chatdraw.Callers.SinchService");
-        sendBroadcast(intent);
     }
 }
