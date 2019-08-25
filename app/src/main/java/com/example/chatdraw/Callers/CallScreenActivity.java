@@ -98,30 +98,7 @@ public class CallScreenActivity extends BaseActivity {
     public void onServiceConnected() {
         Call call = getSinchServiceInterface().getCall(mCallId);
 
-        if (getSinchServiceInterface().getIsOnGoingCall()) {
-            DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
-            mDatabaseRef.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    call.addCallListener(new SinchCallListener());
-                    String userUID = call.getRemoteUserId();
-                    String name = (String) dataSnapshot.child(userUID).child("name").getValue();
-                    String imageURL = (String) dataSnapshot.child(userUID).child("imageUrl").getValue();
-
-                    Picasso.get()
-                            .load(imageURL)
-                            .fit()
-                            .into(mImageCall);
-
-                    mCallerName.setText(name);
-                    mCallState.setText(call.getState().toString());
-                }
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-                    Toast.makeText(CallScreenActivity.this, "Failed to place a call. Error code: 801", Toast.LENGTH_SHORT).show();
-                }
-            });
-        } else if (call != null) {
+        if ((call != null) || getSinchServiceInterface().getIsOnGoingCall()) {
             DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
             mDatabaseRef.addValueEventListener(new ValueEventListener() {
                 @Override

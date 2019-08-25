@@ -627,34 +627,6 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                     if (isGroup) {
                         if (isServiceReady) {
                             groupCallButtonClicked();
-//                                String text = "";
-//
-//                                if (num_participant == 0) {
-//                                    text = "Start a new conference call?";
-//                                } else if (num_participant == 1) {
-//                                    text = "Join the ongoing conference call?";
-//                                } else {
-//                                    Toast.makeText(this, "Unknown error occurred [805]", Toast.LENGTH_SHORT).show();
-//                                    return false;
-//                                }
-//
-//                                AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
-//
-//                                new AlertDialog.Builder(ChatActivity.this)
-//                                        .setTitle("Confirm")
-//                                        .setMessage(text)
-//                                        .setIcon(R.drawable.ic_call)
-//                                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-//                                            public void onClick(DialogInterface dialog, int whichButton) {
-//                                                Intent intent = new Intent(ChatActivity.this, GroupCallActivity.class);
-//                                                intent.putExtra("participant", num_participant);
-//                                                intent.putExtra("userID", userUID);
-//                                                intent.putExtra("groupID", friendsUID);
-//                                                intent.putExtra("groupName", groupName);
-//                                                startActivity(intent);
-//                                            }
-//                                        })
-//                                        .setNegativeButton(android.R.string.no, null).show();
                         } else {
                             Toast.makeText(this, "Calling service not ready", Toast.LENGTH_SHORT).show();
                         }
@@ -734,16 +706,17 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
     }
 
     private void groupCallButtonClicked() {
+        Log.v("QQQ", "0" + getSinchServiceInterface().getIsOnGoingCall());
         if (getSinchServiceInterface().getIsOnGoingCall()) {
-            if (getSinchServiceInterface().getFriendUserName().equals(friendsUID)) {
-                Toast.makeText(this, "Is on going call", Toast.LENGTH_SHORT).show();
+            if (getSinchServiceInterface().getGroupUserName().equals(friendsUID)) {
+                Log.v("QQQ", "1");
 
-//                String tempCallID = getSinchServiceInterface().getCurrentUserCallID();
-//
-//                Intent callScreen = new Intent(this, CallScreenActivity.class);
-//                callScreen.putExtra(SinchService.CALL_ID, tempCallID);
-//                callScreen.putExtra("FriendID", friendsUID);
-//                startActivity(callScreen);
+                Intent intent = new Intent(ChatActivity.this, GroupCallActivity.class);
+                intent.putExtra("participant", num_participant);
+                intent.putExtra("userID", userUID);
+                intent.putExtra("groupID", friendsUID);
+                intent.putExtra("groupName", groupName);
+                startActivity(intent);
             } else {
                 Toast.makeText(this, "Cannot call others while talking with others", Toast.LENGTH_SHORT).show();
             }

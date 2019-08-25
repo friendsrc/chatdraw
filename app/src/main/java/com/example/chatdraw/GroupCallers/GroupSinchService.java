@@ -7,8 +7,6 @@ import com.sinch.android.rtc.SinchClient;
 import com.sinch.android.rtc.SinchClientListener;
 import com.sinch.android.rtc.SinchError;
 import com.sinch.android.rtc.calling.Call;
-import com.sinch.android.rtc.calling.CallClient;
-import com.sinch.android.rtc.calling.CallClientListener;
 import com.sinch.android.rtc.MissingPermissionException;
 
 import android.Manifest;

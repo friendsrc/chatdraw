@@ -66,12 +66,14 @@
         android:layout_width="match_parent"
         android:layout_height="0dp">
 
-        <Chronometer
-            android:id="@+id/chronometer"
-            android:layout_marginTop="5sp"
+        <TextView
+            android:id="@+id/callDuration"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="16sp" />
+            android:layout_gravity="center_horizontal"
+            android:text="00:00"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textSize="18sp"/>
 
         <TextView
             android:id="@+id/callStatus"

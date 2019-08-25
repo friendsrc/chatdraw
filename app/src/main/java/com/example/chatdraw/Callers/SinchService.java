@@ -69,6 +69,7 @@ public class SinchService extends Service {
     private SinchClient mSinchClient;
     private String mUserId, mFriendUserId, mGroupUserId;
     private String currentUserCallID = null;
+    private String currentGroupCallID = null;
     private boolean isOnGoingCall = false;
 
     private StartFailedListener mListener;
@@ -256,6 +257,14 @@ public class SinchService extends Service {
 
         public String getCurrentUserCallID () {
             return currentUserCallID;
+        }
+
+        public void setCurrentGroupCallID (String callID) {
+            currentGroupCallID = callID;
+        }
+
+        public String getCurrentGroupCallID () {
+            return currentGroupCallID;
         }
 
         public boolean isStarted() {

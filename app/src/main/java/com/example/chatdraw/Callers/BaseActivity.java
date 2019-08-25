@@ -63,7 +63,6 @@ public abstract class BaseActivity extends AppCompatActivity implements ServiceC
     }
 
     protected SinchService.SinchServiceInterface getSinchServiceInterface() {
-        Log.v("naniii", "" + mSinchServiceInterface);
         return mSinchServiceInterface;
     }
 
