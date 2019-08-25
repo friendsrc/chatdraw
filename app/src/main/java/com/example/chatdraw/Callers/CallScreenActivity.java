@@ -12,7 +12,6 @@ import com.sinch.android.rtc.calling.CallEndCause;
 import com.sinch.android.rtc.calling.CallListener;
 
 import android.media.AudioManager;
-import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;

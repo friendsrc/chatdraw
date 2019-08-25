@@ -3,14 +3,12 @@ package com.example.chatdraw.GroupCallers;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.chatdraw.Callers.AudioPlayer;
 import com.example.chatdraw.Callers.BaseActivity;

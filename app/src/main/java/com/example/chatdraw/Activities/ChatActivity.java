@@ -30,7 +30,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
-import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -62,7 +61,6 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -649,68 +647,14 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         }
     }
 
-//    public void checkForConferenceDetails() {
-//        String myURL = "https://callingapi.sinch.com/v1/conferences/id/" + groupID;
-//
-//        RequestQueue requestQueue = Volley.newRequestQueue(ChatActivity.this);
-//        JsonObjectRequest objectRequest = new JsonObjectRequest(
-//                Request.Method.GET,
-//                myURL,
-//                null,
-//                new Response.Listener<JSONObject>() {
-//                    @Override
-//                    public void onResponse(JSONObject response) {
-//                        try {
-//                            num_participant = response.getJSONArray("participants").length();
-//                        } catch (JSONException e) {
-//                            Toast.makeText(ChatActivity.this, "Unknown error occurred [802]", Toast.LENGTH_SHORT).show();
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                },
-//                new Response.ErrorListener() {
-//                    @Override
-//                    public void onErrorResponse(VolleyError error) {
-//                        try {
-//                            if (error.networkResponse.statusCode == 404) {
-//                                num_participant = 0;
-//                                Toast.makeText(ChatActivity.this, "No call before", Toast.LENGTH_SHORT).show();
-//                            }
-//                        } catch (Exception e) {
-//                            Toast.makeText(ChatActivity.this, "Unknown error occurred [804]", Toast.LENGTH_SHORT).show();
-//                        }
-//                    }
-//                }
-//        ){
-//            //This is for Headers If You Needed
-//            @Override
-//            public Map<String, String> getHeaders() throws AuthFailureError {
-//                HashMap<String, String> params = new HashMap<String, String>();
-//                params.put("Content-Type", "application/json");
-//                String namePassword = APP_KEY + ":" + APP_SECRET;
-//                String auth = Base64.encodeToString(namePassword.getBytes(), Base64.NO_WRAP);
-//
-//                String authorization = "Basic" + " " + auth;
-//
-//                params.put("Authorization", authorization);
-//                return params;
-//            }
-//        };
-//
-//        requestQueue.add(objectRequest);
-//    }
-
     @Override
     protected void onServiceConnected() {
         isServiceReady = true;
     }
 
     private void groupCallButtonClicked() {
-        Log.v("QQQ", "0" + getSinchServiceInterface().getIsOnGoingCall());
         if (getSinchServiceInterface().getIsOnGoingCall()) {
             if (getSinchServiceInterface().getGroupUserName().equals(friendsUID)) {
-                Log.v("QQQ", "1");
-
                 Intent intent = new Intent(ChatActivity.this, GroupCallActivity.class);
                 intent.putExtra("participant", num_participant);
                 intent.putExtra("userID", userUID);
@@ -817,7 +761,6 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                     } else {
                         chatItem.setMessageBody("[Unknown file type]");
                     }
-
                 }
 
                 // Limit the length of chat preview
@@ -1072,3 +1015,58 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         setIntent(intent);
     }
 }
+
+/*
+For future use: If you want to mute another people
+
+    public void checkForConferenceDetails() {
+        String myURL = "https://callingapi.sinch.com/v1/conferences/id/" + groupID;
+
+        RequestQueue requestQueue = Volley.newRequestQueue(ChatActivity.this);
+        JsonObjectRequest objectRequest = new JsonObjectRequest(
+                Request.Method.GET,
+                myURL,
+                null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            num_participant = response.getJSONArray("participants").length();
+                        } catch (JSONException e) {
+                            Toast.makeText(ChatActivity.this, "Unknown error occurred [802]", Toast.LENGTH_SHORT).show();
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        try {
+                            if (error.networkResponse.statusCode == 404) {
+                                num_participant = 0;
+                                Toast.makeText(ChatActivity.this, "No call before", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (Exception e) {
+                            Toast.makeText(ChatActivity.this, "Unknown error occurred [804]", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+        ){
+            //This is for Headers If You Needed
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/json");
+                String namePassword = APP_KEY + ":" + APP_SECRET;
+                String auth = Base64.encodeToString(namePassword.getBytes(), Base64.NO_WRAP);
+
+                String authorization = "Basic" + " " + auth;
+
+                params.put("Authorization", authorization);
+                return params;
+            }
+        };
+
+        requestQueue.add(objectRequest);
+    }
+*/
