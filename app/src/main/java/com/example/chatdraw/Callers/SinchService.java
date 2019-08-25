@@ -67,7 +67,7 @@ public class SinchService extends Service {
 
     private SinchServiceInterface mSinchServiceInterface = new SinchServiceInterface();
     private SinchClient mSinchClient;
-    private String mUserId, mFriendUserId;
+    private String mUserId, mFriendUserId, mGroupUserId;
     private String currentUserCallID = null;
     private boolean isOnGoingCall = false;
 
@@ -155,15 +155,17 @@ public class SinchService extends Service {
 
     private void createClient(String userName) {
         mUserId = userName;
-        mSinchClient = Sinch.getSinchClientBuilder().context(getApplicationContext()).userId(userName)
+        mSinchClient = Sinch.getSinchClientBuilder().context(getApplicationContext())
+                .userId(userName)
                 .applicationKey(APP_KEY)
                 .applicationSecret(APP_SECRET)
                 .environmentHost(ENVIRONMENT).build();
 
         mSinchClient.setSupportCalling(true);
         mSinchClient.startListeningOnActiveConnection();
-
+        mSinchClient.setSupportActiveConnectionInBackground(true);
         mSinchClient.addSinchClientListener(new MySinchClientListener());
+
         // Permission READ_PHONE_STATE is needed to respect native calls.
         mSinchClient.getCallClient().setRespectNativeCalls(false);
         mSinchClient.getCallClient().addCallClientListener(new SinchCallClientListener());
@@ -201,10 +203,11 @@ public class SinchService extends Service {
         }
 
         public Call callConference(String conferenceId) {
+            Log.v("nanihh", conferenceId);
             if (mSinchClient == null) {
                 return null;
             }
-            return mSinchClient.getCallClient().callUser(conferenceId);
+            return mSinchClient.getCallClient().callConference(conferenceId);
         }
 
         public void startForegroundActivity() {
@@ -237,6 +240,14 @@ public class SinchService extends Service {
 
         public void setFriendUserName(String friendId) {
             mFriendUserId = friendId;
+        }
+
+        public String getGroupUserName() {
+            return mGroupUserId;
+        }
+
+        public void setGroupUserName(String groupId) {
+            mGroupUserId = groupId;
         }
 
         public void setCurrentUserCallID (String callID) {

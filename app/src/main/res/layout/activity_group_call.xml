@@ -75,7 +75,7 @@
 
         <TextView
             android:id="@+id/callStatus"
-            android:text="load"
+            android:text="...loading..."
             android:textSize="14sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />

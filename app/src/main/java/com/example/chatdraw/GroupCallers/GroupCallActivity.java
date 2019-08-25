@@ -13,6 +13,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.chatdraw.Callers.AudioPlayer;
+import com.example.chatdraw.Callers.BaseActivity;
 import com.example.chatdraw.R;
 import com.sinch.android.rtc.AudioController;
 import com.sinch.android.rtc.ClientRegistration;
@@ -26,21 +28,20 @@ import com.sinch.android.rtc.calling.CallListener;
 
 import java.util.List;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-public class GroupCallActivity extends AppCompatActivity {
+public class GroupCallActivity extends BaseActivity {
     private static final String APP_KEY = "9d0ed01f-2dc2-4c26-a683-9c7e93a90029";
     private static final String APP_SECRET = "awRjs8Mowkq63iR1iFGAgA==";
     private static final String ENVIRONMENT = "sandbox.sinch.com";
 
+    private AudioPlayer mAudioPlayer;
     private Button btnCancel;
     private ImageButton btnSpeaker, btnMute, btnBack;
     private Chronometer chronometer;
     private String userID, groupID, groupName;
     private int participant;
     private TextView tvCallStatus, tvGroupTitle;
+    private LinearLayout callLayout;
     protected Call call;
-    private SinchClient sinchClient;
 
     private boolean isMute = false;
     private boolean isSpeaker = false;
@@ -52,6 +53,7 @@ public class GroupCallActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
 
+        mAudioPlayer = new AudioPlayer(this);
         tvCallStatus = (TextView) findViewById(R.id.callStatus);
         tvGroupTitle = (TextView) findViewById(R.id.groupDetails);
 
@@ -60,100 +62,16 @@ public class GroupCallActivity extends AppCompatActivity {
         groupID = intent.getStringExtra("groupID");
         groupName = intent.getStringExtra("groupName");
 
-        sinchClient = Sinch.getSinchClientBuilder().context(getApplicationContext())
-                .applicationKey(APP_KEY)
-                .applicationSecret(APP_SECRET)
-                .environmentHost(ENVIRONMENT)
-                .userId(userID)
-                .build();
+        callLayout = (LinearLayout) findViewById(R.id.onGoingCallLayout);
+        callLayout.setAlpha(0.25f);
 
-        sinchClient.setSupportCalling(true);
-        sinchClient.setSupportActiveConnectionInBackground(true);
-        sinchClient.startListeningOnActiveConnection();
-        sinchClient.addSinchClientListener(new SinchClientListener() {
-            public void onClientStarted(SinchClient client) {
-                Log.d("onClientStarted", client.toString());
-            }
-
-            public void onClientStopped(SinchClient client) {
-                Log.d("onClientStopped", "");
-            }
-
-            public void onClientFailed(SinchClient client, SinchError error) {
-                Log.d("onClientFailed", error.getMessage());
-            }
-
-            public void onRegistrationCredentialsRequired(SinchClient client, ClientRegistration registrationCallback) {
-            }
-
-            public void onLogMessage(int level, String area, String message) {
-                Log.d("onLogMessage", message);
-            }
-        });
-
-        sinchClient.start();
-
-        tvGroupTitle.setText(groupName + " (" + participant + "/10)");
-
-        while (!sinchClient.isStarted()) {
-            LinearLayout callLayout = (LinearLayout) findViewById(R.id.onGoingCallLayout);
-            callLayout.setAlpha(0.25f);
-            Log.v("heyyo", "poop");
-        }
-
-        Log.d("CallListener", "Calling user: " + groupID);
-        call = sinchClient.getCallClient().callConference(groupID);
-        call.addCallListener(new CallListener() {
-            @Override
-            public void onCallProgressing(Call call) {
-                Log.d("CallListener", "Call progressing");
-            }
-
-            @Override
-            public void onCallEstablished(Call call) {
-                Log.d("CallListener", "Call established");
-                tvCallStatus.setText("connected");
-                tvGroupTitle.setText(groupName + " (" + (participant + 1) + "/10)");
-
-                chronometer = findViewById(R.id.chronometer);
-                chronometer.setFormat("Time: %s");
-                chronometer.setBase(SystemClock.elapsedRealtime());
-                chronometer.start();
-
-                LinearLayout callLayout = (LinearLayout) findViewById(R.id.onGoingCallLayout);
-                callLayout.setAlpha(1f);
-
-                AudioController audioController = sinchClient.getAudioController();
-                audioController.unmute();
-                audioController.disableSpeaker();
-                setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
-            }
-
-            @Override
-            public void onCallEnded(Call call) {
-                Log.d("CallListener", "Call ended");
-                tvCallStatus.setText("disconnected");
-                setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
-            }
-
-            @Override
-            public void onShouldSendPushNotification(Call call, List<PushPair> list) {
-
-            }
-        });
+        tvGroupTitle.setText(groupName);
 
         btnCancel = (Button) findViewById(R.id.btnCancel);
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (call == null) {
-                    Toast.makeText(GroupCallActivity.this, "There is no ongoing call", Toast.LENGTH_SHORT).show();
-                } else {
-                    call.hangup();
-                    call = null;
-                }
-
-                finish();
+                endCall();
             }
         });
 
@@ -161,7 +79,7 @@ public class GroupCallActivity extends AppCompatActivity {
         btnSpeaker.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                AudioController audioController = sinchClient.getAudioController();
+                AudioController audioController = getSinchServiceInterface().getAudioController();
 
                 if (isSpeaker) {
                     btnSpeaker.setBackgroundColor(getResources().getColor(R.color.btn_logut_bg));
@@ -181,7 +99,7 @@ public class GroupCallActivity extends AppCompatActivity {
         btnMute.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                AudioController audioController = sinchClient.getAudioController();
+                AudioController audioController = getSinchServiceInterface().getAudioController();
 
                 if (isMute) {
                     btnMute.setBackgroundColor(getResources().getColor(R.color.s));
@@ -202,5 +120,72 @@ public class GroupCallActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    @Override
+    public void onServiceConnected() {
+        call = getSinchServiceInterface().callConference(groupID);
+        call.addCallListener(new CallListener() {
+            @Override
+            public void onCallProgressing(Call call) {
+                Log.d("CallListener", "Call progressing");
+            }
+
+            @Override
+            public void onCallEstablished(Call call) {
+                getSinchServiceInterface().setIsOnGoingCall(true);
+                getSinchServiceInterface().setGroupUserName(groupID);
+                getSinchServiceInterface().startForegroundActivity();
+
+                Log.d("CallListener", "Call established");
+                callLayout.setAlpha(1f);
+
+                tvCallStatus.setText("Connected");
+                tvGroupTitle.setText(groupName + " (" + (participant + 1) + "/10)");
+
+                chronometer = findViewById(R.id.chronometer);
+                chronometer.setFormat("Time: %s");
+                chronometer.setBase(SystemClock.elapsedRealtime());
+                chronometer.start();
+
+                LinearLayout callLayout = (LinearLayout) findViewById(R.id.onGoingCallLayout);
+                callLayout.setAlpha(1f);
+
+                AudioController audioController = getSinchServiceInterface().getAudioController();
+                audioController.unmute();
+                audioController.disableSpeaker();
+                setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
+            }
+
+            @Override
+            public void onCallEnded(Call call) {
+                getSinchServiceInterface().setIsOnGoingCall(false);
+                getSinchServiceInterface().setGroupUserName(null);
+                getSinchServiceInterface().stopForegroundActivity();
+
+                Log.d("CallListener", "Call ended");
+                tvCallStatus.setText("Disconnected");
+
+                mAudioPlayer.stopProgressTone();
+                setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
+                endCall();
+            }
+
+            @Override
+            public void onShouldSendPushNotification(Call call, List<PushPair> list) {
+
+            }
+        });
+    }
+
+    private void endCall() {
+        getSinchServiceInterface().setIsOnGoingCall(false);
+
+        mAudioPlayer.stopProgressTone();
+        if (call != null) {
+            call.hangup();
+            call = null;
+        }
+        finish();
     }
 }

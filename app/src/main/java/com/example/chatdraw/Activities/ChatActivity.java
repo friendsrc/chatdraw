@@ -236,7 +236,7 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
                 connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
             // we are connected to a network
-            checkForConferenceDetails();
+            // checkForConferenceDetails();
         }
 
         // set onCLickListener on the 'More option' button
@@ -619,59 +619,54 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                 return true;
 
             case R.id.call:
-                if (num_participant != -1) {
-                    ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-                    if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
-                            connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
-                        // we are connected to a network
+                ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                        connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+                    // we are connected to a network
 
-                        checkForConferenceDetails();
-
-                        if (isGroup) {
-                            if (isServiceReady) {
-                                String text = "";
-
-                                if (num_participant == 0) {
-                                    text = "Start a new conference call?";
-                                } else if (num_participant == 1) {
-                                    text = "Join the ongoing conference call?";
-                                } else {
-                                    Toast.makeText(this, "Unknown error occurred [805]", Toast.LENGTH_SHORT).show();
-                                    return false;
-                                }
-
-                                AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
-
-                                new AlertDialog.Builder(ChatActivity.this)
-                                        .setTitle("Confirm")
-                                        .setMessage(text)
-                                        .setIcon(R.drawable.ic_call)
-                                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int whichButton) {
-                                                Intent intent = new Intent(ChatActivity.this, GroupCallActivity.class);
-                                                intent.putExtra("participant", num_participant);
-                                                intent.putExtra("userID", userUID);
-                                                intent.putExtra("groupID", friendsUID);
-                                                intent.putExtra("groupName", groupName);
-                                                startActivity(intent);
-                                            }
-                                        })
-                                        .setNegativeButton(android.R.string.no, null).show();
-                            } else {
-                                Toast.makeText(this, "Calling service not ready", Toast.LENGTH_SHORT).show();
-                            }
+                    if (isGroup) {
+                        if (isServiceReady) {
+                            groupCallButtonClicked();
+//                                String text = "";
+//
+//                                if (num_participant == 0) {
+//                                    text = "Start a new conference call?";
+//                                } else if (num_participant == 1) {
+//                                    text = "Join the ongoing conference call?";
+//                                } else {
+//                                    Toast.makeText(this, "Unknown error occurred [805]", Toast.LENGTH_SHORT).show();
+//                                    return false;
+//                                }
+//
+//                                AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
+//
+//                                new AlertDialog.Builder(ChatActivity.this)
+//                                        .setTitle("Confirm")
+//                                        .setMessage(text)
+//                                        .setIcon(R.drawable.ic_call)
+//                                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+//                                            public void onClick(DialogInterface dialog, int whichButton) {
+//                                                Intent intent = new Intent(ChatActivity.this, GroupCallActivity.class);
+//                                                intent.putExtra("participant", num_participant);
+//                                                intent.putExtra("userID", userUID);
+//                                                intent.putExtra("groupID", friendsUID);
+//                                                intent.putExtra("groupName", groupName);
+//                                                startActivity(intent);
+//                                            }
+//                                        })
+//                                        .setNegativeButton(android.R.string.no, null).show();
                         } else {
-                            if (isServiceReady) {
-                                callButtonClicked();
-                            } else {
-                                Toast.makeText(this, "Calling service not ready", Toast.LENGTH_SHORT).show();
-                            }
+                            Toast.makeText(this, "Calling service not ready", Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        Toast.makeText(this, "No internet connection detected", Toast.LENGTH_SHORT).show();
+                        if (isServiceReady) {
+                            callButtonClicked();
+                        } else {
+                            Toast.makeText(this, "Calling service not ready", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 } else {
-                    Toast.makeText(this, "Please wait for a few seconds for the service to load", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "No internet connection detected", Toast.LENGTH_SHORT).show();
                 }
 
                 return true;
@@ -682,60 +677,95 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         }
     }
 
-    public void checkForConferenceDetails() {
-        String myURL = "https://callingapi.sinch.com/v1/conferences/id/" + groupID;
-
-        RequestQueue requestQueue = Volley.newRequestQueue(ChatActivity.this);
-        JsonObjectRequest objectRequest = new JsonObjectRequest(
-                Request.Method.GET,
-                myURL,
-                null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            num_participant = response.getJSONArray("participants").length();
-                        } catch (JSONException e) {
-                            Toast.makeText(ChatActivity.this, "Unknown error occurred [802]", Toast.LENGTH_SHORT).show();
-                            e.printStackTrace();
-                        }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        try {
-                            if (error.networkResponse.statusCode == 404) {
-                                num_participant = 0;
-                                Toast.makeText(ChatActivity.this, "No call before", Toast.LENGTH_SHORT).show();
-                            }
-                        } catch (Exception e) {
-                            Toast.makeText(ChatActivity.this, "Unknown error occurred [804]", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                }
-        ){
-            //This is for Headers If You Needed
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                HashMap<String, String> params = new HashMap<String, String>();
-                params.put("Content-Type", "application/json");
-                String namePassword = APP_KEY + ":" + APP_SECRET;
-                String auth = Base64.encodeToString(namePassword.getBytes(), Base64.NO_WRAP);
-
-                String authorization = "Basic" + " " + auth;
-
-                params.put("Authorization", authorization);
-                return params;
-            }
-        };
-
-        requestQueue.add(objectRequest);
-    }
+//    public void checkForConferenceDetails() {
+//        String myURL = "https://callingapi.sinch.com/v1/conferences/id/" + groupID;
+//
+//        RequestQueue requestQueue = Volley.newRequestQueue(ChatActivity.this);
+//        JsonObjectRequest objectRequest = new JsonObjectRequest(
+//                Request.Method.GET,
+//                myURL,
+//                null,
+//                new Response.Listener<JSONObject>() {
+//                    @Override
+//                    public void onResponse(JSONObject response) {
+//                        try {
+//                            num_participant = response.getJSONArray("participants").length();
+//                        } catch (JSONException e) {
+//                            Toast.makeText(ChatActivity.this, "Unknown error occurred [802]", Toast.LENGTH_SHORT).show();
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                },
+//                new Response.ErrorListener() {
+//                    @Override
+//                    public void onErrorResponse(VolleyError error) {
+//                        try {
+//                            if (error.networkResponse.statusCode == 404) {
+//                                num_participant = 0;
+//                                Toast.makeText(ChatActivity.this, "No call before", Toast.LENGTH_SHORT).show();
+//                            }
+//                        } catch (Exception e) {
+//                            Toast.makeText(ChatActivity.this, "Unknown error occurred [804]", Toast.LENGTH_SHORT).show();
+//                        }
+//                    }
+//                }
+//        ){
+//            //This is for Headers If You Needed
+//            @Override
+//            public Map<String, String> getHeaders() throws AuthFailureError {
+//                HashMap<String, String> params = new HashMap<String, String>();
+//                params.put("Content-Type", "application/json");
+//                String namePassword = APP_KEY + ":" + APP_SECRET;
+//                String auth = Base64.encodeToString(namePassword.getBytes(), Base64.NO_WRAP);
+//
+//                String authorization = "Basic" + " " + auth;
+//
+//                params.put("Authorization", authorization);
+//                return params;
+//            }
+//        };
+//
+//        requestQueue.add(objectRequest);
+//    }
 
     @Override
     protected void onServiceConnected() {
         isServiceReady = true;
+    }
+
+    private void groupCallButtonClicked() {
+        if (getSinchServiceInterface().getIsOnGoingCall()) {
+            if (getSinchServiceInterface().getFriendUserName().equals(friendsUID)) {
+                Toast.makeText(this, "Is on going call", Toast.LENGTH_SHORT).show();
+
+//                String tempCallID = getSinchServiceInterface().getCurrentUserCallID();
+//
+//                Intent callScreen = new Intent(this, CallScreenActivity.class);
+//                callScreen.putExtra(SinchService.CALL_ID, tempCallID);
+//                callScreen.putExtra("FriendID", friendsUID);
+//                startActivity(callScreen);
+            } else {
+                Toast.makeText(this, "Cannot call others while talking with others", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            String userGroup = friendsUID;
+
+            if (userGroup.isEmpty()) {
+                Toast.makeText(this, "Please enter a user to call", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            try {
+                Intent intent = new Intent(ChatActivity.this, GroupCallActivity.class);
+                intent.putExtra("participant", num_participant);
+                intent.putExtra("userID", userUID);
+                intent.putExtra("groupID", friendsUID);
+                intent.putExtra("groupName", groupName);
+                startActivity(intent);
+            } catch (MissingPermissionException e) {
+                ActivityCompat.requestPermissions(this, new String[]{e.getRequiredPermission()}, REQUEST_MICROPHONE);
+            }
+        }
     }
 
     private void callButtonClicked() {
