@@ -12,11 +12,15 @@ import com.sinch.android.rtc.calling.CallClientListener;
 import com.sinch.android.rtc.MissingPermissionException;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 import android.content.pm.PackageManager;
@@ -24,6 +28,9 @@ import android.os.Bundle;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+
+import androidx.annotation.RequiresApi;
+import androidx.core.app.NotificationCompat;
 
 public class SinchService extends Service {
 
@@ -60,7 +67,10 @@ public class SinchService extends Service {
 
     private SinchServiceInterface mSinchServiceInterface = new SinchServiceInterface();
     private SinchClient mSinchClient;
-    private String mUserId;
+    private String mUserId, mFriendUserId, mGroupUserId;
+    private String currentUserCallID = null;
+    private String currentGroupCallID = null;
+    private boolean isOnGoingCall = false;
 
     private StartFailedListener mListener;
     private PersistedSettings mSettings;
@@ -77,6 +87,27 @@ public class SinchService extends Service {
         if (!userName.isEmpty() && messenger != null) {
             start(userName);
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private void startMyOwnForeground()
+    {
+        String NOTIFICATION_CHANNEL_ID = "example.permanence";
+        String channelName = "Background Service";
+        NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
+        chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        assert manager != null;
+        manager.createNotificationChannel(chan);
+
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
+        Notification notification = notificationBuilder.setOngoing(true)
+                .setContentTitle("App is running in background")
+                .setPriority(NotificationManager.IMPORTANCE_MIN)
+                .setCategory(Notification.CATEGORY_SERVICE)
+                .build();
+        startForeground(2, notification);
     }
 
     @Override
@@ -125,15 +156,17 @@ public class SinchService extends Service {
 
     private void createClient(String userName) {
         mUserId = userName;
-        mSinchClient = Sinch.getSinchClientBuilder().context(getApplicationContext()).userId(userName)
+        mSinchClient = Sinch.getSinchClientBuilder().context(getApplicationContext())
+                .userId(userName)
                 .applicationKey(APP_KEY)
                 .applicationSecret(APP_SECRET)
                 .environmentHost(ENVIRONMENT).build();
 
         mSinchClient.setSupportCalling(true);
         mSinchClient.startListeningOnActiveConnection();
-
+        mSinchClient.setSupportActiveConnectionInBackground(true);
         mSinchClient.addSinchClientListener(new MySinchClientListener());
+
         // Permission READ_PHONE_STATE is needed to respect native calls.
         mSinchClient.getCallClient().setRespectNativeCalls(false);
         mSinchClient.getCallClient().addCallClientListener(new SinchCallClientListener());
@@ -170,8 +203,68 @@ public class SinchService extends Service {
             return mSinchClient.getCallClient().callUser(userId);
         }
 
+        public Call callConference(String conferenceId) {
+            Log.v("nanihh", conferenceId);
+            if (mSinchClient == null) {
+                return null;
+            }
+            return mSinchClient.getCallClient().callConference(conferenceId);
+        }
+
+        public void startForegroundActivity() {
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O)
+                startMyOwnForeground();
+            else
+                startForeground(1, new Notification());
+        }
+
+        public void stopForegroundActivity() {
+            stopForeground(true);
+            stopSelf();
+        }
+
+        public void setIsOnGoingCall(boolean input) {
+            isOnGoingCall = input;
+        }
+
+        public boolean getIsOnGoingCall() {
+            return isOnGoingCall;
+        }
+
         public String getUserName() {
             return mUserId;
+        }
+
+        public String getFriendUserName() {
+            return mFriendUserId;
+        }
+
+        public void setFriendUserName(String friendId) {
+            mFriendUserId = friendId;
+        }
+
+        public String getGroupUserName() {
+            return mGroupUserId;
+        }
+
+        public void setGroupUserName(String groupId) {
+            mGroupUserId = groupId;
+        }
+
+        public void setCurrentUserCallID (String callID) {
+            currentUserCallID = callID;
+        }
+
+        public String getCurrentUserCallID () {
+            return currentUserCallID;
+        }
+
+        public void setCurrentGroupCallID (String callID) {
+            currentGroupCallID = callID;
+        }
+
+        public String getCurrentGroupCallID () {
+            return currentGroupCallID;
         }
 
         public boolean isStarted() {
@@ -292,5 +385,14 @@ public class SinchService extends Service {
             editor.putString("Username", username);
             editor.commit();
         }
+    }
+
+    // not sure if this is useful
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+
+        Intent intent = new Intent("com.example.chatdraw.Callers.SinchService");
+        sendBroadcast(intent);
     }
 }

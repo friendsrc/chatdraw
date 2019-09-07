@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 
@@ -23,6 +24,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -36,10 +39,18 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.chatdraw.Drawing.DrawActivity;
 import com.example.chatdraw.Callers.BaseActivity;
 import com.example.chatdraw.Callers.CallScreenActivity;
 import com.example.chatdraw.Callers.SinchService;
+import com.example.chatdraw.GroupCallers.GroupCallActivity;
 import com.example.chatdraw.Items.ChatItem;
 import com.example.chatdraw.R;
 import com.example.chatdraw.Adapters.ChatRecyclerViewAdapter;
@@ -71,13 +82,18 @@ import com.sinch.android.rtc.MissingPermissionException;
 import com.sinch.android.rtc.calling.Call;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -88,6 +104,10 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
     public static final int REQUEST_MICROPHONE = 3;
     private static String TAG = "ChatActivity";
     private boolean isServiceReady = false;
+
+    private static final String APP_KEY = "9d0ed01f-2dc2-4c26-a683-9c7e93a90029";
+    private static final String APP_SECRET = "awRjs8Mowkq63iR1iFGAgA==";
+    private int num_participant = -1;
 
     // this user's information
     private String userUID;
@@ -219,6 +239,7 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
+        // solve confict here
         View v = findViewById(R.id.my_toolbar);
         v.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -232,7 +253,6 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                 }
             }
         });
-
 
         // set onCLickListener on the 'More option' button
         ImageView fileImageView = findViewById(R.id.chat_attach_imageView);
@@ -612,22 +632,34 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                 intent.putExtra("userUID", userUID);
                 intent.putExtra("friendsUID", friendsUID);
                 startActivity(intent);
-                return true;
 
+                return true;
             case R.id.call:
-                if (isGroup) {
-                    Toast.makeText(this, "Calling for groups not yet supported", Toast.LENGTH_SHORT).show();
-                } else {
-                    if (isServiceReady) {
-                        callButtonClicked();
+                ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                        connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+                    // we are connected to a network
+
+                    if (isGroup) {
+                        if (isServiceReady) {
+                            groupCallButtonClicked();
+                        } else {
+                            Toast.makeText(this, "Calling service not ready", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        if (isServiceReady) {
+                            callButtonClicked();
+                        } else {
+                            Toast.makeText(this, "Calling service not ready", Toast.LENGTH_SHORT).show();
+                        }
                     }
+                } else {
+                    Toast.makeText(this, "No internet connection detected", Toast.LENGTH_SHORT).show();
                 }
+
                 return true;
-
             default:
-
                 return super.onOptionsItemSelected(item);
-
         }
     }
 
@@ -636,31 +668,79 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         isServiceReady = true;
     }
 
-    private void callButtonClicked() {
-        String userName = friendsUID;
+    private void groupCallButtonClicked() {
+        if (getSinchServiceInterface().getIsOnGoingCall()) {
+            if (getSinchServiceInterface().getGroupUserName().equals(friendsUID)) {
+                Intent intent = new Intent(ChatActivity.this, GroupCallActivity.class);
+                intent.putExtra("participant", num_participant);
+                intent.putExtra("userID", userUID);
+                intent.putExtra("groupID", friendsUID);
+                intent.putExtra("groupName", groupName);
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "Cannot call others while talking with others", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            String userGroup = friendsUID;
 
-        if (userName.isEmpty()) {
-            Toast.makeText(this, "Please enter a user to call", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        try {
-            Call call = getSinchServiceInterface().callUser(userName);
-            if (call == null) {
-                // Service failed for some reason, show a Toast and abort
-                Toast.makeText(this, "Service is not started. Try stopping the service and starting it again before "
-                        + "placing a call.", Toast.LENGTH_LONG).show();
+            if (userGroup.isEmpty()) {
+                Toast.makeText(this, "Please enter a user to call", Toast.LENGTH_LONG).show();
                 return;
             }
 
-            String callId = call.getCallId();
-            Intent callScreen = new Intent(this, CallScreenActivity.class);
-            callScreen.putExtra(SinchService.CALL_ID, callId);
-            startActivity(callScreen);
-        } catch (MissingPermissionException e) {
-            ActivityCompat.requestPermissions(this, new String[]{e.getRequiredPermission()}, REQUEST_MICROPHONE);
+            try {
+                Intent intent = new Intent(ChatActivity.this, GroupCallActivity.class);
+                intent.putExtra("participant", num_participant);
+                intent.putExtra("userID", userUID);
+                intent.putExtra("groupID", friendsUID);
+                intent.putExtra("groupName", groupName);
+                startActivity(intent);
+            } catch (MissingPermissionException e) {
+                ActivityCompat.requestPermissions(this, new String[]{e.getRequiredPermission()}, REQUEST_MICROPHONE);
+            }
         }
+    }
 
+    private void callButtonClicked() {
+        if (getSinchServiceInterface().getIsOnGoingCall()) {
+            if (getSinchServiceInterface().getFriendUserName().equals(friendsUID)) {
+                Toast.makeText(this, "Is on going call", Toast.LENGTH_SHORT).show();
+
+                String tempCallID = getSinchServiceInterface().getCurrentUserCallID();
+
+                Intent callScreen = new Intent(this, CallScreenActivity.class);
+                callScreen.putExtra(SinchService.CALL_ID, tempCallID);
+                callScreen.putExtra("FriendID", friendsUID);
+                startActivity(callScreen);
+            } else {
+                Toast.makeText(this, "Cannot call others while talking with others", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            String userName = friendsUID;
+
+            if (userName.isEmpty()) {
+                Toast.makeText(this, "Please enter a user to call", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            try {
+                Call call = getSinchServiceInterface().callUser(userName);
+                if (call == null) {
+                    // Service failed for some reason, show a Toast and abort
+                    Toast.makeText(this, "Service is not started. Try stopping the service and starting it again before "
+                            + "placing a call.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                String callId = call.getCallId();
+                Intent callScreen = new Intent(this, CallScreenActivity.class);
+                callScreen.putExtra(SinchService.CALL_ID, callId);
+                callScreen.putExtra("FriendID", friendsUID);
+                startActivity(callScreen);
+            } catch (MissingPermissionException e) {
+                ActivityCompat.requestPermissions(this, new String[]{e.getRequiredPermission()}, REQUEST_MICROPHONE);
+            }
+        }
     }
 
     // send the ChatItem to Firebase
@@ -697,7 +777,6 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                     } else {
                         chatItem.setMessageBody("[Unknown file type]");
                     }
-
                 }
 
                 // Limit the length of chat preview
@@ -948,3 +1027,58 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         setIntent(intent);
     }
 }
+
+/*
+For future use: If you want to mute another people
+
+    public void checkForConferenceDetails() {
+        String myURL = "https://callingapi.sinch.com/v1/conferences/id/" + groupID;
+
+        RequestQueue requestQueue = Volley.newRequestQueue(ChatActivity.this);
+        JsonObjectRequest objectRequest = new JsonObjectRequest(
+                Request.Method.GET,
+                myURL,
+                null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            num_participant = response.getJSONArray("participants").length();
+                        } catch (JSONException e) {
+                            Toast.makeText(ChatActivity.this, "Unknown error occurred [802]", Toast.LENGTH_SHORT).show();
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        try {
+                            if (error.networkResponse.statusCode == 404) {
+                                num_participant = 0;
+                                Toast.makeText(ChatActivity.this, "No call before", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (Exception e) {
+                            Toast.makeText(ChatActivity.this, "Unknown error occurred [804]", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+        ){
+            //This is for Headers If You Needed
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/json");
+                String namePassword = APP_KEY + ":" + APP_SECRET;
+                String auth = Base64.encodeToString(namePassword.getBytes(), Base64.NO_WRAP);
+
+                String authorization = "Basic" + " " + auth;
+
+                params.put("Authorization", authorization);
+                return params;
+            }
+        };
+
+        requestQueue.add(objectRequest);
+    }
+*/

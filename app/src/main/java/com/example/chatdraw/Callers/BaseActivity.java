@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Messenger;
+import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -39,6 +40,7 @@ public abstract class BaseActivity extends AppCompatActivity implements ServiceC
     public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
         if (SinchService.class.getName().equals(componentName.getClassName())) {
             mSinchServiceInterface = (SinchService.SinchServiceInterface) iBinder;
+            Log.v("naniiii", "" + mSinchServiceInterface);
             onServiceConnected();
         }
     }
