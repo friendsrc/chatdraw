@@ -1,7 +1,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!-- "Mark Favorite", should appear as action button if possible -->
     <item
         android:id="@+id/draw_undo"
         android:icon="@drawable/undo"
@@ -18,17 +17,24 @@
         android:icon="@drawable/clear"
         android:title="Clear drawing"
         app:showAsAction="never"/>
+
     <item
         android:id="@+id/draw_export"
         android:icon="@drawable/export"
         android:title="Export"
         app:showAsAction="always"/>
 
-    <item android:id="@+id/action_settings"
-        android:title="Draw Setting 1"
+    <item
+        android:id="@+id/draw_pinch_toggle"
+        android:icon="@drawable/export"
+        android:title="Disable pinch"
         app:showAsAction="never"/>
-    <item android:id="@+id/action_settings2"
-        android:title="Draw Setting 2"
+
+    <item
+        android:id="@+id/draw_scroll_toggle"
+        android:icon="@drawable/export"
+        android:title="Disable scroll"
         app:showAsAction="never"/>
+
 
 </menu>

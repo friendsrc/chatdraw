@@ -50,6 +50,7 @@ dependencies {
     implementation 'com.llollox:androidtoggleswitch:2.0.1'
     implementation "com.android.support:support-compat:28.0.0"
     implementation 'com.google.android.gms:play-services-ads:18.1.0'
+    implementation 'com.otaliastudios:zoomlayout:1.6.1'
     implementation project(path: ':sinch-android-verification-1.6.0')
     implementation project(path: ':sinch-android-rtc-3.14.2')
 

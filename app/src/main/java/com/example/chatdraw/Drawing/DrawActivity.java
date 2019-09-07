@@ -6,14 +6,19 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -24,6 +29,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.jaredrummler.android.colorpicker.ColorPickerDialog;
 import com.jaredrummler.android.colorpicker.ColorPickerDialogListener;
+import com.otaliastudios.zoom.ZoomLayout;
 
 public class DrawActivity extends AppCompatActivity implements ColorPickerDialogListener {
 
@@ -32,6 +38,7 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
     private String friendsUID;
 
     private DatabaseReference mRef;
+    private ZoomLayout mZoomLayout;
     private CanvasView mCanvasView;
 
     private ImageView mColorButton;
@@ -47,13 +54,60 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
         userUID = intent.getStringExtra("userUID");
         friendsUID = intent.getStringExtra("friendsUID");
 
+        // set the action bar
+        Toolbar myToolbar = findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
+        getSupportActionBar().setTitle("");
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         // set up canvas
         final CanvasView canvasView = findViewById(R.id.canvas);
         mCanvasView = canvasView;
-        canvasView.setIDs(userUID, friendsUID);
+
+        mZoomLayout = findViewById(R.id.zoom_layout);
+        canvasView.actionBar = myToolbar;
+
+
+        WindowManager windowManager =
+                (WindowManager) getApplication().getSystemService(Context.WINDOW_SERVICE);
+        final Display display = windowManager.getDefaultDisplay();
+        android.graphics.Point outPoint = new android.graphics.Point();
+        float mRealSizeHeight;
+        float mRealSizeWidth;
+        if (Build.VERSION.SDK_INT >= 19) {
+            // include navigation bar
+            display.getRealSize(outPoint);
+        } else {
+            // exclude navigation bar
+            display.getSize(outPoint);
+        }
+        if (outPoint.y > outPoint.x) {
+            mRealSizeHeight = outPoint.y;
+            mRealSizeWidth = outPoint.x;
+        } else {
+            mRealSizeHeight = outPoint.x;
+            mRealSizeWidth = outPoint.y;
+        }
+
+        canvasView.widthMultiplier = 2048f / mRealSizeWidth;
+        canvasView.heightMultiplier = 2048f / mRealSizeHeight;
+
+
+        // set drawing scale
+//        DisplayMetrics displayMetrics = new DisplayMetrics();
+//        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+//        int height = displayMetrics.heightPixels;
+//        int width = displayMetrics.widthPixels;
+//        canvasView.widthMultiplier = 2048f / width;
+//        canvasView.heightMultiplier = 2048f / (height);
+        canvasView.setIDs(userUID, friendsUID, findViewById(R.id.canvas), mZoomLayout);
         canvasView.getFromFirebase();
 
-        if (userUID.compareTo(friendsUID) > 0) {
+        if (friendsUID.startsWith("GROUP_")) {
+            mRef = FirebaseDatabase.getInstance().getReference()
+                    .child("Drawing")
+                    .child(friendsUID);
+        } else if (userUID.compareTo(friendsUID) > 0) {
             mRef = FirebaseDatabase.getInstance().getReference()
                     .child("Drawing")
                     .child(userUID + "|" + friendsUID);
@@ -63,38 +117,6 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
                     .child(friendsUID + "|" + userUID);
         }
 
-//        // set clear canvas button
-//        Button clearButton = findViewById(R.id.clear_drawing_button);
-//        clearButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                canvasView.clearCanvas();
-//            }
-//        });
-//
-//        // set undo button
-//        final Button undoButton = findViewById(R.id.undo_drawing_button);
-//        undoButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                canvasView.undo();
-//            }
-//        });
-//
-//        // set redo button
-//        final Button redoButton = findViewById(R.id.redo_drawing_button);
-//        redoButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                canvasView.redo();
-//            }
-//        });
-
-        // set the action bar
-        Toolbar myToolbar = findViewById(R.id.my_toolbar);
-        setSupportActionBar(myToolbar);
-        getSupportActionBar().setTitle("");
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // set color picker
         mColorButton = findViewById(R.id.color_picker_imageview);
@@ -186,6 +208,30 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
                     mCanvasView.exportDrawing();
                 }
                 break;
+            case R.id.draw_pinch_toggle:
+                if (item.getTitle().equals("Disable pinch")) {
+                    mZoomLayout.setZoomEnabled(false);
+                    mZoomLayout.setZoomEnabled(false);
+                    item.setTitle("Enable pinch");
+                } else {
+                    mZoomLayout.setZoomEnabled(true);
+                    mZoomLayout.setZoomEnabled(true);
+                    item.setTitle("Disable pinch");
+                }
+                break;
+            case R.id.draw_scroll_toggle:
+                if (item.getTitle().equals("Disable scroll")) {
+                    mZoomLayout.setScrollEnabled(false);
+                    mZoomLayout.setTwoFingersScrollEnabled(false);
+                    mZoomLayout.setThreeFingersScrollEnabled(false);
+                    item.setTitle("Enable scroll");
+                } else {
+                    mZoomLayout.setScrollEnabled(true);
+                    mZoomLayout.setTwoFingersScrollEnabled(true);
+                    mZoomLayout.setThreeFingersScrollEnabled(true);
+                    item.setTitle("Disable scroll");
+                }
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -196,12 +242,8 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
         if (requestCode == 909) {
             if (grantResults.length > 0
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // permission was granted, yay! Do the
-                // contacts-related task you need to do.
                 mCanvasView.exportDrawing();
             } else {
-                // permission denied, boo! Disable the
-                // functionality that depends on this permission.
                 Toast.makeText(this, "Permission not granted", Toast.LENGTH_SHORT).show();
             }
             return;

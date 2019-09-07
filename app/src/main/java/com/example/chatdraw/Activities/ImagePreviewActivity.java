@@ -14,6 +14,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -21,7 +22,9 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -57,11 +60,18 @@ public class ImagePreviewActivity extends AppCompatActivity {
         final String imageUrl = getIntent().getStringExtra("imageUrl");
         mSenderName = getIntent().getStringExtra("senderName");
 
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int height = size.y;
+
         // load the image into imageView
         ImageView imageView = findViewById(R.id.photo_imageView);
         Picasso.get()
                 .load(imageUrl)
-                .fit()
+                .resize(width, height)
+                .centerInside()
                 .into(imageView);
 
         // set the back button
