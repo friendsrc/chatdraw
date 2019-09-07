@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -21,6 +22,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -31,6 +33,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.otaliastudios.zoom.ZoomLayout;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -49,6 +52,13 @@ public class CanvasView extends View {
     public String userUID;
     public String friendsUID;
 
+    // Drawing scale
+    ZoomLayout zoomLayout;
+    View canvasContainer;
+    Toolbar actionBar;
+    public float widthMultiplier;
+    public float heightMultiplier;
+
     // Cached information
     private ArrayList<String> lineIDs = new ArrayList<>();
     private ArrayList<String> removedLineIDs =  new ArrayList<>();
@@ -60,7 +70,7 @@ public class CanvasView extends View {
     // Paint currently chosen by the user
     public Paint myPaint;
     public int myCurrentColor = Color.BLACK;
-    public float myCurrentBrushSize = 6f;
+    public float myCurrentBrushSize = 20f;
 
     // Path
     private float mX, mY;
@@ -97,16 +107,17 @@ public class CanvasView extends View {
         myPaint.setStrokeJoin(Paint.Join.ROUND);
         myPaint.setStrokeWidth(myCurrentBrushSize);
 
-//        mBitmap = Bitmap.createBitmap(400, 400, Bitmap.Config.ARGB_8888);
-//        mCanvas = new Canvas(mBitmap);
-
     }
 
     // set IDs for connection to Firebase, called directly after CanvasView is instantiated
-    public void setIDs(String userID, String friendID) {
+    public void setIDs(String userID, String friendID, View view, ZoomLayout layout) {
         userUID = userID;
         friendsUID = friendID;
-        if (userUID.compareTo(friendsUID) > 0) {
+        if (friendsUID.startsWith("GROUP_")) {
+            mRef = FirebaseDatabase.getInstance().getReference()
+                    .child("Drawing")
+                    .child(friendsUID);
+        } else if (userUID.compareTo(friendsUID) > 0) {
             mRef = FirebaseDatabase.getInstance().getReference()
                     .child("Drawing")
                     .child(userUID + "|" + friendsUID);
@@ -115,11 +126,14 @@ public class CanvasView extends View {
                     .child("Drawing")
                     .child(friendsUID + "|" + userUID);
         }
+
+        canvasContainer = view;
+        zoomLayout = layout;
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        mBitmap = Bitmap.createBitmap(canvas.getWidth(), canvas.getHeight(), Bitmap.Config.ARGB_8888);
+        mBitmap = Bitmap.createBitmap(2548, 2548, Bitmap.Config.ARGB_8888);
         mCanvas = new Canvas(mBitmap);
         mCanvas.drawColor(Color.WHITE);
 
@@ -140,8 +154,12 @@ public class CanvasView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        float x = event.getX();
-        float y = event.getY();
+        int[] viewLocation = new int[2];
+        getLocationOnScreen(viewLocation);
+
+        float x = event.getX() * widthMultiplier  / zoomLayout.getZoom() - zoomLayout.getPanX();
+        float y = event.getY()  * widthMultiplier / zoomLayout.getZoom() - zoomLayout.getPanY();
+
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 startTouch(x, y);
@@ -150,7 +168,7 @@ public class CanvasView extends View {
                 moveTouch(x, y);
                 break;
             case MotionEvent.ACTION_UP:
-                upTouch();
+                upTouch(x, y);
                 break;
         }
         return true;
@@ -175,8 +193,13 @@ public class CanvasView extends View {
     }
 
 
-    private void upTouch() {
+    private void upTouch(float x, float y) {
         // points with value x = -1 and y = -1 indicates the end of a line
+        mRef.child(System.currentTimeMillis() + "")
+                .setValue(
+                        new Point(x, y, userUID, currentLineID,
+                                true, myCurrentColor, myCurrentBrushSize));
+
         mRef.child(System.currentTimeMillis() + "")
                 .setValue(
                         new Point(-1, -1, userUID, currentLineID,
@@ -316,6 +339,7 @@ public class CanvasView extends View {
                 float y  = currPoint[0].getY();
 
                 if (!paints.containsKey(currPoint[0].getLineID())) { // start of a new line
+                    removedLineIDs.clear();
                     int color = currPoint[0].getColor();
                     Float size =  currPoint[0].getBrushSize();
                     mPath = new Path();
@@ -410,9 +434,7 @@ public class CanvasView extends View {
 
             }
         };
-
         ref.addChildEventListener(mChildEventListener);
-
     }
 
 

@@ -63,8 +63,11 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -207,22 +210,28 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         }
 
         // get user's display name and profile picture
-        FirebaseFirestore.getInstance().collection("Users")
-                .document(userUID)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+        FirebaseDatabase.getInstance().getReference()
+                .child("Users")
+                .child(userUID)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        userName[0] = task.getResult().getString("name");
-                        userUsername[0] = task.getResult().getString("username");
-                        userImageUrl[0] = task.getResult().getString("imageUrl");
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                        userName[0] = dataSnapshot.child("name").getValue(String.class);
+                        userUsername[0] = dataSnapshot.child("username").getValue(String.class);
+                        userImageUrl[0] = dataSnapshot.child("imageUrl").getValue(String.class);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
                     }
                 });
 
 
         // set the action bar title
-        Toolbar myToolbar = findViewById(R.id.my_toolbar);
-        setSupportActionBar(myToolbar);
+        Toolbar toolbar = findViewById(R.id.my_toolbar);
+        setSupportActionBar(toolbar);
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -230,12 +239,20 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
-                connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
-            // we are connected to a network
-            // checkForConferenceDetails();
-        }
+        // solve confict here
+        View v = findViewById(R.id.my_toolbar);
+        v.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isGroup) {
+                    Intent  intent = new Intent(ChatActivity.this, GroupInfoActivity.class);
+                    intent.putExtra("id", groupID);
+                    startActivity(intent);
+                } else {
+                    // TODO
+                }
+            }
+        });
 
         // set onCLickListener on the 'More option' button
         ImageView fileImageView = findViewById(R.id.chat_attach_imageView);
@@ -284,16 +301,22 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         } else {
             isGroup = false;
             // get friends's display name and profile picture
-            FirebaseFirestore.getInstance().collection("Users")
-                    .document(friendsUID)
-                    .get()
-                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+
+            FirebaseDatabase.getInstance().getReference()
+                    .child("Users")
+                    .child(friendsUID)
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            friendName[0] = task.getResult().getString("name");
-                            friendUsername[0] = task.getResult().getString("username");
-                            friendImageUrl[0] = task.getResult().getString("imageUrl");
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            friendName[0] = dataSnapshot.child("name").getValue(String.class);
+                            friendUsername[0] = dataSnapshot.child("username").getValue(String.class);
+                            friendImageUrl[0] = dataSnapshot.child("imageUrl").getValue(String.class);
                             getMessages();
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
                         }
                     });
         }
@@ -605,17 +628,12 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         switch (item.getItemId()) {
             case R.id.draw:
                 // Go to draw activity
-                if (isGroup) {
-                    Toast.makeText(this,
-                            "Drawing for groups not yet supported", Toast.LENGTH_SHORT).show();
-                } else {
-                    Intent intent = new Intent(ChatActivity.this, DrawActivity.class);
-                    intent.putExtra("userUID", userUID);
-                    intent.putExtra("friendsUID", friendsUID);
-                    startActivity(intent);
-                }
-                return true;
+                Intent intent = new Intent(ChatActivity.this, DrawActivity.class);
+                intent.putExtra("userUID", userUID);
+                intent.putExtra("friendsUID", friendsUID);
+                startActivity(intent);
 
+                return true;
             case R.id.call:
                 ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
                 if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
@@ -641,8 +659,6 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
 
                 return true;
             default:
-                // If we got here, the user's action was not recognized.
-                // Invoke the superclass to handle it.
                 return super.onOptionsItemSelected(item);
         }
     }
@@ -883,35 +899,31 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         ChatItem chatItem = mAdapter.getItem(position);
 
         if (v.findViewById(R.id.text_message_cardview) != null) {
-            Intent intent = new Intent(ChatActivity.this, ImagePreviewActivity.class);
-            String[] arr = chatItem.getMessageBody().split("\t");
-            intent.putExtra("imageUrl", arr[2]);
-            String senderName;
-            if (chatItem.getSenderID().equals(userUID)) {
-                senderName = "You";
-            } else {
-                senderName = chatItem.getSenderName();
-            }
-            intent.putExtra("senderName", senderName);
-            startActivity(intent);
+            goToImagePreview(chatItem);
         } else if (v.findViewById(R.id.pdf_icon_imageview) != null) {
             String url = chatItem.getMessageBody().split("\t")[3];
-
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            startActivity(browserIntent);
-
-//            Intent intent = new Intent(Intent.ACTION_VIEW);
-//            intent.setDataAndType(Uri.parse(url), "application/pdf");
-//            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//            Intent newIntent = Intent.createChooser(intent, "Open File");
-//            try {
-//                startActivity(newIntent);
-//            } catch (ActivityNotFoundException e) {
-//                // Instruct the user to install a PDF reader here, or something
-//            }
-
+            viewPdf(url);
         }
 
+    }
+
+    public void goToImagePreview(ChatItem chatItem) {
+        Intent intent = new Intent(ChatActivity.this, ImagePreviewActivity.class);
+        String[] arr = chatItem.getMessageBody().split("\t");
+        intent.putExtra("imageUrl", arr[2]);
+        String senderName;
+        if (chatItem.getSenderID().equals(userUID)) {
+            senderName = "You";
+        } else {
+            senderName = chatItem.getSenderName();
+        }
+        intent.putExtra("senderName", senderName);
+        startActivity(intent);
+    }
+
+    public void viewPdf(String url) {
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        startActivity(browserIntent);
     }
 
     public void getOlderMessages() {

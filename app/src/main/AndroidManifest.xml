@@ -31,7 +31,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <activity android:name=".GroupCallers.GroupCallActivity" />
+
+        <activity android:name=".Activities.GroupInfoEditActivity"></activity>
+        <activity android:name=".Activities.GroupInfoActivity" />
         <activity android:name=".Drawing.DrawActivity" />
         <activity android:name=".Callers.IncomingCallScreenActivity" />
         <activity android:name=".Callers.CallScreenActivity" />

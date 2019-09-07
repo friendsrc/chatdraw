@@ -1,23 +1,37 @@
 package com.example.chatdraw.Adapters;
 
+import android.app.Dialog;
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.Toolbar;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.chatdraw.Activities.ChatActivity;
 import com.example.chatdraw.Items.ChatItem;
 import com.example.chatdraw.R;
 import com.example.chatdraw.Listeners.RecyclerViewClickListener;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
+import java.util.Date;
 import java.util.LinkedList;
 
 public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerViewAdapter.MyViewHolder> {
@@ -95,27 +109,35 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                                                                int viewType) {
         // create a new view
         View friendListItem;
-        if (viewType == 0) { // text, from this user
-            friendListItem = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.right_chat_bubble, parent, false);
-        } else if (viewType == 1){ // text, from another user
-            friendListItem = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.left_chat_bubble, parent, false);
-        } else if (viewType == 20) { // image, from this user
-            friendListItem = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.right_chat_bubble_photo, parent, false);
-        } else if (viewType == 21) { // image, from another user
-            friendListItem = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.left_chat_bubble_photo, parent, false);
-        } else if (viewType == 30) { // pdf, from this user
-            friendListItem = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.right_chat_bubble_pdf, parent, false);
-        } else if (viewType == 31) { // pdf, from another user
-            friendListItem = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.left_chat_bubble_pdf, parent, false);
-        } else {
-            friendListItem = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.right_chat_bubble, parent, false);
+        switch (viewType) {
+            case 0:  // text, from this user
+                friendListItem = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.right_chat_bubble, parent, false);
+                break;
+            case 1:  // text, from another user
+                friendListItem = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.left_chat_bubble, parent, false);
+                break;
+            case 20:  // image, from this user
+                friendListItem = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.right_chat_bubble_photo, parent, false);
+                break;
+            case 21:  // image, from another user
+                friendListItem = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.left_chat_bubble_photo, parent, false);
+                break;
+            case 30:  // pdf, from this user
+                friendListItem = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.right_chat_bubble_pdf, parent, false);
+                break;
+            case 31:  // pdf, from another user
+                friendListItem = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.left_chat_bubble_pdf, parent, false);
+                break;
+            default:
+                friendListItem = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.right_chat_bubble, parent, false);
+                break;
         }
 
         return new ChatRecyclerViewAdapter.MyViewHolder(friendListItem);
@@ -138,21 +160,130 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
             name.setText(nameString);
         }
 
+        String[] arr = chatItem.getMessageBody().split("\t");
+
+        if (arr.length > 1) {
+            if (arr[1].equals("IMAGE")) {
+                ImageView message = holder.view.findViewById(R.id.text_message_body_image);
+                message.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        ((ChatActivity) context).goToImagePreview(chatItem);
+                    }
+                });
+            } else if (arr[1].equals("PDF")) {
+                TextView message = holder.view.findViewById(R.id.text_message_body);
+                message.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        String url = chatItem.getMessageBody().split("\t")[3];
+                        ((ChatActivity) context).viewPdf(url);
+                    }
+                });
+            }
+        }
+
+
         if (chatItem.getMessageBody().startsWith(chatItem.getSenderID())) {
-            String[] arr = chatItem.getMessageBody().split("\t");
             if (arr[1].equals("IMAGE")) {
                 ImageView message = holder.view.findViewById(R.id.text_message_body_image);
                 Picasso.get()
                         .load(arr[2])
                         .fit()
                         .into(message);
+                message.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        if (!chatItem.getSenderID().equals(userId))  return true;
+                        Dialog dialog = new Dialog(context);
+                        dialog.setContentView(R.layout.nontextmessagepopup);
+                        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                        dialog.setCancelable(true);
+
+
+
+                        TextView delete = dialog.findViewById(R.id.delete_message_textview);
+                        delete.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                deleteMessage(chatItem.getSenderID(), chatItem.getReceiverID(),
+                                        chatItem.getTimestamp(), chatItem.getMessageBody(), dialog,  position);
+                            }
+                        });
+
+                        dialog.show();
+                        dialog.getWindow().setGravity(Gravity.CENTER);
+                        return true;
+                    }
+                });
             } else if (arr[1].equals("PDF")) {
+                if (!chatItem.getSenderID().equals(userId));
                 TextView message = holder.view.findViewById(R.id.text_message_body);
                 message.setText(arr[2]);
+                message.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        if (!chatItem.getSenderID().equals(userId))  return true;
+
+                        Dialog dialog = new Dialog(context);
+                        dialog.setContentView(R.layout.nontextmessagepopup);
+                        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                        dialog.setCancelable(true);
+
+                        TextView delete = dialog.findViewById(R.id.delete_message_textview);
+                        delete.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                deleteMessage(chatItem.getSenderID(), chatItem.getReceiverID(),
+                                        chatItem.getTimestamp(), chatItem.getMessageBody(), dialog, position);
+                            }
+                        });
+
+                        dialog.show();
+                        dialog.getWindow().setGravity(Gravity.CENTER);
+                        return true;
+                    }
+                });
             }
         } else {
             TextView message = holder.view.findViewById(R.id.text_message_body);
             message.setText(mDataset.get(position).getMessageBody());
+            message.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    if (!chatItem.getSenderID().equals(userId))  return true;
+
+                    Dialog dialog = new Dialog(context);
+                    dialog.setContentView(R.layout.messageoptionpopup);
+                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                    dialog.setCancelable(true);
+
+                    TextView copy = dialog.findViewById(R.id.copy_message_textview);
+                    copy.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            android.content.ClipboardManager clipboard = (android.content.ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+                            android.content.ClipData clip = android.content.ClipData.newPlainText("text label",message.getText().toString());
+                            clipboard.setPrimaryClip(clip);
+                            dialog.dismiss();
+                            Toast.makeText(context, "Message copied to clipboard", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                    TextView delete = dialog.findViewById(R.id.delete_message_textview);
+                    delete.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            deleteMessage(chatItem.getSenderID(), chatItem.getReceiverID(),
+                                    chatItem.getTimestamp(), chatItem.getMessageBody(), dialog,  position);
+                        }
+                    });
+
+                    dialog.show();
+                    dialog.getWindow().setGravity(Gravity.CENTER);
+                    return true;
+                }
+            });
         }
 
         ImageView profilePicture = holder.view.findViewById(R.id.image_message_profile);
@@ -164,13 +295,18 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                         .fit()
                         .into(profilePicture);
             }
+            profilePicture.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(context, " Profile photo clicked", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
 
         TextView time = holder.view.findViewById(R.id.text_message_time);
         time.setText(mDataset.get(position).getTimeSent());
-
-
     }
+
 
     // Return the size of your dataset (invoked by the layout manager)
     @Override
@@ -188,5 +324,107 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
         notifyDataSetChanged();
     }
 
+
     public ChatItem getItem(int position) { return  mDataset.get(position); }
+
+
+    public void deleteMessage(String senderID, String receiverID, Date timestamp,
+                              String messageBody, Dialog dialog, int position) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // remove from firebase
+        if (receiverID.startsWith("GROUP_")) {
+            FirebaseFirestore.getInstance()
+                    .collection("GroupMessages")
+                    .document(receiverID)
+                    .collection("ChatHistory")
+                    .whereEqualTo("timestamp", timestamp)
+                    .whereEqualTo("messageBody", messageBody)
+                    .get()
+                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                        @Override
+                        public void onSuccess(QuerySnapshot snapshots) {
+                            for (DocumentSnapshot d: snapshots.getDocuments()) {
+                                d.getReference().delete()
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                dialog.dismiss();
+                                                Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            }
+                        }
+                    });
+        } else {
+            FirebaseFirestore.getInstance()
+                    .collection("Messages")
+                    .document(senderID)
+                    .collection("Friends")
+                    .document(receiverID)
+                    .collection("ChatHistory")
+                    .whereEqualTo("timestamp", timestamp)
+                    .whereEqualTo("messageBody", messageBody)
+                    .get()
+                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                        @Override
+                        public void onSuccess(QuerySnapshot snapshots) {
+                            for (DocumentSnapshot d: snapshots.getDocuments()) {
+                                d.getReference().delete()
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                dialog.dismiss();
+                                                Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            }
+                        }
+                    });
+        }
+
+        // check if firebase message preview should be updated
+        if (position == mDataset.size() - 1) {
+            // the deleted message is  the last sent message
+            // update preview to second to last message
+
+            ChatItem chatItem = mDataset.get(mDataset.size() - 2);
+            if (chatItem.getMessageBody().startsWith(userId)) {
+                String[] arr = chatItem.getMessageBody().split("\t");
+                if (arr[1].equals("IMAGE")) {
+                    chatItem.setMessageBody("[Image]");
+                } else if (arr[1].equals("PDF")) {
+                    chatItem.setMessageBody("[Pdf]");
+                } else {
+                    chatItem.setMessageBody("[Unknown file type]");
+                }
+            }
+            if (mDataset.size() >= 2) {
+                // Send to user's message preview collection
+                db.collection("Previews").document(senderID)
+                        .collection("ChatPreviews").document(receiverID)
+                        .set(mDataset.get(mDataset.size() - 2));
+
+                // Send to the receiver's message preview collection
+                db.collection("Previews").document(receiverID)
+                        .collection("ChatPreviews").document(senderID)
+                        .set(mDataset.get(mDataset.size() - 2));
+            } else {
+                chatItem.setMessageBody("");
+                // Send to user's message preview collection
+                db.collection("Previews").document(senderID)
+                        .collection("ChatPreviews").document(receiverID)
+                        .set(chatItem);
+
+                // Send to the receiver's message preview collection
+                db.collection("Previews").document(receiverID)
+                        .collection("ChatPreviews").document(senderID)
+                        .set(chatItem);
+            }
+        }
+
+        // remove from dataset
+        mDataset.remove(position);
+    }
+
 }
