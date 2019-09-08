@@ -302,6 +302,21 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        FirebaseFirestore.getInstance()
+                .collection("Groups")
+                .document(groupID)
+                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                        Toolbar toolbar = findViewById(R.id.my_toolbar);
+                        toolbar.setTitle(documentSnapshot.get("groupName").toString());
+                    }
+                });
+    }
+
     private void SelectImage(){
         final CharSequence[] items={"Camera", "Image", "File Explorer", "Cancel"};
 
@@ -342,6 +357,7 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         });
         builder.show();
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
