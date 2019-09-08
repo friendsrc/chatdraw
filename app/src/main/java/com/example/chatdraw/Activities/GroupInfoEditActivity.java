@@ -143,7 +143,6 @@ public class GroupInfoEditActivity extends AppCompatActivity {
 
                 }
                 sendMessage();
-                Toast.makeText(GroupInfoEditActivity.this, "Changes saved.", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -331,20 +330,32 @@ public class GroupInfoEditActivity extends AppCompatActivity {
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if (isNameChanged || isPhotoChanged) {
+                            String name = dataSnapshot.child("name").getValue(String.class);
+                            String username = dataSnapshot.child("username").getValue(String.class);
+                            String imageUrl = dataSnapshot.child("imageUrl").getValue(String.class);
 
-                        String name = dataSnapshot.child("name").getValue(String.class);
-                        String username = dataSnapshot.child("username").getValue(String.class);
-                        String imageUrl = dataSnapshot.child("imageUrl").getValue(String.class);
+                            String message = name + " changed group ";
+                            if (isPhotoChanged && isNameChanged) {
+                                message += "name and picture";
+                            } else if (isNameChanged) {
+                                message += "name";
+                            } else {
+                                message += "photo";
+                            }
 
-                        ChatItem chatItem  = new ChatItem(name + " changed the group info", userUID, name, username, imageUrl,
-                                groupUID, groupName, "" ,groupImageUrl);
 
-                        FirebaseFirestore db = FirebaseFirestore.getInstance();
-                        db.collection("GroupMessages")
-                                .document(groupUID)
-                                .collection("ChatHistory")
-                                .add(chatItem);
+                            ChatItem chatItem  = new ChatItem(message, userUID, name, username, imageUrl,
+                                    groupUID, groupName, "" ,groupImageUrl);
 
+                            FirebaseFirestore db = FirebaseFirestore.getInstance();
+                            db.collection("GroupMessages")
+                                    .document(groupUID)
+                                    .collection("ChatHistory")
+                                    .add(chatItem);
+                            Toast.makeText(GroupInfoEditActivity.this, "Changes saved.", Toast.LENGTH_SHORT).show();
+                        }
+                        finish();
                     }
 
                     @Override
