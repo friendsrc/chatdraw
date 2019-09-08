@@ -55,7 +55,7 @@ import java.security.acl.Group;
 import java.util.ArrayList;
 
 public class GroupInfoEditActivity extends AppCompatActivity {
-    
+
     private static final int REQUEST_CAMERA = 807;
     private static final int SELECT_FILE = 809;
 
@@ -89,7 +89,7 @@ public class GroupInfoEditActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setTitle("Edit");
         }
-        
+
         imageView = findViewById(R.id.group_info_edit_imageview);
         if (groupImageUrl != null) {
             Picasso.get()
@@ -97,7 +97,7 @@ public class GroupInfoEditActivity extends AppCompatActivity {
                     .fit()
                     .into(imageView);
         }
-        
+
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -120,8 +120,8 @@ public class GroupInfoEditActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-               isNameChanged = true;
-               groupName = editText.getText().toString();
+                isNameChanged = true;
+                groupName = editText.getText().toString();
             }
         });
 
@@ -339,13 +339,13 @@ public class GroupInfoEditActivity extends AppCompatActivity {
                             if (isPhotoChanged && isNameChanged) {
                                 message += "name and picture";
                             } else if (isNameChanged) {
-                                message += "name";
+                                message += "name to " + groupName;
                             } else {
                                 message += "photo";
                             }
 
 
-                            ChatItem chatItem  = new ChatItem(message, userUID, name, username, imageUrl,
+                            ChatItem chatItem  = new ChatItem(userUID + "\tINFO\t" + message, userUID, name, username, imageUrl,
                                     groupUID, groupName, "" ,groupImageUrl);
 
                             FirebaseFirestore db = FirebaseFirestore.getInstance();
