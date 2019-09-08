@@ -107,7 +107,6 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
 
     private static final String APP_KEY = "9d0ed01f-2dc2-4c26-a683-9c7e93a90029";
     private static final String APP_SECRET = "awRjs8Mowkq63iR1iFGAgA==";
-    private int num_participant = -1;
 
     // this user's information
     private String userUID;
@@ -669,30 +668,44 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
     }
 
     private void groupCallButtonClicked() {
+        String[] tempGroupArr = friendsUID.split("_");
+        String sinchGroupID = tempGroupArr[0] + "_" + tempGroupArr[2];
+        Log.v("groupSinch", sinchGroupID);
+        Log.v("memberSinch", "" + membersID);
+
+        if (userImageUrl[0] == null) {
+            userImageUrl[0] = "https://firebasestorage.googleapis.com/v0/b/chatdraw-ff7eb.appspot.com/o/Users%2F106689861101623002819%2Fprofilepic%2F1567929062984.jpg?alt=media&token=a800b643-1d02-4d38-964f-46c84b0b3b02";
+        }
+
+        Log.v("MYGOD", "" + userName[0]);
+        Log.v("MYGOD", "" + userImageUrl[0]);
+
         if (getSinchServiceInterface().getIsOnGoingCall()) {
-            if (getSinchServiceInterface().getGroupUserName().equals(friendsUID)) {
+            if (getSinchServiceInterface().getGroupUserName().equals(sinchGroupID)) {
                 Intent intent = new Intent(ChatActivity.this, GroupCallActivity.class);
-                intent.putExtra("participant", num_participant);
+                intent.putExtra("participant", membersID.size());
+                intent.putExtra("imageUrl", userImageUrl[0]);
+                intent.putExtra("userName", userName[0]);
                 intent.putExtra("userID", userUID);
-                intent.putExtra("groupID", friendsUID);
+                intent.putExtra("groupID", sinchGroupID);
                 intent.putExtra("groupName", groupName);
                 startActivity(intent);
             } else {
                 Toast.makeText(this, "Cannot call others while talking with others", Toast.LENGTH_SHORT).show();
             }
         } else {
-            String userGroup = friendsUID;
-
-            if (userGroup.isEmpty()) {
+            if (sinchGroupID.isEmpty()) {
                 Toast.makeText(this, "Please enter a user to call", Toast.LENGTH_LONG).show();
                 return;
             }
 
             try {
                 Intent intent = new Intent(ChatActivity.this, GroupCallActivity.class);
-                intent.putExtra("participant", num_participant);
+                intent.putExtra("participant", membersID.size());
                 intent.putExtra("userID", userUID);
-                intent.putExtra("groupID", friendsUID);
+                intent.putExtra("imageUrl", userImageUrl[0]);
+                intent.putExtra("userName", userName[0]);
+                intent.putExtra("groupID", sinchGroupID);
                 intent.putExtra("groupName", groupName);
                 startActivity(intent);
             } catch (MissingPermissionException e) {

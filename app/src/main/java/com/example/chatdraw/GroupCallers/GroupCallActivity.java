@@ -9,17 +9,29 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 
 import com.example.chatdraw.Callers.AudioPlayer;
 import com.example.chatdraw.Callers.BaseActivity;
 import com.example.chatdraw.R;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.sinch.android.rtc.AudioController;
 import com.sinch.android.rtc.PushPair;
 import com.sinch.android.rtc.calling.Call;
 import com.sinch.android.rtc.calling.CallListener;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -28,14 +40,15 @@ public class GroupCallActivity extends BaseActivity {
     private static final String APP_SECRET = "awRjs8Mowkq63iR1iFGAgA==";
     private static final String ENVIRONMENT = "sandbox.sinch.com";
 
+    public DatabaseReference mRef;
     private TextView mCallDuration;
     private AudioPlayer mAudioPlayer;
     private Timer mTimer;
     private UpdateCallDurationTask mDurationTask;
     private Button btnCancel;
     private ImageButton btnSpeaker, btnMute, btnBack;
-    private String userID, groupID, callID, groupName;
-    private int participant;
+    private String userID, groupID, callID, groupName, userName, imageUrl;
+    private int groupSize;
     private TextView tvCallStatus, tvGroupTitle;
     protected Call call;
 
@@ -67,7 +80,9 @@ public class GroupCallActivity extends BaseActivity {
         tvGroupTitle = (TextView) findViewById(R.id.groupDetails);
         mCallDuration = (TextView) findViewById(R.id.callDuration);
 
-        participant = intent.getIntExtra("participant", 0);
+        groupSize = intent.getIntExtra("participant", 0);
+        imageUrl = intent.getStringExtra("imageUrl");
+        userName = intent.getStringExtra("userName");
         userID = intent.getStringExtra("userID");
         groupID = intent.getStringExtra("groupID");
         groupName = intent.getStringExtra("groupName");
@@ -134,11 +149,17 @@ public class GroupCallActivity extends BaseActivity {
         if (!getSinchServiceInterface().getIsOnGoingCall()) {
             call = getSinchServiceInterface().callConference(groupID);
             callID = call.getCallId();
+
+            Log.v("PPPP", "QUEEN");
+
         } else {
             callID = getSinchServiceInterface().getCurrentGroupCallID();
             call = getSinchServiceInterface().getCall(callID);
 
-            tvGroupTitle.setText(groupName + " (" + (participant + 1) + "/10)");
+            Log.v("QQQQ", "QUEEN");
+
+
+            tvGroupTitle.setText(groupName + " (" + 1 + "/" + groupSize + ")");
             tvCallStatus.setText("Connected");
         }
 
@@ -192,10 +213,71 @@ public class GroupCallActivity extends BaseActivity {
             getSinchServiceInterface().setCurrentGroupCallID(callID);
             getSinchServiceInterface().startForegroundActivity();
 
+            mRef = FirebaseDatabase.getInstance()
+                    .getReference("GroupCall")
+                    .child(groupID);
+
+            mRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                            Toast.makeText(GroupCallActivity.this, "There is on going call", Toast.LENGTH_SHORT).show();
+                            Log.v("testing", "" + ds);
+
+//                            DatabaseReference tes = FirebaseDatabase.getInstance()
+//                                    .getReference("GroupCall")
+//                                    .child(groupID)
+//                                    .child("members");
+//
+//                            tes.addListenerForSingleValueEvent(new ValueEventListener() {
+//                                @Override
+//                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                                    if (!dataSnapshot.exists()) {
+//                                        Log.v("kuyyyys", "FU");
+//                                    } else {
+//                                        Log.v("kuyyy", "OK");
+//                                        for (DataSnapshot ds : dataSnapshot.getChildren()) {
+//                                            Log.v("kuyy", "" + ds);
+//                                            LinkedList<Member> ll = new LinkedList<>();
+//                                            ll.add(ds.getValue(Member.class));
+//
+//                                            for (Member tester: ll) {
+//                                                Log.v("PLEASE", "" + tester);
+//                                                Log.v("PLEASE", "" + tester.getName());
+//                                                Log.v("PLEASE", "" + tester.getimageUrl());
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//
+//                                @Override
+//                                public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                                }
+//                            });
+                        }
+                    } else {
+                        Log.v("New Conference Call", "Group call has been started by: " + userName);
+                        Member pp = new Member(userName, imageUrl);
+
+                        Map<String, Object> hmap = new HashMap<>();
+                        hmap.put("participants", 1);
+
+                        mRef.setValue(hmap);
+                        mRef.child("members").child("user1").setValue(pp);
+                    }
+                }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+
             Log.d("CallListener", "Call established");
 
             tvCallStatus.setText("Connected");
-            tvGroupTitle.setText(groupName + " (" + (participant + 1) + "/10)");
+            tvGroupTitle.setText(groupName + " (" + 1 + "/" + groupSize + ")");
 
             LinearLayout callLayout = (LinearLayout) findViewById(R.id.onGoingCallLayout);
             callLayout.setAlpha(1f);
