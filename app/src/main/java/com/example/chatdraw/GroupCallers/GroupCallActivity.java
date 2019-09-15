@@ -26,6 +26,7 @@ import com.sinch.android.rtc.PushPair;
 import com.sinch.android.rtc.calling.Call;
 import com.sinch.android.rtc.calling.CallListener;
 
+import java.security.acl.Group;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -34,12 +35,18 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class GroupCallActivity extends BaseActivity {
     private static final String APP_KEY = "9d0ed01f-2dc2-4c26-a683-9c7e93a90029";
     private static final String APP_SECRET = "awRjs8Mowkq63iR1iFGAgA==";
     private static final String ENVIRONMENT = "sandbox.sinch.com";
 
+    private HashMap<String, Member> userIdMemberMap;
     public DatabaseReference mRef;
     private TextView mCallDuration;
     private AudioPlayer mAudioPlayer;
@@ -49,8 +56,10 @@ public class GroupCallActivity extends BaseActivity {
     private ImageButton btnSpeaker, btnMute, btnBack;
     private String userID, groupID, callID, groupName, userName, imageUrl;
     private int groupSize;
-    private TextView tvCallStatus, tvGroupTitle;
+    private TextView tvCallStatus, tvGroupTitle, tvGroupName;
     protected Call call;
+    private Long currentParticipant;
+    private boolean isInitiated = false;
 
     private boolean isMute = false;
     private boolean isSpeaker = false;
@@ -76,6 +85,7 @@ public class GroupCallActivity extends BaseActivity {
         Intent intent = getIntent();
 
         mAudioPlayer = new AudioPlayer(this);
+        tvGroupName = (TextView) findViewById(R.id.groupName);
         tvCallStatus = (TextView) findViewById(R.id.callStatus);
         tvGroupTitle = (TextView) findViewById(R.id.groupDetails);
         mCallDuration = (TextView) findViewById(R.id.callDuration);
@@ -87,9 +97,10 @@ public class GroupCallActivity extends BaseActivity {
         groupID = intent.getStringExtra("groupID");
         groupName = intent.getStringExtra("groupName");
 
-        tvGroupTitle.setText(groupName);
+        tvGroupName.setText(groupName);
 
         btnCancel = (Button) findViewById(R.id.btnCancel);
+        btnCancel.setEnabled(false);
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -144,6 +155,10 @@ public class GroupCallActivity extends BaseActivity {
         });
     }
 
+    public void enableCancelButton() {
+        btnCancel.setEnabled(true);
+    }
+
     @Override
     public void onServiceConnected() {
         if (!getSinchServiceInterface().getIsOnGoingCall()) {
@@ -158,8 +173,7 @@ public class GroupCallActivity extends BaseActivity {
 
             Log.v("QQQQ", "QUEEN");
 
-
-            tvGroupTitle.setText(groupName + " (" + 1 + "/" + groupSize + ")");
+            tvGroupTitle.setText("(-/" + groupSize + ")");
             tvCallStatus.setText("Connected");
         }
 
@@ -223,39 +237,68 @@ public class GroupCallActivity extends BaseActivity {
                     if (dataSnapshot.exists()) {
                         for (DataSnapshot ds : dataSnapshot.getChildren()) {
                             Toast.makeText(GroupCallActivity.this, "There is on going call", Toast.LENGTH_SHORT).show();
-                            Log.v("testing", "" + ds);
+                            Log.v("MORE testing", "" + dataSnapshot.child("participants").getValue());
+                            Log.v("testing", "mellow" + ds);
+                            currentParticipant =  (Long) dataSnapshot.child("participants").getValue();
 
-//                            DatabaseReference tes = FirebaseDatabase.getInstance()
-//                                    .getReference("GroupCall")
-//                                    .child(groupID)
-//                                    .child("members");
-//
-//                            tes.addListenerForSingleValueEvent(new ValueEventListener() {
-//                                @Override
-//                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                                    if (!dataSnapshot.exists()) {
-//                                        Log.v("kuyyyys", "FU");
-//                                    } else {
-//                                        Log.v("kuyyy", "OK");
-//                                        for (DataSnapshot ds : dataSnapshot.getChildren()) {
-//                                            Log.v("kuyy", "" + ds);
-//                                            LinkedList<Member> ll = new LinkedList<>();
-//                                            ll.add(ds.getValue(Member.class));
-//
-//                                            for (Member tester: ll) {
-//                                                Log.v("PLEASE", "" + tester);
-//                                                Log.v("PLEASE", "" + tester.getName());
-//                                                Log.v("PLEASE", "" + tester.getimageUrl());
-//                                            }
-//                                        }
-//                                    }
-//                                }
-//
-//                                @Override
-//                                public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//                                }
-//                            });
+                            DatabaseReference tes = FirebaseDatabase.getInstance()
+                                    .getReference("GroupCall")
+                                    .child(groupID)
+                                    .child("members");
+
+                            tes.addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    if (!dataSnapshot.exists()) {
+                                        Log.v("kuyyyys", "FU");
+                                        Log.v("New Conference Call2", "Group call has been started by: " + userName);
+                                        Member pp = new Member(userName, imageUrl);
+
+                                        Map<String, Object> hmap = new HashMap<>();
+                                        hmap.put("participants", 1);
+                                        isInitiated = true;
+
+                                        mRef.setValue(hmap);
+                                        mRef.child("members").child(userID).setValue(pp);
+                                    } else {
+                                        Log.v("kuyyy", "OK" + dataSnapshot);
+                                        String tempGroupTitle = tvGroupTitle.getText().toString();
+                                        Map<String, Object> hmap = new HashMap<>();
+
+                                        Log.v("HELLOOOOOOOOO?????", "LOL");
+
+                                        if (currentParticipant == null) {
+                                            Toast.makeText(GroupCallActivity.this, "[806] Failed to update current participant", Toast.LENGTH_SHORT).show();
+                                        } else if (!tempGroupTitle.equals("(" + (currentParticipant) + "/" + groupSize + ")")) {
+                                            Log.v("HELLOOOOOOOOO", "LOL");
+                                            tvGroupTitle.setText("(" + currentParticipant + "/" + groupSize + ")");
+                                        } else {
+                                            hmap.put("participants", currentParticipant + 1);
+                                            tvGroupTitle.setText("(" + (currentParticipant + 1) + "/" + groupSize + ")");
+                                        }
+
+                                        mRef.updateChildren(hmap);
+
+                                        userIdMemberMap = new HashMap<>();
+
+                                        for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                                            Log.v("kuyy", "" + ds);
+                                            userIdMemberMap.put(ds.getKey(), ds.getValue(Member.class));
+                                            Log.v("kuyy", "" + userIdMemberMap);
+                                        }
+
+                                        Member pp = new Member(userName, imageUrl);
+                                        userIdMemberMap.put(userID, pp);
+                                        Log.v("kuyy", "" + userIdMemberMap);
+                                        mRef.child("members").setValue(userIdMemberMap);
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            });
                         }
                     } else {
                         Log.v("New Conference Call", "Group call has been started by: " + userName);
@@ -263,9 +306,10 @@ public class GroupCallActivity extends BaseActivity {
 
                         Map<String, Object> hmap = new HashMap<>();
                         hmap.put("participants", 1);
+                        isInitiated = true;
 
                         mRef.setValue(hmap);
-                        mRef.child("members").child("user1").setValue(pp);
+                        mRef.child("members").child(userID).setValue(pp);
                     }
                 }
                 @Override
@@ -277,7 +321,11 @@ public class GroupCallActivity extends BaseActivity {
             Log.d("CallListener", "Call established");
 
             tvCallStatus.setText("Connected");
-            tvGroupTitle.setText(groupName + " (" + 1 + "/" + groupSize + ")");
+            if (isInitiated) {
+                tvGroupTitle.setText("(" + 1 + "/" + groupSize + ")");
+            } else {
+                isInitiated = false;
+            }
 
             LinearLayout callLayout = (LinearLayout) findViewById(R.id.onGoingCallLayout);
             callLayout.setAlpha(1f);
@@ -286,6 +334,16 @@ public class GroupCallActivity extends BaseActivity {
             audioController.unmute();
             audioController.disableSpeaker();
             setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
+
+            final Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    btnCancel.setEnabled(true);
+                }
+            };
+
+            ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+            executorService.schedule(runnable, 3, SECONDS);
         }
 
         @Override
@@ -294,6 +352,52 @@ public class GroupCallActivity extends BaseActivity {
             getSinchServiceInterface().setGroupUserName(null);
             getSinchServiceInterface().setCurrentGroupCallID(null);
             getSinchServiceInterface().stopForegroundActivity();
+
+            mRef = FirebaseDatabase.getInstance()
+                    .getReference("GroupCall")
+                    .child(groupID);
+
+            mRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                            Toast.makeText(GroupCallActivity.this, "There is on going call", Toast.LENGTH_SHORT).show();
+                            Log.v("MORE testing", "" + dataSnapshot.child("participants").getValue());
+                            Log.v("testing", "mellow" + ds);
+                            Long currentParticipant =  (Long) dataSnapshot.child("participants").getValue();
+
+                            Map<String, Object> hmap = new HashMap<>();
+
+                            if (currentParticipant == null){
+                                Toast.makeText(GroupCallActivity.this, "[807] Failed to update current participant", Toast.LENGTH_SHORT).show();
+                            } else {
+                                if (currentParticipant <= 0) {
+                                    hmap.put("participants", 0);
+                                } else {
+                                    hmap.put("participants", currentParticipant - 1);
+                                }
+                            }
+
+                            mRef.updateChildren(hmap);
+
+                            DatabaseReference tes = FirebaseDatabase.getInstance()
+                                    .getReference("GroupCall")
+                                    .child(groupID)
+                                    .child("members");
+
+                            Log.v("DELETE", "" + tes.getRef().child(userID));
+                            tes.getRef().child(userID).removeValue();
+                        }
+                    } else {
+                        Toast.makeText(GroupCallActivity.this, "[808] Unknown error when end call", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
 
             Log.d("CallListener", "Call ended");
             tvCallStatus.setText("Disconnected");
