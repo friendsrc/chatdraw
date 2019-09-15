@@ -37,10 +37,11 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-public class GroupInfoActivity extends AppCompatActivity implements RecyclerViewClickListener{
+public class GroupInfoActivity extends AppCompatActivity {
 
     private static final String TAG = "GroupInfoActivity";
-    public static int INFO_EDIT_REQUEST_CODE = 10191;
+    public static final int INFO_EDIT_REQUEST_CODE = 10191;
+    public static final int NEW_MEMBER_REQUEST_CODE = 10132;
 
     private String groupUID;
     private String groupName;
@@ -82,7 +83,6 @@ public class GroupInfoActivity extends AppCompatActivity implements RecyclerView
 
         Intent intent = getIntent();
         groupUID = intent.getStringExtra("id");
-        getMembers();
 
         FirebaseFirestore.getInstance()
                 .collection("Groups")
@@ -131,6 +131,12 @@ public class GroupInfoActivity extends AppCompatActivity implements RecyclerView
         switch (item.getItemId()) {
             case R.id.group_info_add_member:
                 Toast.makeText(this, "add", Toast.LENGTH_SHORT).show();
+                Intent newMemberIntent =  new Intent(GroupInfoActivity.this, AddGroupMemberActivity.class);
+                newMemberIntent.putExtra("groupMembers", groupMembers);
+                newMemberIntent.putExtra("groupUID", groupUID);
+                newMemberIntent.putExtra("groupName", groupName);
+                newMemberIntent.putExtra("groupImageUrl", groupImageUrl);
+                startActivityForResult(newMemberIntent, NEW_MEMBER_REQUEST_CODE);
                 break;
             case R.id.group_info_edit:
                 Intent intent = new Intent(GroupInfoActivity.this, GroupInfoEditActivity.class);
@@ -144,15 +150,29 @@ public class GroupInfoActivity extends AppCompatActivity implements RecyclerView
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        mAdapter.clearData();
+        getContactsFromFirestore();
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (requestCode == INFO_EDIT_REQUEST_CODE && resultCode == 1000) {
-            finish();
+            switch (resultCode) {
+                case 1000:
+                    finish();
+                    break;
+                case 2143:
+                    //
+                    break;
+            }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
 
     public void getMembers() {
-        Log.d(TAG, "Getting contacts from cache");
+        Log.d(TAG, "Getting group members from cache");
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.disableNetwork();
         FirebaseDatabase.getInstance().goOffline();
@@ -178,7 +198,7 @@ public class GroupInfoActivity extends AppCompatActivity implements RecyclerView
     }
 
     public void getContactsFromFirestore() {
-        Log.d(TAG, "Getting contacts from firestore");
+        Log.d(TAG, "Getting group members from firestore");
         final FirebaseFirestore db  = FirebaseFirestore.getInstance();
         db.enableNetwork();
         FirebaseDatabase.getInstance().goOnline();
@@ -222,10 +242,5 @@ public class GroupInfoActivity extends AppCompatActivity implements RecyclerView
 
             }
         });
-    }
-
-    @Override
-    public void recyclerViewListClicked(View v, int position) {
-
     }
 }
