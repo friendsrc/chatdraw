@@ -35,6 +35,7 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -538,7 +539,7 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                     Bitmap bmp = BitmapFactory.decodeStream(imageStream);
 
                     ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    bmp.compress(Bitmap.CompressFormat.JPEG, 50, stream);
+                    bmp.compress(Bitmap.CompressFormat.JPEG, 100, stream);
 
                     // this is an example if you want to set the bmp to your chat for example
                     // circleImageView.setImageBitmap(bmp);

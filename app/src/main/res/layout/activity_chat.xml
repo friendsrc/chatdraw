@@ -34,7 +34,8 @@
         android:minHeight="48dp"
         android:paddingLeft="16dp"
         android:paddingRight="16dp"
-        android:paddingBottom="8dp">
+        android:paddingBottom="8dp"
+        android:layout_alignParentBottom="true">
 
         <ImageView
             android:id="@+id/chat_attach_imageView"
@@ -49,7 +50,8 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:minHeight="48dp"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true" />
         <ImageView
             android:id="@+id/chat_send_imageview"
             android:layout_width="wrap_content"

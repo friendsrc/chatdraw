@@ -5,13 +5,42 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Activities.ImagePreviewActivity">
-    <ImageView
+
+    <com.otaliastudios.zoom.ZoomImageView
         android:id="@+id/photo_imageView"
         android:background="#000000"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"/>
+        android:scrollbars="vertical|horizontal"
+        app:transformation="centerInside"
+        app:transformationGravity="auto"
+        app:alignment="center"
+        app:overScrollHorizontal="true"
+        app:overScrollVertical="true"
+        app:overPinchable="true"
+        app:horizontalPanEnabled="true"
+        app:verticalPanEnabled="true"
+        app:zoomEnabled="true"
+        app:flingEnabled="true"
+        app:scrollEnabled="true"
+        app:oneFingerScrollEnabled="true"
+        app:twoFingersScrollEnabled="true"
+        app:threeFingersScrollEnabled="true"
+        app:minZoom="1"
+        app:minZoomType="zoom"
+        app:maxZoom="2.5"
+        app:maxZoomType="zoom"
+        app:animationDuration="280"/>
+
+    <!--<ImageView-->
+        <!--android:id="@+id/photo_imageView"-->
+        <!--android:background="#000000"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--app:layout_constraintTop_toTopOf="parent"-->
+        <!--app:layout_constraintLeft_toLeftOf="parent"/>-->
 
     <View
         android:id="@+id/photo_view1"
