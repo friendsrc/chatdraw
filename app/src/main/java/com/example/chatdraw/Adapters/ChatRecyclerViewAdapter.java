@@ -78,25 +78,28 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
     @Override
     public int getItemViewType(int position) {
         ChatItem chatItem = mDataset.get(position);
+        String[] arr = chatItem.getMessageBody().split("\t");
 
         if (chatItem.getSenderID().equals(userId)) { // chat is sent by this user
             if (chatItem.getMessageBody().startsWith(userId)) {
-                String[] arr = chatItem.getMessageBody().split("\t");
                 if (arr[1].equals("IMAGE")) {
                     return 20; // chat item is of type image
                 } else if (arr[1].equals("PDF")) {
                     return 30; // chat item is of type pdf
+                } else if (arr[1].equals("INFO")) {
+                    return 44;
                 }
             }
             return 0; // chat item is of type text
 
         } else { // chat is not sent by this user
-            String[] arr = chatItem.getMessageBody().split("\t");
             if (chatItem.getMessageBody().startsWith(chatItem.getSenderID())) {
                 if (arr[1].equals("IMAGE")) {
                     return 21; // chat item is of type image
                 } else if (arr[1].equals("PDF")) {
                     return 31; // chat item is of type pdf
+                } else if (arr[1].equals("INFO")) {
+                    return 44;
                 }
             }
             return 1; // chat item is of type text
@@ -106,7 +109,7 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
     // Create new views (invoked by the layout manager)
     @Override
     public ChatRecyclerViewAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent,
-                                                               int viewType) {
+                                                                   int viewType) {
         // create a new view
         View friendListItem;
         switch (viewType) {
@@ -134,6 +137,10 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                 friendListItem = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.left_chat_bubble_pdf, parent, false);
                 break;
+            case 44: // chat action
+                friendListItem = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.chat_action_item, parent, false);
+                break;
             default:
                 friendListItem = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.right_chat_bubble, parent, false);
@@ -149,6 +156,12 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
         ChatItem chatItem = mDataset.get(position);
+
+        TextView chatActionTextView = holder.view.findViewById(R.id.chat_action_textview);
+        if (chatActionTextView != null) {
+            chatActionTextView.setText(chatItem.getMessageBody().split("\t")[2]);
+            return;
+        }
 
         TextView name = holder.view.findViewById(R.id.text_message_name);
         if (name != null) {
@@ -395,6 +408,8 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                     chatItem.setMessageBody("[Image]");
                 } else if (arr[1].equals("PDF")) {
                     chatItem.setMessageBody("[Pdf]");
+                } else if (arr[1].equals("INFO")) {
+                    chatItem.setMessageBody(arr[2]);
                 } else {
                     chatItem.setMessageBody("[Unknown file type]");
                 }

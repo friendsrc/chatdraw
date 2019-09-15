@@ -102,6 +102,7 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
     private static final int REQUEST_CAMERA = 1;
     private static final int REQUEST_DOCUMENT = 2;
     public static final int REQUEST_MICROPHONE = 3;
+    public static final int REQUEST_INFOEDIT = 4;
     private static String TAG = "ChatActivity";
     private boolean isServiceReady = false;
 
@@ -246,7 +247,7 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                 if (isGroup) {
                     Intent  intent = new Intent(ChatActivity.this, GroupInfoActivity.class);
                     intent.putExtra("id", groupID);
-                    startActivity(intent);
+                    startActivityForResult(intent, REQUEST_INFOEDIT);
                 } else {
                     // TODO
                 }
@@ -321,6 +322,14 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (isGroup) {
+
+        }
+    }
+
     private void SelectImage(){
         final CharSequence[] items={"Camera", "Image", "File Explorer", "Cancel"};
 
@@ -362,6 +371,7 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         builder.show();
     }
 
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == REQUEST_CAMERA && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -381,6 +391,19 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode, resultCode,data);
+
+        if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_INFOEDIT) {
+            FirebaseFirestore.getInstance()
+                    .collection("Groups")
+                    .document(groupID)
+                    .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                            Toolbar toolbar = findViewById(R.id.my_toolbar);
+                            toolbar.setTitle(documentSnapshot.get("groupName").toString());
+                        }
+                    });
+        }
 
         if (resultCode == Activity.RESULT_OK){
             if (requestCode == REQUEST_CAMERA){

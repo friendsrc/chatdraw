@@ -59,7 +59,7 @@ public class GroupInfoActivity extends AppCompatActivity {
                         ActionBar actionBar = getSupportActionBar();
                         if (actionBar != null) {
                             actionBar.setDisplayHomeAsUpEnabled(true);
-                            actionBar.setTitle(groupName);
+                            actionBar.setTitle("Group Info");
                         }
                     }
                 });

@@ -402,6 +402,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                                     chatItem[0].setMessageBody("[Image]");
                                 } else if (arr[1].equals("PDF")) {
                                     chatItem[0].setMessageBody("[Pdf]");
+                                } else if (arr[1].equals("INFO")) {
+                                    chatItem[0].setMessageBody(arr[2]);
                                 } else {
                                     chatItem[0].setMessageBody("[Unknown file type]");
                                 }
