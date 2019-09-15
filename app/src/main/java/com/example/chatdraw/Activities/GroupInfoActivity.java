@@ -1,9 +1,11 @@
 package com.example.chatdraw.Activities;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,6 +26,9 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 
 public class GroupInfoActivity extends AppCompatActivity {
+
+    private static String TAG = "GroupInfoActivity";
+    public static int INFO_EDIT_REQUEST_CODE = 10191;
 
     private String groupUID;
     private String groupName;
@@ -91,9 +96,17 @@ public class GroupInfoActivity extends AppCompatActivity {
                 intent.putExtra("groupName", groupName);
                 intent.putExtra("groupUID", groupUID);
                 intent.putExtra("groupImageUrl", groupImageUrl);
-                startActivity(intent);
+                startActivityForResult(intent, INFO_EDIT_REQUEST_CODE);
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == INFO_EDIT_REQUEST_CODE) {
+            finish();
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }

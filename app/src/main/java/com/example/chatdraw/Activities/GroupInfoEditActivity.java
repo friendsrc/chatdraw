@@ -61,7 +61,7 @@ public class GroupInfoEditActivity extends AppCompatActivity {
 
     private String groupUID;
     private String groupName;
-    private String groupImageUrl;
+    private String oldGroupImageUrl;
 
     private boolean isNameChanged = false ;
     private boolean isPhotoChanged = false;
@@ -78,7 +78,7 @@ public class GroupInfoEditActivity extends AppCompatActivity {
         Intent intent = getIntent();
         groupUID = intent.getStringExtra("groupUID");
         groupName = intent.getStringExtra("groupName");
-        groupImageUrl = intent.getStringExtra("groupImageUrl");
+        oldGroupImageUrl = intent.getStringExtra("groupImageUrl");
 
         // set the toolbar
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
@@ -91,9 +91,9 @@ public class GroupInfoEditActivity extends AppCompatActivity {
         }
 
         imageView = findViewById(R.id.group_info_edit_imageview);
-        if (groupImageUrl != null) {
+        if (oldGroupImageUrl != null) {
             Picasso.get()
-                    .load(groupImageUrl)
+                    .load(oldGroupImageUrl)
                     .fit()
                     .into(imageView);
         }
@@ -346,7 +346,7 @@ public class GroupInfoEditActivity extends AppCompatActivity {
 
 
                             ChatItem chatItem  = new ChatItem(userUID + "\tINFO\t" + message, userUID, name, username, imageUrl,
-                                    groupUID, groupName, "" ,groupImageUrl);
+                                    groupUID, groupName, "" , url);
 
                             FirebaseFirestore db = FirebaseFirestore.getInstance();
                             db.collection("GroupMessages")

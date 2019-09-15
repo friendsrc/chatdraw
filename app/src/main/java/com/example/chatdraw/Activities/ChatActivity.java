@@ -392,7 +392,7 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
     public void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode, resultCode,data);
 
-        if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_INFOEDIT) {
+        if (requestCode == REQUEST_INFOEDIT) {
             FirebaseFirestore.getInstance()
                     .collection("Groups")
                     .document(groupID)
