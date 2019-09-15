@@ -1,9 +1,12 @@
 package com.example.chatdraw.Activities;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -16,18 +19,27 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.chatdraw.Adapters.RecyclerViewAdapter;
+import com.example.chatdraw.Items.FriendListItem;
+import com.example.chatdraw.Listeners.RecyclerViewClickListener;
 import com.example.chatdraw.R;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-public class GroupInfoActivity extends AppCompatActivity {
+public class GroupInfoActivity extends AppCompatActivity implements RecyclerViewClickListener{
 
-    private static String TAG = "GroupInfoActivity";
+    private static final String TAG = "GroupInfoActivity";
     public static int INFO_EDIT_REQUEST_CODE = 10191;
 
     private String groupUID;
@@ -35,13 +47,42 @@ public class GroupInfoActivity extends AppCompatActivity {
     private String groupImageUrl;
     private ArrayList<String> groupMembers;
 
+    private RecyclerView recyclerView;
+    private RecyclerView.LayoutManager layoutManager;
+    private ArrayList<FriendListItem> friendList;
+
+    // Adapters for RecyclerView
+    private RecyclerViewAdapter mAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_info);
 
+        // set the RecyclerView
+        recyclerView = findViewById(R.id.add_group_member_recycler_view);
+
+        // use this setting to improve performance if changes in content do not change
+        // the layout size of the RecyclerView
+        recyclerView.setHasFixedSize(true);
+
+        // use a linear layout manager
+        layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+
+        // specify an adapter
+        friendList = new ArrayList<>();
+        mAdapter = new RecyclerViewAdapter(friendList, this, new RecyclerViewClickListener() {
+            @Override
+            public void recyclerViewListClicked(View v, int position) {
+                // do nothing
+            }
+        });
+        recyclerView.setAdapter(mAdapter);
+
         Intent intent = getIntent();
         groupUID = intent.getStringExtra("id");
+        getMembers();
 
         FirebaseFirestore.getInstance()
                 .collection("Groups")
@@ -104,9 +145,87 @@ public class GroupInfoActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (requestCode == INFO_EDIT_REQUEST_CODE) {
+        if (requestCode == INFO_EDIT_REQUEST_CODE && resultCode == 1000) {
             finish();
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    public void getMembers() {
+        Log.d(TAG, "Getting contacts from cache");
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.disableNetwork();
+        FirebaseDatabase.getInstance().goOffline();
+        db.collection("Groups")
+                .document(groupUID)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            ArrayList<String> arr = (ArrayList<String>) task.getResult().get("members");
+                            if (arr != null) {
+                                for (String s : arr) {
+                                    addMemberWithID(s);
+                                }
+                            }
+                            db.enableNetwork();
+                        } else {
+                            getContactsFromFirestore();
+                        }
+                    }
+                });
+    }
+
+    public void getContactsFromFirestore() {
+        Log.d(TAG, "Getting contacts from firestore");
+        final FirebaseFirestore db  = FirebaseFirestore.getInstance();
+        db.enableNetwork();
+        FirebaseDatabase.getInstance().goOnline();
+        db.collection("Groups")
+                .document(groupUID)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            ArrayList<String> arr = (ArrayList<String>) task.getResult().get("members");
+                            if (arr != null ) {
+                                for (String s: arr) {
+                                    addMemberWithID(s);
+                                }
+                            }
+                        }
+                    }
+                });
+    }
+
+    private void addMemberWithID(final String uID) {
+        DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
+
+        mDatabaseRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String name = (String) dataSnapshot.child(uID).child("name").getValue();
+                String status = (String) dataSnapshot.child(uID).child("status").getValue();
+                String imageURL = (String) dataSnapshot.child(uID).child("imageUrl").getValue();
+
+                // check if the user doesn't have name/status/imageURL
+                if (status == null) status = "";
+
+                FriendListItem newFriend = new FriendListItem(name, status, uID, imageURL);
+                mAdapter.addItem(newFriend);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    @Override
+    public void recyclerViewListClicked(View v, int position) {
+
     }
 }

@@ -7,6 +7,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.app.Activity;
@@ -29,18 +31,25 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.chatdraw.Adapters.GroupListRecyclerViewAdapter;
+import com.example.chatdraw.Adapters.RecyclerViewAdapter;
 import com.example.chatdraw.Items.ChatItem;
+import com.example.chatdraw.Items.FriendListItem;
+import com.example.chatdraw.Listeners.RecyclerViewClickListener;
 import com.example.chatdraw.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
@@ -56,6 +65,8 @@ import java.util.ArrayList;
 
 public class GroupInfoEditActivity extends AppCompatActivity {
 
+    private static final String TAG = "GroupInfoEditActivity";
+
     private static final int REQUEST_CAMERA = 807;
     private static final int SELECT_FILE = 809;
 
@@ -70,10 +81,14 @@ public class GroupInfoEditActivity extends AppCompatActivity {
     private ImageView imageView;
     private String url;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_info_edit);
+
+
 
         Intent intent = getIntent();
         groupUID = intent.getStringExtra("groupUID");
@@ -355,6 +370,7 @@ public class GroupInfoEditActivity extends AppCompatActivity {
                                     .add(chatItem);
                             Toast.makeText(GroupInfoEditActivity.this, "Changes saved.", Toast.LENGTH_SHORT).show();
                         }
+                        GroupInfoEditActivity.this.setResult(1000);
                         finish();
                     }
 
@@ -364,4 +380,6 @@ public class GroupInfoEditActivity extends AppCompatActivity {
                     }
                 });
     }
+
+
 }
