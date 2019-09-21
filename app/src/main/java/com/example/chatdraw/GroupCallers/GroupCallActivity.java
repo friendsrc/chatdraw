@@ -9,11 +9,11 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -30,10 +30,7 @@ import com.sinch.android.rtc.PushPair;
 import com.sinch.android.rtc.calling.Call;
 import com.sinch.android.rtc.calling.CallListener;
 
-import java.security.acl.Group;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -41,7 +38,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -169,7 +165,6 @@ public class GroupCallActivity extends BaseActivity {
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int height = displayMetrics.heightPixels;
 
-        Log.v("Hellow", "" + height);
         Log.d("WOIIII", "" + height);
         int buttonHeight = (height - 500) / 2;
 
@@ -193,12 +188,13 @@ public class GroupCallActivity extends BaseActivity {
 
                 ll.setOrientation(LinearLayout.VERTICAL);
 
-                Button button = new Button(this);
-                button.setLayoutParams(new LinearLayout.LayoutParams(
+                ImageView imgView = new ImageView(this);
+                imgView.setLayoutParams(new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
                         buttonHeight - 100,
                         1.0f
                 ));
+                imgView.setImageResource(R.drawable.ic_credits);
 
                 LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
@@ -206,19 +202,20 @@ public class GroupCallActivity extends BaseActivity {
                         1.0f
                 );
                 params.setMargins(10,0,10, 0);
+
                 TextView tv1 = new TextView(this);
                 tv1.setLayoutParams(params);
                 tv1.setGravity(Gravity.TOP|Gravity.CENTER);
-                tv1.setTextSize(18);
-                tv1.setBackgroundColor(getResources().getColor(R.color.blue));
+                tv1.setBackgroundColor(getResources().getColor(R.color.bluegray600));
                 tv1.setTextColor(getResources().getColor(R.color.white));
+                tv1.setTextSize(18);
                 tv1.setText("HELO");
-                ll.addView(button);
+
+                ll.addView(imgView);
                 ll.addView(tv1);
 
-
                 // Make text not clip on small button
-                button.setPadding(0, 0, 0, 0);
+                // button.setPadding(0, 0, 0, 0);
                 tableRow.addView(ll);
             }
         }
