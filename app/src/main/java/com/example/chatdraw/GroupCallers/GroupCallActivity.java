@@ -29,6 +29,7 @@ import com.sinch.android.rtc.AudioController;
 import com.sinch.android.rtc.PushPair;
 import com.sinch.android.rtc.calling.Call;
 import com.sinch.android.rtc.calling.CallListener;
+import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
 import java.util.List;
@@ -42,12 +43,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class GroupCallActivity extends BaseActivity {
-    private static final int NUM_ROWS = 22;
     private static final int NUM_COLS = 2;
     private static final String APP_KEY = "9d0ed01f-2dc2-4c26-a683-9c7e93a90029";
     private static final String APP_SECRET = "awRjs8Mowkq63iR1iFGAgA==";
     private static final String ENVIRONMENT = "sandbox.sinch.com";
 
+    private TableLayout table;
     private HashMap<String, Member> userIdMemberMap;
     public DatabaseReference mRef;
     private TextView mCallDuration;
@@ -101,7 +102,7 @@ public class GroupCallActivity extends BaseActivity {
 
         tvGroupName.setText(groupName);
 
-        populateImages();
+        table = (TableLayout) findViewById(R.id.tableForImages);
 
         btnCancel = (Button) findViewById(R.id.btnCancel);
         btnCancel.setEnabled(false);
@@ -159,16 +160,37 @@ public class GroupCallActivity extends BaseActivity {
         });
     }
 
-    private void populateImages() {
-        TableLayout table = (TableLayout) findViewById(R.id.tableForImages);
+    private void populateImages(Map hmap) {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int height = displayMetrics.heightPixels;
+        int windowHeight = displayMetrics.heightPixels;
+        int windowWidth = displayMetrics.widthPixels;
 
-        Log.d("WOIIII", "" + height);
-        int buttonHeight = (height - 500) / 2;
+        Log.d("WOIIII", "" + windowHeight + " " + windowWidth);
+        int buttonHeight = (windowHeight - 500) / 2;
 
-        for (int row = 0; row < NUM_ROWS; row++) {
+        // for now we consider number of member in a group maximum of 50
+        Member[] memberArray = new Member[50];
+
+        int totalParticipant = hmap.size();
+        int num_rows = totalParticipant/2;
+
+        if (totalParticipant % 2 != 0) {
+            num_rows = totalParticipant/2 + 1;
+        }
+
+        int counter = 0;
+        for (Object key: hmap.keySet()) {
+            Member tempMember = (Member) hmap.get(key);
+
+            Log.v("TESTERINGER", "" + tempMember);
+            memberArray[counter] = tempMember;
+            counter++;
+        }
+
+        table.removeAllViews();
+
+        for (int row = 0; row < num_rows; row++) {
             TableRow tableRow = new TableRow(this);
             tableRow.setLayoutParams(new TableLayout.LayoutParams(
                     TableLayout.LayoutParams.MATCH_PARENT,
@@ -179,6 +201,10 @@ public class GroupCallActivity extends BaseActivity {
             table.addView(tableRow);
 
             for (int col = 0; col < NUM_COLS; col++) {
+                if ((row * 2) + col > totalParticipant - 1) {
+                    break;
+                }
+
                 LinearLayout ll = new LinearLayout(this);
                 ll.setLayoutParams(new TableRow.LayoutParams(
                         TableRow.LayoutParams.MATCH_PARENT,
@@ -194,7 +220,14 @@ public class GroupCallActivity extends BaseActivity {
                         buttonHeight - 100,
                         1.0f
                 ));
-                imgView.setImageResource(R.drawable.ic_credits);
+
+                // imgView.setImageResource(R.drawable.ic_credits);
+                String imgUrl = memberArray[(row * 2) + col].getimageUrl();
+                Picasso.get()
+                        .load(imgUrl)
+//                        .resize(windowWidth/2 - 40, buttonHeight - 100)
+                        .fit()
+                        .into(imgView);
 
                 LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
@@ -209,7 +242,9 @@ public class GroupCallActivity extends BaseActivity {
                 tv1.setBackgroundColor(getResources().getColor(R.color.bluegray600));
                 tv1.setTextColor(getResources().getColor(R.color.white));
                 tv1.setTextSize(18);
-                tv1.setText("HELO");
+
+                String myName = memberArray[(row * 2) + col].getName();
+                tv1.setText(myName);
 
                 ll.addView(imgView);
                 ll.addView(tv1);
@@ -285,6 +320,9 @@ public class GroupCallActivity extends BaseActivity {
 
                         Member pp = new Member(userName, imageUrl);
                         userIdMemberMap.put(userID, pp);
+
+                        Log.v("TESTERING", "" + userIdMemberMap);
+                        populateImages(userIdMemberMap);
 
                         Map<String, Object> hmap = new HashMap<>();
 
@@ -404,6 +442,9 @@ public class GroupCallActivity extends BaseActivity {
 
                         Member pp = new Member(userName, imageUrl);
                         userIdMemberMap.put(userID, pp);
+
+                        Log.v("TESTERING", "" + userIdMemberMap);
+                        populateImages(userIdMemberMap);
 
                         Map<String, Object> hmap = new HashMap<>();
 
