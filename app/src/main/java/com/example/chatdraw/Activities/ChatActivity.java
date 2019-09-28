@@ -680,7 +680,7 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         Log.v("MYGOD", "" + userName[0]);
         Log.v("MYGOD", "" + userImageUrl[0]);
 
-        if (getSinchServiceInterface().getIsOnGoingCall()) {
+        if (getSinchServiceInterface().getGroupIsOnGoingCall()) {
             if (getSinchServiceInterface().getGroupUserName().equals(sinchGroupID)) {
                 Intent intent = new Intent(ChatActivity.this, GroupCallActivity.class);
                 intent.putExtra("participant", membersID.size());
@@ -694,28 +694,38 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                 Toast.makeText(this, "Cannot call others while talking with others", Toast.LENGTH_SHORT).show();
             }
         } else {
-            if (sinchGroupID.isEmpty()) {
-                Toast.makeText(this, "Please enter a user to call", Toast.LENGTH_LONG).show();
-                return;
-            }
+            if (getSinchServiceInterface().getIsOnGoingCall()) {
+                Toast.makeText(this, "You are currently calling other person: "
+                        + getSinchServiceInterface().getFriendName(), Toast.LENGTH_SHORT).show();
+            } else {
+                if (sinchGroupID.isEmpty()) {
+                    Toast.makeText(this, "Please enter a user to call", Toast.LENGTH_LONG).show();
+                    return;
+                }
 
-            try {
-                Intent intent = new Intent(ChatActivity.this, GroupCallActivity.class);
-                intent.putExtra("participant", membersID.size());
-                intent.putExtra("userID", userUID);
-                intent.putExtra("imageUrl", userImageUrl[0]);
-                intent.putExtra("userName", userName[0]);
-                intent.putExtra("groupID", sinchGroupID);
-                intent.putExtra("groupName", groupName);
-                startActivity(intent);
-            } catch (MissingPermissionException e) {
-                ActivityCompat.requestPermissions(this, new String[]{e.getRequiredPermission()}, REQUEST_MICROPHONE);
+                try {
+                    Intent intent = new Intent(ChatActivity.this, GroupCallActivity.class);
+                    intent.putExtra("participant", membersID.size());
+                    intent.putExtra("userID", userUID);
+                    intent.putExtra("imageUrl", userImageUrl[0]);
+                    intent.putExtra("userName", userName[0]);
+                    intent.putExtra("groupID", sinchGroupID);
+                    intent.putExtra("groupName", groupName);
+                    startActivity(intent);
+                } catch (MissingPermissionException e) {
+                    ActivityCompat.requestPermissions(this, new String[]{e.getRequiredPermission()}, REQUEST_MICROPHONE);
+                }
             }
         }
     }
 
     private void callButtonClicked() {
         if (getSinchServiceInterface().getIsOnGoingCall()) {
+//            ERROR HERE :(
+//            java.lang.NullPointerException: Attempt to invoke virtual method 'boolean java.lang.String.equals(java.lang.Object)' on a null object reference
+//            at com.example.chatdraw.Activities.ChatActivity.callButtonClicked(ChatActivity.java:724)
+//            at com.example.chatdraw.Activities.ChatActivity.onOptionsItemSelected(ChatActivity.java:650)
+
             if (getSinchServiceInterface().getFriendUserName().equals(friendsUID)) {
                 Toast.makeText(this, "Is on going call", Toast.LENGTH_SHORT).show();
 
@@ -724,34 +734,44 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                 Intent callScreen = new Intent(this, CallScreenActivity.class);
                 callScreen.putExtra(SinchService.CALL_ID, tempCallID);
                 callScreen.putExtra("FriendID", friendsUID);
+                callScreen.putExtra("FriendName", friendName);
+
+                Log.v("ERROR HERE", "");
+
                 startActivity(callScreen);
             } else {
                 Toast.makeText(this, "Cannot call others while talking with others", Toast.LENGTH_SHORT).show();
             }
         } else {
-            String userName = friendsUID;
+            if (getSinchServiceInterface().getGroupIsOnGoingCall()) {
+                Toast.makeText(this, "You have on-going call in another group: "
+                        + getSinchServiceInterface().getGroupName(), Toast.LENGTH_SHORT).show();
+            } else {
+                String userName = friendsUID;
 
-            if (userName.isEmpty()) {
-                Toast.makeText(this, "Please enter a user to call", Toast.LENGTH_LONG).show();
-                return;
-            }
-
-            try {
-                Call call = getSinchServiceInterface().callUser(userName);
-                if (call == null) {
-                    // Service failed for some reason, show a Toast and abort
-                    Toast.makeText(this, "Service is not started. Try stopping the service and starting it again before "
-                            + "placing a call.", Toast.LENGTH_LONG).show();
+                if (userName.isEmpty()) {
+                    Toast.makeText(this, "Please enter a user to call", Toast.LENGTH_LONG).show();
                     return;
                 }
 
-                String callId = call.getCallId();
-                Intent callScreen = new Intent(this, CallScreenActivity.class);
-                callScreen.putExtra(SinchService.CALL_ID, callId);
-                callScreen.putExtra("FriendID", friendsUID);
-                startActivity(callScreen);
-            } catch (MissingPermissionException e) {
-                ActivityCompat.requestPermissions(this, new String[]{e.getRequiredPermission()}, REQUEST_MICROPHONE);
+                try {
+                    Call call = getSinchServiceInterface().callUser(userName);
+                    if (call == null) {
+                        // Service failed for some reason, show a Toast and abort
+                        Toast.makeText(this, "Service is not started. Try stopping the service and starting it again before "
+                                + "placing a call.", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    String callId = call.getCallId();
+                    Intent callScreen = new Intent(this, CallScreenActivity.class);
+                    callScreen.putExtra(SinchService.CALL_ID, callId);
+                    callScreen.putExtra("FriendID", friendsUID);
+                    callScreen.putExtra("FriendName", friendName);
+                    startActivity(callScreen);
+                } catch (MissingPermissionException e) {
+                    ActivityCompat.requestPermissions(this, new String[]{e.getRequiredPermission()}, REQUEST_MICROPHONE);
+                }
             }
         }
     }

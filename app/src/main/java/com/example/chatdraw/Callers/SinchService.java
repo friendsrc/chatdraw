@@ -70,6 +70,11 @@ public class SinchService extends Service {
     private String mUserId, mFriendUserId, mGroupUserId;
     private String currentUserCallID = null;
     private String currentGroupCallID = null;
+
+    private String mFriendName = null;
+    private String mGroupName = null;
+
+    private boolean isGroupOnGoingCall = false;
     private boolean isOnGoingCall = false;
 
     private StartFailedListener mListener;
@@ -227,8 +232,16 @@ public class SinchService extends Service {
             isOnGoingCall = input;
         }
 
+        public void setGroupIsOnGoingCall(boolean input) {
+            isGroupOnGoingCall = input;
+        }
+
         public boolean getIsOnGoingCall() {
             return isOnGoingCall;
+        }
+
+        public boolean getGroupIsOnGoingCall() {
+            return isGroupOnGoingCall;
         }
 
         public String getUserName() {
@@ -250,6 +263,14 @@ public class SinchService extends Service {
         public void setGroupUserName(String groupId) {
             mGroupUserId = groupId;
         }
+
+        public String getGroupName() { return mGroupName; }
+
+        public void setGroupName(String groupName) { mGroupName = groupName; }
+
+        public String getFriendName() { return mFriendName; }
+
+        public void setFriendName(String groupName) { mFriendName = groupName; }
 
         public void setCurrentUserCallID (String callID) {
             currentUserCallID = callID;

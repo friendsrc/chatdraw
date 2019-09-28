@@ -94,6 +94,10 @@ public class IncomingCallScreenActivity extends BaseActivity {
         if (call != null) {
             try {
                 call.answer();
+
+                // ERROR HERE because I didn't passed FriendUID to CallScreenActivity
+                finish();
+
                 Intent intent = new Intent(this, CallScreenActivity.class);
                 intent.putExtra(SinchService.CALL_ID, mCallId);
                 startActivity(intent);

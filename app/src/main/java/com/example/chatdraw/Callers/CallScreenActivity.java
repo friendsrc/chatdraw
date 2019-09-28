@@ -41,6 +41,7 @@ public class CallScreenActivity extends BaseActivity {
 
     private String mCallId;
     private String mFriendCallID;
+    private String mFriendName;
 
     private TextView mCallDuration;
     private TextView mCallState;
@@ -84,6 +85,7 @@ public class CallScreenActivity extends BaseActivity {
 
         mCallId = getIntent().getStringExtra(SinchService.CALL_ID);
         mFriendCallID = getIntent().getStringExtra("FriendID");
+        mFriendName = getIntent().getStringExtra("FriendName");
 
         mCallBack.setOnClickListener(new OnClickListener() {
             @Override
@@ -149,6 +151,7 @@ public class CallScreenActivity extends BaseActivity {
 
     private void endCall() {
         getSinchServiceInterface().setIsOnGoingCall(false);
+        getSinchServiceInterface().setFriendName(null);
         getSinchServiceInterface().setCurrentUserCallID(null);
 
         mAudioPlayer.stopProgressTone();
@@ -177,6 +180,7 @@ public class CallScreenActivity extends BaseActivity {
         @Override
         public void onCallEnded(Call call) {
             getSinchServiceInterface().setIsOnGoingCall(false);
+            getSinchServiceInterface().setFriendName(null);
             getSinchServiceInterface().setFriendUserName(null);
             getSinchServiceInterface().setCurrentUserCallID(null);
             getSinchServiceInterface().stopForegroundActivity();
@@ -194,6 +198,7 @@ public class CallScreenActivity extends BaseActivity {
         public void onCallEstablished(Call call) {
             getSinchServiceInterface().setIsOnGoingCall(true);
             getSinchServiceInterface().setFriendUserName(mFriendCallID);
+            getSinchServiceInterface().setFriendName(mFriendName);
             getSinchServiceInterface().setCurrentUserCallID(mCallId);
             getSinchServiceInterface().startForegroundActivity();
 

@@ -263,7 +263,7 @@ public class GroupCallActivity extends BaseActivity {
 
     @Override
     public void onServiceConnected() {
-        if (!getSinchServiceInterface().getIsOnGoingCall()) {
+        if (!getSinchServiceInterface().getGroupIsOnGoingCall()) {
             call = getSinchServiceInterface().callConference(groupID);
             callID = call.getCallId();
 
@@ -394,7 +394,8 @@ public class GroupCallActivity extends BaseActivity {
 
         @Override
         public void onCallEstablished(Call call) {
-            getSinchServiceInterface().setIsOnGoingCall(true);
+            getSinchServiceInterface().setGroupIsOnGoingCall(true);
+            getSinchServiceInterface().setGroupName(groupName);
             getSinchServiceInterface().setGroupUserName(groupID);
             getSinchServiceInterface().setCurrentGroupCallID(callID);
             getSinchServiceInterface().startForegroundActivity();
@@ -493,7 +494,8 @@ public class GroupCallActivity extends BaseActivity {
 
         @Override
         public void onCallEnded(Call call) {
-            getSinchServiceInterface().setIsOnGoingCall(false);
+            getSinchServiceInterface().setGroupIsOnGoingCall(false);
+            getSinchServiceInterface().setGroupName(null);
             getSinchServiceInterface().setGroupUserName(null);
             getSinchServiceInterface().setCurrentGroupCallID(null);
             getSinchServiceInterface().stopForegroundActivity();
@@ -523,7 +525,7 @@ public class GroupCallActivity extends BaseActivity {
     }
 
     private void endCall() {
-        getSinchServiceInterface().setIsOnGoingCall(false);
+        getSinchServiceInterface().setGroupIsOnGoingCall(false);
 
         mAudioPlayer.stopProgressTone();
         if (call != null) {
