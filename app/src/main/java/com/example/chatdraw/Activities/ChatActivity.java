@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -347,8 +348,7 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                                 ChatActivity.this, new String[] {Manifest.permission.CAMERA},
                                 REQUEST_CAMERA);
                     } else {
-                        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                        startActivityForResult(intent, REQUEST_CAMERA);
+                        takePicture();
                     }
                 } else if (items[i].equals("Image")) {
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -371,12 +371,36 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         builder.show();
     }
 
+    Uri imageUri;
+
+    private void takePicture() {
+//        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//        startActivityForResult(intent, REQUEST_CAMERA);
+
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, "New Picture");
+        values.put(MediaStore.Images.Media.DESCRIPTION, "From your Camera");
+        imageUri = getContentResolver().insert(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        startActivityForResult(intent, REQUEST_CAMERA);
+    }
+
+    public String getRealPathFromURI(Uri contentUri) {
+        String[] proj = { MediaStore.Images.Media.DATA };
+        Cursor cursor = managedQuery(contentUri, proj, null, null, null);
+        int column_index = cursor
+                .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+        cursor.moveToFirst();
+        return cursor.getString(column_index);
+    }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == REQUEST_CAMERA && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            startActivityForResult(intent, REQUEST_CAMERA);
+            takePicture();
         } else if (requestCode == REQUEST_DOCUMENT && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
             intent.setType("application/pdf");
@@ -407,8 +431,16 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
 
         if (resultCode == Activity.RESULT_OK){
             if (requestCode == REQUEST_CAMERA){
-                Bundle bundle = data.getExtras();
-                bmp = (Bitmap) bundle.get("data");
+//                Bundle bundle = data.getExtras();
+//                bmp = (Bitmap) bundle.get("data");
+                try {
+                    bmp = MediaStore.Images.Media.getBitmap(
+                            getContentResolver(), imageUri);
+//                    imgView.setImageBitmap(bmp);
+//                    imageurl = getRealPathFromURI(imageUri);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 isActionSelected = true;
             } else if (requestCode == SELECT_FILE){
                 selectedImageUri = data.getData();
