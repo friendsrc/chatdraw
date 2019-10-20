@@ -624,17 +624,34 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         switch (item.getItemId()) {
             case R.id.draw:
-                // Go to draw activity
-                Intent intent = new Intent(ChatActivity.this, DrawActivity.class);
-                intent.putExtra("userUID", userUID);
-                intent.putExtra("friendsUID", friendsUID);
-                startActivity(intent);
+                if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                        connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+                    // we are connected to a network
+
+                    if (isGroup) {
+                        if (isServiceReady) {
+                            getSinchServiceInterface().setIsDrawingCall(true);
+                            groupCallButtonClicked();
+                        } else {
+                            Toast.makeText(this, "Calling service not ready", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        if (isServiceReady) {
+                            getSinchServiceInterface().setIsDrawingCall(true);
+                            callButtonClicked();
+                        } else {
+                            Toast.makeText(this, "Calling service not ready", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                } else {
+                    Toast.makeText(this, "No internet connection detected", Toast.LENGTH_SHORT).show();
+                }
 
                 return true;
             case R.id.call:
-                ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
                 if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
                         connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
                     // we are connected to a network
@@ -730,10 +747,9 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
 
                 Intent callScreen = new Intent(this, CallScreenActivity.class);
                 callScreen.putExtra(SinchService.CALL_ID, tempCallID);
+                callScreen.putExtra("userID", userUID);
                 callScreen.putExtra("FriendID", friendsUID);
                 callScreen.putExtra("FriendName", friendName[0]);
-
-                Log.v("ERROR HERE", "");
 
                 startActivity(callScreen);
             } else {
@@ -749,6 +765,7 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                 } else {
                     Intent callScreen = new Intent(this, CallScreenActivity.class);
                     callScreen.putExtra(SinchService.CALL_ID, getSinchServiceInterface().getTryConnectCallID());
+                    callScreen.putExtra("userID", userUID);
                     callScreen.putExtra("FriendID", friendsUID);
                     callScreen.putExtra("FriendName", friendName[0]);
                     startActivity(callScreen);
@@ -773,6 +790,7 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                     String callId = call.getCallId();
                     Intent callScreen = new Intent(this, CallScreenActivity.class);
                     callScreen.putExtra(SinchService.CALL_ID, callId);
+                    callScreen.putExtra("userID", userUID);
                     callScreen.putExtra("FriendID", friendsUID);
                     callScreen.putExtra("FriendName", friendName[0]);
                     getSinchServiceInterface().setTryConnectUser(friendsUID);

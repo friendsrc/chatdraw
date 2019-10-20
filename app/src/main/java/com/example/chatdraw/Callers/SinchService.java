@@ -79,6 +79,7 @@ public class SinchService extends Service {
 
     private boolean isGroupOnGoingCall = false;
     private boolean isOnGoingCall = false;
+    private boolean isDrawingCall = false;
 
     private StartFailedListener mListener;
     private PersistedSettings mSettings;
@@ -231,6 +232,10 @@ public class SinchService extends Service {
             stopSelf();
         }
 
+        public void setIsDrawingCall(boolean callingDraw){
+            isDrawingCall = callingDraw;
+        }
+
         public void setTryConnectUser(String friendID) {
             mTryConnectUser = friendID;
         }
@@ -253,6 +258,10 @@ public class SinchService extends Service {
 
         public String getTryConnectCallID() {
             return mTryConnectCallID;
+        }
+
+        public boolean getIsDrawingCall() {
+            return isDrawingCall;
         }
 
         public boolean getIsOnGoingCall() {
