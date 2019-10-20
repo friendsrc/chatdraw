@@ -6,15 +6,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.exifinterface.media.ExifInterface;
 
 import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -63,6 +66,8 @@ public class GroupCreateActivity extends AppCompatActivity {
     private Uri selectedImageUri;
     private String url;
 
+    private Uri cameraImageUri;
+
     private String groupID;
     ImageView groupPicture;
     ImageView cameraLogo;
@@ -98,7 +103,7 @@ public class GroupCreateActivity extends AppCompatActivity {
         groupPicture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SelectImage();
+                selectImage();
             }
         });
 
@@ -253,7 +258,14 @@ public class GroupCreateActivity extends AppCompatActivity {
         return true;
     }
 
-    private void SelectImage(){
+    public static Bitmap rotateImage(Bitmap source, float angle)
+    {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
+    }
+
+    private void selectImage(){
         final CharSequence[] items={"Camera","Gallery"};
 
         AlertDialog.Builder builder = new AlertDialog.Builder(GroupCreateActivity.this);
@@ -275,8 +287,7 @@ public class GroupCreateActivity extends AppCompatActivity {
                             == PackageManager.PERMISSION_DENIED) {
                         Toast.makeText(GroupCreateActivity.this, "Camera permission not granted", Toast.LENGTH_SHORT).show();
                     } else {
-                        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                        startActivityForResult(intent, REQUEST_CAMERA);
+                        takePicture();
                     }
                 } else if (items[i].equals("Gallery")) {
                     Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -288,6 +299,18 @@ public class GroupCreateActivity extends AppCompatActivity {
         builder.show();
     }
 
+    private void takePicture() {
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, "New Picture");
+        values.put(MediaStore.Images.Media.DESCRIPTION, "From your Camera");
+        cameraImageUri = getContentResolver().insert(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, cameraImageUri);
+        startActivityForResult(intent, REQUEST_CAMERA);
+    }
+
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode, resultCode,data);
@@ -295,8 +318,36 @@ public class GroupCreateActivity extends AppCompatActivity {
         if (resultCode == Activity.RESULT_OK){
             cameraLogo.setVisibility(View.INVISIBLE);
             if(requestCode == REQUEST_CAMERA){
-                Bundle bundle = data.getExtras();
-                bmp = (Bitmap) bundle.get("data");
+//                Bundle bundle = data.getExtras();
+//                bmp = (Bitmap) bundle.get("data");
+                try {
+                    bmp = MediaStore.Images.Media.getBitmap(
+                            getContentResolver(), cameraImageUri);
+                    ExifInterface ei = new ExifInterface(
+                            this.getContentResolver().openInputStream(cameraImageUri));
+                    int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                            ExifInterface.ORIENTATION_UNDEFINED);
+
+                    switch(orientation) {
+                        case ExifInterface.ORIENTATION_ROTATE_90:
+                            bmp = rotateImage(bmp, 90);
+                            break;
+
+                        case ExifInterface.ORIENTATION_ROTATE_180:
+                            bmp = rotateImage(bmp, 180);
+                            break;
+
+                        case ExifInterface.ORIENTATION_ROTATE_270:
+                            bmp = rotateImage(bmp, 270);
+                            break;
+
+                        case ExifInterface.ORIENTATION_NORMAL:
+                        default:
+                            break;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 groupPicture.setImageBitmap(bmp);
             } else if (requestCode == SELECT_FILE){
                 selectedImageUri = data.getData();
