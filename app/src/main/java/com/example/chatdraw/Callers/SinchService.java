@@ -63,6 +63,7 @@ public class SinchService extends Service {
     private Messenger messenger;
 
     public static final String CALL_ID = "CALL_ID";
+    public static final String FRIEND_ID = "FRIEND_ID";
     static final String TAG = SinchService.class.getSimpleName();
 
     private SinchServiceInterface mSinchServiceInterface = new SinchServiceInterface();
@@ -73,6 +74,8 @@ public class SinchService extends Service {
 
     private String mFriendName = null;
     private String mGroupName = null;
+    private String mTryConnectUser = null;
+    private String mTryConnectCallID = null;
 
     private boolean isGroupOnGoingCall = false;
     private boolean isOnGoingCall = false;
@@ -228,12 +231,28 @@ public class SinchService extends Service {
             stopSelf();
         }
 
+        public void setTryConnectUser(String friendID) {
+            mTryConnectUser = friendID;
+        }
+
+        public void setTryConnectCallID(String callID) {
+            mTryConnectCallID = callID;
+        }
+
         public void setIsOnGoingCall(boolean input) {
             isOnGoingCall = input;
         }
 
         public void setGroupIsOnGoingCall(boolean input) {
             isGroupOnGoingCall = input;
+        }
+
+        public String getTryConnectUser() {
+            return mTryConnectUser;
+        }
+
+        public String getTryConnectCallID() {
+            return mTryConnectCallID;
         }
 
         public boolean getIsOnGoingCall() {
@@ -382,6 +401,7 @@ public class SinchService extends Service {
             Log.d(TAG, "Incoming call");
             Intent intent = new Intent(SinchService.this, IncomingCallScreenActivity.class);
             intent.putExtra(CALL_ID, call.getCallId());
+            intent.putExtra(FRIEND_ID, call.getRemoteUserId());
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             SinchService.this.startActivity(intent);
         }

@@ -34,7 +34,9 @@ import com.squareup.picasso.Picasso;
 
 public class IncomingCallScreenActivity extends BaseActivity {
     static final String TAG = IncomingCallScreenActivity.class.getSimpleName();
+
     private String mCallId;
+    private String mFriendId;
     private AudioPlayer mAudioPlayer;
     private ImageView mImageProfile;
 
@@ -53,6 +55,7 @@ public class IncomingCallScreenActivity extends BaseActivity {
         mAudioPlayer = new AudioPlayer(this);
         mAudioPlayer.playRingtone();
         mCallId = getIntent().getStringExtra(SinchService.CALL_ID);
+        mFriendId = getIntent().getStringExtra(SinchService.FRIEND_ID);
     }
 
     @Override
@@ -99,6 +102,7 @@ public class IncomingCallScreenActivity extends BaseActivity {
                 finish();
 
                 Intent intent = new Intent(this, CallScreenActivity.class);
+                intent.putExtra(SinchService.FRIEND_ID, mFriendId);
                 intent.putExtra(SinchService.CALL_ID, mCallId);
                 startActivity(intent);
             } catch (MissingPermissionException e) {

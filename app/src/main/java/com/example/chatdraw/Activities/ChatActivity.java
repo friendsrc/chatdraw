@@ -697,6 +697,8 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
             if (getSinchServiceInterface().getIsOnGoingCall()) {
                 Toast.makeText(this, "You are currently calling other person: "
                         + getSinchServiceInterface().getFriendName(), Toast.LENGTH_SHORT).show();
+            } else if (getSinchServiceInterface().getTryConnectUser() != null) {
+                Toast.makeText(this, "Cannot call others while trying to connect with others", Toast.LENGTH_SHORT).show();
             } else {
                 if (sinchGroupID.isEmpty()) {
                     Toast.makeText(this, "Please enter a user to call", Toast.LENGTH_LONG).show();
@@ -721,11 +723,6 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
 
     private void callButtonClicked() {
         if (getSinchServiceInterface().getIsOnGoingCall()) {
-//            ERROR HERE :(
-//            java.lang.NullPointerException: Attempt to invoke virtual method 'boolean java.lang.String.equals(java.lang.Object)' on a null object reference
-//            at com.example.chatdraw.Activities.ChatActivity.callButtonClicked(ChatActivity.java:724)
-//            at com.example.chatdraw.Activities.ChatActivity.onOptionsItemSelected(ChatActivity.java:650)
-
             if (getSinchServiceInterface().getFriendUserName().equals(friendsUID)) {
                 Toast.makeText(this, "Is on going call", Toast.LENGTH_SHORT).show();
 
@@ -734,7 +731,7 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                 Intent callScreen = new Intent(this, CallScreenActivity.class);
                 callScreen.putExtra(SinchService.CALL_ID, tempCallID);
                 callScreen.putExtra("FriendID", friendsUID);
-                callScreen.putExtra("FriendName", friendName);
+                callScreen.putExtra("FriendName", friendName[0]);
 
                 Log.v("ERROR HERE", "");
 
@@ -746,16 +743,26 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
             if (getSinchServiceInterface().getGroupIsOnGoingCall()) {
                 Toast.makeText(this, "You have on-going call in another group: "
                         + getSinchServiceInterface().getGroupName(), Toast.LENGTH_SHORT).show();
+            } else if (getSinchServiceInterface().getTryConnectUser() != null) {
+                if (!getSinchServiceInterface().getTryConnectUser().equals(friendsUID)) {
+                    Toast.makeText(this, "Cannot call others while talking with others", Toast.LENGTH_SHORT).show();
+                } else {
+                    Intent callScreen = new Intent(this, CallScreenActivity.class);
+                    callScreen.putExtra(SinchService.CALL_ID, getSinchServiceInterface().getTryConnectCallID());
+                    callScreen.putExtra("FriendID", friendsUID);
+                    callScreen.putExtra("FriendName", friendName[0]);
+                    startActivity(callScreen);
+                }
             } else {
-                String userName = friendsUID;
+                String userNameTemp = friendsUID;
 
-                if (userName.isEmpty()) {
+                if (userNameTemp.isEmpty()) {
                     Toast.makeText(this, "Please enter a user to call", Toast.LENGTH_LONG).show();
                     return;
                 }
 
                 try {
-                    Call call = getSinchServiceInterface().callUser(userName);
+                    Call call = getSinchServiceInterface().callUser(userNameTemp);
                     if (call == null) {
                         // Service failed for some reason, show a Toast and abort
                         Toast.makeText(this, "Service is not started. Try stopping the service and starting it again before "
@@ -767,7 +774,9 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                     Intent callScreen = new Intent(this, CallScreenActivity.class);
                     callScreen.putExtra(SinchService.CALL_ID, callId);
                     callScreen.putExtra("FriendID", friendsUID);
-                    callScreen.putExtra("FriendName", friendName);
+                    callScreen.putExtra("FriendName", friendName[0]);
+                    getSinchServiceInterface().setTryConnectUser(friendsUID);
+                    getSinchServiceInterface().setTryConnectCallID(callId);
                     startActivity(callScreen);
                 } catch (MissingPermissionException e) {
                     ActivityCompat.requestPermissions(this, new String[]{e.getRequiredPermission()}, REQUEST_MICROPHONE);

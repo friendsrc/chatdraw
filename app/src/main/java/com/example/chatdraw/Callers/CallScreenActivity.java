@@ -39,7 +39,10 @@ public class CallScreenActivity extends BaseActivity {
     private Timer mTimer;
     private UpdateCallDurationTask mDurationTask;
 
+    private boolean isIncomingCall = false;
+
     private String mCallId;
+    private String mFriendIncomingCallID;
     private String mFriendCallID;
     private String mFriendName;
 
@@ -84,6 +87,12 @@ public class CallScreenActivity extends BaseActivity {
         });
 
         mCallId = getIntent().getStringExtra(SinchService.CALL_ID);
+        mFriendIncomingCallID = getIntent().getStringExtra(SinchService.FRIEND_ID);
+
+        if (mFriendIncomingCallID != null) {
+            isIncomingCall = true;
+        }
+
         mFriendCallID = getIntent().getStringExtra("FriendID");
         mFriendName = getIntent().getStringExtra("FriendName");
 
@@ -179,6 +188,8 @@ public class CallScreenActivity extends BaseActivity {
 
         @Override
         public void onCallEnded(Call call) {
+            getSinchServiceInterface().setTryConnectCallID(null);
+            getSinchServiceInterface().setTryConnectUser(null);
             getSinchServiceInterface().setIsOnGoingCall(false);
             getSinchServiceInterface().setFriendName(null);
             getSinchServiceInterface().setFriendUserName(null);
@@ -196,8 +207,16 @@ public class CallScreenActivity extends BaseActivity {
 
         @Override
         public void onCallEstablished(Call call) {
+            getSinchServiceInterface().setTryConnectCallID(null);
+            getSinchServiceInterface().setTryConnectUser(null);
             getSinchServiceInterface().setIsOnGoingCall(true);
-            getSinchServiceInterface().setFriendUserName(mFriendCallID);
+
+            if (isIncomingCall) {
+                getSinchServiceInterface().setFriendUserName(mFriendIncomingCallID);
+            } else {
+                getSinchServiceInterface().setFriendUserName(mFriendCallID);
+            }
+
             getSinchServiceInterface().setFriendName(mFriendName);
             getSinchServiceInterface().setCurrentUserCallID(mCallId);
             getSinchServiceInterface().startForegroundActivity();
