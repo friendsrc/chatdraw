@@ -1,9 +1,7 @@
 package com.example.chatdraw.Drawing;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -11,10 +9,8 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -23,10 +19,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.internal.ads.zzagm;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -39,7 +32,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.TreeMap;
 import java.util.UUID;
 
@@ -341,7 +333,7 @@ public class CanvasView extends View {
                 if (!paints.containsKey(currPoint[0].getLineID())) { // start of a new line
                     removedLineIDs.clear();
                     int color = currPoint[0].getColor();
-                    Float size =  currPoint[0].getBrushSize();
+                    float size =  currPoint[0].getBrushSize();
                     mPath = new Path();
 
                     Paint paint = new Paint();

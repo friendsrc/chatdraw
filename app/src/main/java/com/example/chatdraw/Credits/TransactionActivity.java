@@ -80,28 +80,25 @@ public class TransactionActivity extends AppCompatActivity {
                 .collection("History")
                 .orderBy("timestamp", Query.Direction.ASCENDING)
                 .limit(25)
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                        // remove previous data
-                        adapter.clearData();
-                        for (DocumentSnapshot q: queryDocumentSnapshots) {
-                            TransactionItem transactionItem = q.toObject(TransactionItem.class);
-                            Log.v("HEREEE", "" + transactionItem);
+                .addSnapshotListener((queryDocumentSnapshots, e) -> {
+                    // remove previous data
+                    adapter.clearData();
+                    for (DocumentSnapshot q: queryDocumentSnapshots) {
+                        TransactionItem transactionItem = q.toObject(TransactionItem.class);
+                        Log.v("HEREEE", "" + transactionItem);
 
-                            exampleList.addFirst(transactionItem);
-                            recyclerView.scrollToPosition(adapter.getItemCount() + 1);
-                        }
-
-                        adapter = new CreditRecyclerViewAdapter(exampleList);
-                        recyclerView.setAdapter(adapter);
+                        exampleList.addFirst(transactionItem);
+                        recyclerView.scrollToPosition(adapter.getItemCount() + 1);
                     }
+
+                    adapter = new CreditRecyclerViewAdapter(exampleList);
+                    recyclerView.setAdapter(adapter);
                 });
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        SearchView searchView = (SearchView) findViewById(R.id.action_search_view);
+        SearchView searchView = findViewById(R.id.action_search_view);
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override

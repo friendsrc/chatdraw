@@ -26,9 +26,7 @@ import com.sinch.android.rtc.PushPair;
 import com.sinch.android.rtc.calling.Call;
 import com.sinch.android.rtc.calling.CallListener;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -59,12 +57,7 @@ public class GroupCallActivity extends BaseActivity {
 
         @Override
         public void run() {
-            GroupCallActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    updateCallDuration();
-                }
-            });
+            GroupCallActivity.this.runOnUiThread(() -> updateCallDuration());
         }
     }
 
@@ -76,9 +69,9 @@ public class GroupCallActivity extends BaseActivity {
         Intent intent = getIntent();
 
         mAudioPlayer = new AudioPlayer(this);
-        tvCallStatus = (TextView) findViewById(R.id.callStatus);
-        tvGroupTitle = (TextView) findViewById(R.id.groupDetails);
-        mCallDuration = (TextView) findViewById(R.id.callDuration);
+        tvCallStatus = findViewById(R.id.callStatus);
+        tvGroupTitle = findViewById(R.id.groupDetails);
+        mCallDuration = findViewById(R.id.callDuration);
 
         groupSize = intent.getIntExtra("participant", 0);
         imageUrl = intent.getStringExtra("imageUrl");
@@ -89,59 +82,43 @@ public class GroupCallActivity extends BaseActivity {
 
         tvGroupTitle.setText(groupName);
 
-        btnCancel = (Button) findViewById(R.id.btnCancel);
-        btnCancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                endCall();
+        btnCancel = findViewById(R.id.btnCancel);
+        btnCancel.setOnClickListener(view -> endCall());
+
+        btnSpeaker = findViewById(R.id.btnSpeaker);
+        btnSpeaker.setOnClickListener(view -> {
+            AudioController audioController = getSinchServiceInterface().getAudioController();
+
+            if (isSpeaker) {
+                btnSpeaker.setBackgroundColor(getResources().getColor(R.color.btn_logut_bg));
+                audioController.disableSpeaker();
+
+                isSpeaker = false;
+            } else {
+                btnSpeaker.setBackgroundColor(getResources().getColor(R.color.greyish));
+                audioController.enableSpeaker();
+
+                isSpeaker = true;
             }
         });
 
-        btnSpeaker = (ImageButton) findViewById(R.id.btnSpeaker);
-        btnSpeaker.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AudioController audioController = getSinchServiceInterface().getAudioController();
+        btnMute = findViewById(R.id.btnMute);
+        btnMute.setOnClickListener(view -> {
+            AudioController audioController = getSinchServiceInterface().getAudioController();
 
-                if (isSpeaker) {
-                    btnSpeaker.setBackgroundColor(getResources().getColor(R.color.btn_logut_bg));
-                    audioController.disableSpeaker();
-
-                    isSpeaker = false;
-                } else {
-                    btnSpeaker.setBackgroundColor(getResources().getColor(R.color.greyish));
-                    audioController.enableSpeaker();
-
-                    isSpeaker = true;
-                }
+            if (isMute) {
+                btnMute.setBackgroundColor(getResources().getColor(R.color.s));
+                audioController.unmute();
+                isMute = false;
+            } else {
+                btnMute.setBackgroundColor(getResources().getColor(R.color.greyish));
+                audioController.mute();
+                isMute = true;
             }
         });
 
-        btnMute = (ImageButton) findViewById(R.id.btnMute);
-        btnMute.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AudioController audioController = getSinchServiceInterface().getAudioController();
-
-                if (isMute) {
-                    btnMute.setBackgroundColor(getResources().getColor(R.color.s));
-                    audioController.unmute();
-                    isMute = false;
-                } else {
-                    btnMute.setBackgroundColor(getResources().getColor(R.color.greyish));
-                    audioController.mute();
-                    isMute = true;
-                }
-            }
-        });
-
-        btnBack = (ImageButton) findViewById(R.id.btnBack);
-        btnBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
+        btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(view -> finish());
     }
 
     @Override
@@ -279,7 +256,7 @@ public class GroupCallActivity extends BaseActivity {
             tvCallStatus.setText("Connected");
             tvGroupTitle.setText(groupName + " (" + 1 + "/" + groupSize + ")");
 
-            LinearLayout callLayout = (LinearLayout) findViewById(R.id.onGoingCallLayout);
+            LinearLayout callLayout = findViewById(R.id.onGoingCallLayout);
             callLayout.setAlpha(1f);
 
             AudioController audioController = getSinchServiceInterface().getAudioController();

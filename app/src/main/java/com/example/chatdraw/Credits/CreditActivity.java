@@ -7,16 +7,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.chatdraw.AccountActivity.LoginActivity;
-import com.example.chatdraw.AccountActivity.PersonalActivity;
-import com.example.chatdraw.AccountActivity.SettingsActivity;
 import com.example.chatdraw.AccountActivity.SignupActivity;
 import com.example.chatdraw.R;
 import com.google.android.gms.ads.AdRequest;
@@ -46,18 +42,15 @@ public class CreditActivity extends AppCompatActivity implements RewardedVideoAd
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_credit);
 
-        credit_balance = (TextView) findViewById(R.id.credit_balance);
-        Button history_button = (Button) findViewById(R.id.history_button);
-        ads_button = (Button) findViewById(R.id.ads_button);
+        credit_balance = findViewById(R.id.credit_balance);
+        Button history_button = findViewById(R.id.history_button);
+        ads_button = findViewById(R.id.ads_button);
 
         ads_button.setEnabled(false);
 
-        history_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(CreditActivity.this, TransactionActivity.class);
-                startActivity(intent);
-            }
+        history_button.setOnClickListener(view -> {
+            Intent intent = new Intent(CreditActivity.this, TransactionActivity.class);
+            startActivity(intent);
         });
 
         MobileAds.initialize(this, "ca-app-pub-6617407029399736~9775527525");
@@ -66,14 +59,11 @@ public class CreditActivity extends AppCompatActivity implements RewardedVideoAd
 
         mAd.loadAd("ca-app-pub-6617407029399736/1425306353", new AdRequest.Builder().build());
 
-        ads_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mAd.isLoaded()) {
-                    mAd.show();
-                } else {
-                    Toast.makeText(CreditActivity.this, "No ads available currently", Toast.LENGTH_SHORT).show();
-                }
+        ads_button.setOnClickListener(view -> {
+            if (mAd.isLoaded()) {
+                mAd.show();
+            } else {
+                Toast.makeText(CreditActivity.this, "No ads available currently", Toast.LENGTH_SHORT).show();
             }
         });
 

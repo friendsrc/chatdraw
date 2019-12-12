@@ -84,7 +84,7 @@ public class ProfileEditActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile_edit);
 
-        circleImageView = (CircleImageView) findViewById(R.id.new_profile_picture_image_view);
+        circleImageView = findViewById(R.id.new_profile_picture_image_view);
         mProgressDialog = new ProgressDialog(ProfileEditActivity.this);
         auth = FirebaseAuth.getInstance();
 
@@ -125,7 +125,7 @@ public class ProfileEditActivity extends AppCompatActivity {
                     }
                 }
 
-                CircleImageView imgview = (CircleImageView) findViewById(R.id.new_profile_picture_image_view);
+                CircleImageView imgview = findViewById(R.id.new_profile_picture_image_view);
 
                 if (imgurl == null) {
                     imgview.setImageResource(R.drawable.account_circle_black_75dp);
@@ -135,10 +135,10 @@ public class ProfileEditActivity extends AppCompatActivity {
                             .into(imgview);
                 }
 
-                TextView tv = (TextView) findViewById(R.id.profiles_field);
+                TextView tv = findViewById(R.id.profiles_field);
                 tv.setText(tempName);
 
-                TextView tv1 = (TextView) findViewById(R.id.usernames_field);
+                TextView tv1 = findViewById(R.id.usernames_field);
                 tv1.setText(tempUsername);
             }
 
@@ -149,13 +149,8 @@ public class ProfileEditActivity extends AppCompatActivity {
         });
 
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.photo_button);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                SelectImage();
-            }
-        });
+        FloatingActionButton fab = findViewById(R.id.photo_button);
+        fab.setOnClickListener(view -> SelectImage());
 
         getFragmentManager()
                 .beginTransaction()
@@ -188,107 +183,104 @@ public class ProfileEditActivity extends AppCompatActivity {
 
     }
 
-    private static Preference.OnPreferenceChangeListener listener = new Preference.OnPreferenceChangeListener() {
-        @Override
-        public boolean onPreferenceChange(final Preference preference, Object newValue) {
-            String stringValue = newValue.toString();
-            if (preference instanceof ListPreference){
-                ListPreference listPreference = (ListPreference) preference;
-                int index = listPreference.findIndexOfValue(stringValue);
+    private static Preference.OnPreferenceChangeListener listener = (preference, newValue) -> {
+        String stringValue = newValue.toString();
+        if (preference instanceof ListPreference){
+            ListPreference listPreference = (ListPreference) preference;
+            int index = listPreference.findIndexOfValue(stringValue);
 
-                // Set the summary to reflect the new value
-                if (index > -1) {
-                    preference.setSummary(listPreference.getEntries()[index]);
+            // Set the summary to reflect the new value
+            if (index > -1) {
+                preference.setSummary(listPreference.getEntries()[index]);
 
-                    Activity activity = (Activity) preference.getContext();
-                    GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(activity);
+                Activity activity = (Activity) preference.getContext();
+                GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(activity);
 
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("status", stringValue);
+                Map<String, Object> map = new HashMap<>();
+                map.put("status", stringValue);
 
-                    if (acct != null) {
-                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(acct.getId()).child("status");
-                        databaseReference.setValue(stringValue);
-                    } else {
-                        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(user.getUid()).child("status");
-                        databaseReference.setValue(stringValue);
-                    }
-
+                if (acct != null) {
+                    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(acct.getId()).child("status");
+                    databaseReference.setValue(stringValue);
                 } else {
-                    preference.setSummary(null);
+                    final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(user.getUid()).child("status");
+                    databaseReference.setValue(stringValue);
                 }
-            } else if (preference instanceof EditTextPreference) {
-                if (stringValue.length() == 0) {
-                    if (preference.getSummary().equals("changethis")) {
-                        Log.v("PASS HERE", "CHANGETHIS");
-                        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
 
-                        reference.addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                Activity activity = (Activity) preference.getContext();
-                                GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(activity);
+            } else {
+                preference.setSummary(null);
+            }
+        } else if (preference instanceof EditTextPreference) {
+            if (stringValue.length() == 0) {
+                if (preference.getSummary().equals("changethis")) {
+                    Log.v("PASS HERE", "CHANGETHIS");
+                    final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                    DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
 
-                                String profilename = "";
-                                String username = "";
+                    reference.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            Activity activity = (Activity) preference.getContext();
+                            GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(activity);
 
-                                if (acct != null) {
-                                    String tempID = acct.getId();
-                                    profilename = (String) dataSnapshot.child(tempID).child("name").getValue();
-                                    username = (String) dataSnapshot.child(tempID).child("username").getValue();
-                                } else {
-                                    String tempID = user.getUid();
-                                    profilename = (String) dataSnapshot.child(tempID).child("name").getValue();
-                                    username = (String) dataSnapshot.child(tempID).child("username").getValue();
-                                }
+                            String profilename = "";
+                            String username = "";
 
-                                if (preference.getKey().equals("profilenames") && (profilename != null)) {
-                                    preference.setSummary(profilename);
-                                } else if (preference.getKey().equals("usernames") && username != null) {
-                                    preference.setSummary(username);
-                                }
+                            if (acct != null) {
+                                String tempID = acct.getId();
+                                profilename = (String) dataSnapshot.child(tempID).child("name").getValue();
+                                username = (String) dataSnapshot.child(tempID).child("username").getValue();
+                            } else {
+                                String tempID = user.getUid();
+                                profilename = (String) dataSnapshot.child(tempID).child("name").getValue();
+                                username = (String) dataSnapshot.child(tempID).child("username").getValue();
                             }
 
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                            if (preference.getKey().equals("profilenames") && (profilename != null)) {
+                                preference.setSummary(profilename);
+                            } else if (preference.getKey().equals("usernames") && username != null) {
+                                preference.setSummary(username);
                             }
-                        });
+                        }
 
-                    } else {
-                        Log.v("HERE", "SET HERE");
-                        preference.setSummary("Not set");
-                    }
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+
                 } else {
-                    if (preference.getKey().equals("profilenames")) {
-                        preference.setSummary(stringValue);
-                    } else if (preference.getKey().equals("usernames")) {
-                        preference.setSummary(stringValue);
-                    } else {
-                        preference.setSummary(stringValue);
-                    }
+                    Log.v("HERE", "SET HERE");
+                    preference.setSummary("Not set");
                 }
-            } else if (preference instanceof RingtonePreference){
-                if (TextUtils.isEmpty(stringValue)) {
-                    preference.setSummary("Silent");
+            } else {
+                if (preference.getKey().equals("profilenames")) {
+                    preference.setSummary(stringValue);
+                } else if (preference.getKey().equals("usernames")) {
+                    preference.setSummary(stringValue);
                 } else {
-                    Ringtone ringtone = RingtoneManager.getRingtone(preference.getContext(),
-                            Uri.parse(stringValue));
-
-                    if (ringtone == null) {
-                        // Clear the summary
-                        preference.setSummary("Choose notification ringtone");
-                    } else {
-                        String name = ringtone.getTitle(preference.getContext());
-                        preference.setSummary(name);
-                    }
+                    preference.setSummary(stringValue);
                 }
             }
+        } else if (preference instanceof RingtonePreference){
+            if (TextUtils.isEmpty(stringValue)) {
+                preference.setSummary("Silent");
+            } else {
+                Ringtone ringtone = RingtoneManager.getRingtone(preference.getContext(),
+                        Uri.parse(stringValue));
 
-            return true;
+                if (ringtone == null) {
+                    // Clear the summary
+                    preference.setSummary("Choose notification ringtone");
+                } else {
+                    String name = ringtone.getTitle(preference.getContext());
+                    preference.setSummary(name);
+                }
+            }
         }
+
+        return true;
     };
 
     private void SelectImage(){
@@ -297,32 +289,29 @@ public class ProfileEditActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(ProfileEditActivity.this);
         builder.setTitle("Change profile image from");
 
-        builder.setItems(items, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                if (items[i].equals("Camera")) {
-                    // ask for Camera permission
-                    if (ContextCompat.checkSelfPermission(ProfileEditActivity.this, Manifest.permission.CAMERA)
-                            == PackageManager.PERMISSION_DENIED) {
-                        ActivityCompat.requestPermissions(
-                                ProfileEditActivity.this, new String[] {Manifest.permission.CAMERA},
-                                REQUEST_CAMERA);
-                    }
-
-                    if (ContextCompat.checkSelfPermission(ProfileEditActivity.this, Manifest.permission.CAMERA)
-                            == PackageManager.PERMISSION_DENIED) {
-                        Toast.makeText(ProfileEditActivity.this, "Camera permission not granted", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                        startActivityForResult(intent, REQUEST_CAMERA);
-                    }
-                } else if (items[i].equals("Gallery")) {
-                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                    intent.setType("image/*");
-                    startActivityForResult(intent, SELECT_FILE);
-                } else if (items[i].equals("Cancel")) {
-                    dialogInterface.dismiss();
+        builder.setItems(items, (dialogInterface, i) -> {
+            if (items[i].equals("Camera")) {
+                // ask for Camera permission
+                if (ContextCompat.checkSelfPermission(ProfileEditActivity.this, Manifest.permission.CAMERA)
+                        == PackageManager.PERMISSION_DENIED) {
+                    ActivityCompat.requestPermissions(
+                            ProfileEditActivity.this, new String[] {Manifest.permission.CAMERA},
+                            REQUEST_CAMERA);
                 }
+
+                if (ContextCompat.checkSelfPermission(ProfileEditActivity.this, Manifest.permission.CAMERA)
+                        == PackageManager.PERMISSION_DENIED) {
+                    Toast.makeText(ProfileEditActivity.this, "Camera permission not granted", Toast.LENGTH_SHORT).show();
+                } else {
+                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    startActivityForResult(intent, REQUEST_CAMERA);
+                }
+            } else if (items[i].equals("Gallery")) {
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("image/*");
+                startActivityForResult(intent, SELECT_FILE);
+            } else if (items[i].equals("Cancel")) {
+                dialogInterface.dismiss();
             }
         });
         builder.show();
@@ -389,42 +378,25 @@ public class ProfileEditActivity extends AppCompatActivity {
                 byte[] byteArray = stream.toByteArray();
 
                 UploadTask uploadTask = fileReference.putBytes(byteArray);
-                uploadTask.addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        // Handle unsuccessful uploads
-                        mProgressDialog.dismiss();
-                        Toast.makeText(ProfileEditActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        mProgressDialog.dismiss();
-                        Toast.makeText(ProfileEditActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
-                        fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            public void onSuccess(Uri uri) {
-                                String url = uri.toString();
-                                // Upload upload = new Upload(name, url);
+                uploadTask.addOnFailureListener(e -> {
+                    // Handle unsuccessful uploads
+                    mProgressDialog.dismiss();
+                    Toast.makeText(ProfileEditActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                }).addOnSuccessListener(taskSnapshot -> {
+                    mProgressDialog.dismiss();
+                    Toast.makeText(ProfileEditActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
+                    fileReference.getDownloadUrl().addOnSuccessListener(uri -> {
+                        String url = uri.toString();
+                        // Upload upload = new Upload(name, url);
 
-                                // update realtime
-                                String uploadId = mDatabaseRef.push().getKey();
-                                mDatabaseRef.child(userID).child("imageUrl").setValue(url);
-                            }
-                        });
-                    }
-                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                        int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                        mProgressDialog.setProgress(currentProgress);
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(ProfileEditActivity.this, "Failed to upload image", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                        // update realtime
+                        String uploadId = mDatabaseRef.push().getKey();
+                        mDatabaseRef.child(userID).child("imageUrl").setValue(url);
+                    });
+                }).addOnProgressListener(taskSnapshot -> {
+                    int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                    mProgressDialog.setProgress(currentProgress);
+                }).addOnFailureListener(e -> Toast.makeText(ProfileEditActivity.this, "Failed to upload image", Toast.LENGTH_SHORT).show());
 
                 selectedImageUri = null;
             } else if (bmp != null) {
@@ -443,42 +415,25 @@ public class ProfileEditActivity extends AppCompatActivity {
                         .child("image.jpg");
 
                 UploadTask uploadTask = imageRef.putBytes(dataforbmp);
-                uploadTask.addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        // Handle unsuccessful uploads
-                        mProgressDialog.dismiss();
-                        Toast.makeText(ProfileEditActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        mProgressDialog.dismiss();
-                        Toast.makeText(ProfileEditActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
-                        imageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            public void onSuccess(Uri uri) {
-                                String url = uri.toString();
-                                // Upload upload = new Upload(name, url);
+                uploadTask.addOnFailureListener(e -> {
+                    // Handle unsuccessful uploads
+                    mProgressDialog.dismiss();
+                    Toast.makeText(ProfileEditActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                }).addOnSuccessListener(taskSnapshot -> {
+                    mProgressDialog.dismiss();
+                    Toast.makeText(ProfileEditActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
+                    imageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                        String url = uri.toString();
+                        // Upload upload = new Upload(name, url);
 
-                                // update realtime
-                                String uploadId = mDatabaseRef.push().getKey();
-                                mDatabaseRef.child(userID).child("imageUrl").setValue(url);
-                            }
-                        });
-                    }
-                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                        int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                        mProgressDialog.setProgress(currentProgress);
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(ProfileEditActivity.this, "Failed to upload image", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                        // update realtime
+                        String uploadId = mDatabaseRef.push().getKey();
+                        mDatabaseRef.child(userID).child("imageUrl").setValue(url);
+                    });
+                }).addOnProgressListener(taskSnapshot -> {
+                    int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                    mProgressDialog.setProgress(currentProgress);
+                }).addOnFailureListener(e -> Toast.makeText(ProfileEditActivity.this, "Failed to upload image", Toast.LENGTH_SHORT).show());
 
                 bmp = null;
             } else {

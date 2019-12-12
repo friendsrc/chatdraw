@@ -14,7 +14,6 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.TaskStackBuilder;
 
 import com.example.chatdraw.Activities.ChatActivity;
-import com.example.chatdraw.Activities.MainActivity;
 import com.example.chatdraw.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -26,9 +25,6 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
-
-import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
 
@@ -58,51 +54,42 @@ public class ChatService extends Service {
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("Users").document(id)
                 .get()
-                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                    @Override
-                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        db.collection("Previews")
-                                .document(id)
-                                .collection("ChatPreviews")
-                                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                                    @Override
-                                    public void onEvent(@Nullable QuerySnapshot snapshots, @Nullable FirebaseFirestoreException e) {
-                                        if (e != null) {
-                                            Log.w(TAG, "listen:error", e);
-                                            return;
-                                        }
+                .addOnSuccessListener(documentSnapshot -> db.collection("Previews")
+                        .document(id)
+                        .collection("ChatPreviews")
+                        .addSnapshotListener((snapshots, e) -> {
+                            if (e != null) {
+                                Log.w(TAG, "listen:error", e);
+                                return;
+                            }
 
-                                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
-                                            String senderID = dc.getDocument().getString("senderID");
-                                            if (!senderID.equals(id)) {
-                                                String messageBody = (String) dc.getDocument().get("messageBody");
-                                                String senderName = (String) dc.getDocument().get("senderName");
-                                                if (dc.getDocument().getString("receiverID").startsWith("GROUP_")) {
-                                                    senderName = dc.getDocument().getString("receiverName");
-                                                    senderID = dc.getDocument().getString("receiverID");
-                                                }
-                                                int messageId = senderID.hashCode();
-                                                switch (dc.getType()) {
-                                                    case ADDED:
+                            for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                                String senderID = dc.getDocument().getString("senderID");
+                                if (!senderID.equals(id)) {
+                                    String messageBody = (String) dc.getDocument().get("messageBody");
+                                    String senderName = (String) dc.getDocument().get("senderName");
+                                    if (dc.getDocument().getString("receiverID").startsWith("GROUP_")) {
+                                        senderName = dc.getDocument().getString("receiverName");
+                                        senderID = dc.getDocument().getString("receiverID");
+                                    }
+                                    int messageId = senderID.hashCode();
+                                    switch (dc.getType()) {
+                                        case ADDED:
 //                                                        createNotification(messageId, messageBody, senderName, senderID);
 //                                                        Log.d(TAG, "New message: " + dc.getDocument().getData());
-                                                        break;
-                                                    case MODIFIED:
-                                                        createNotification(messageId, messageBody, senderName, senderID);
-                                                        Log.d(TAG, "Modified message: " + dc.getDocument().getData());
-                                                        break;
-                                                    case REMOVED:
-                                                        Log.d(TAG, "Removed message: " + dc.getDocument().getData());
-                                                        break;
-                                                }
-                                            }
-                                        }
-
+                                            break;
+                                        case MODIFIED:
+                                            createNotification(messageId, messageBody, senderName, senderID);
+                                            Log.d(TAG, "Modified message: " + dc.getDocument().getData());
+                                            break;
+                                        case REMOVED:
+                                            Log.d(TAG, "Removed message: " + dc.getDocument().getData());
+                                            break;
                                     }
-                                });
+                                }
+                            }
 
-                    }
-                });
+                        }));
     }
 
     @Override

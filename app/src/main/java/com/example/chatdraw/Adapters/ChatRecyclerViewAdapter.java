@@ -4,7 +4,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,9 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
-import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.chatdraw.Activities.ChatActivity;
@@ -23,7 +20,6 @@ import com.example.chatdraw.R;
 import com.example.chatdraw.Listeners.RecyclerViewClickListener;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -82,24 +78,30 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
 
         if (chatItem.getSenderID().equals(userId)) { // chat is sent by this user
             if (chatItem.getMessageBody().startsWith(userId)) {
-                if (arr[1].equals("IMAGE")) {
-                    return 20; // chat item is of type image
-                } else if (arr[1].equals("PDF")) {
-                    return 30; // chat item is of type pdf
-                } else if (arr[1].equals("INFO")) {
-                    return 44;
+                switch (arr[1]) {
+                    case "IMAGE":
+                        return 20; // chat item is of type image
+
+                    case "PDF":
+                        return 30; // chat item is of type pdf
+
+                    case "INFO":
+                        return 44;
                 }
             }
             return 0; // chat item is of type text
 
         } else { // chat is not sent by this user
             if (chatItem.getMessageBody().startsWith(chatItem.getSenderID())) {
-                if (arr[1].equals("IMAGE")) {
-                    return 21; // chat item is of type image
-                } else if (arr[1].equals("PDF")) {
-                    return 31; // chat item is of type pdf
-                } else if (arr[1].equals("INFO")) {
-                    return 44;
+                switch (arr[1]) {
+                    case "IMAGE":
+                        return 21; // chat item is of type image
+
+                    case "PDF":
+                        return 31; // chat item is of type pdf
+
+                    case "INFO":
+                        return 44;
                 }
             }
             return 1; // chat item is of type text
@@ -113,10 +115,7 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
         // create a new view
         View friendListItem;
         switch (viewType) {
-            case 0:  // text, from this user
-                friendListItem = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.right_chat_bubble, parent, false);
-                break;
+            // text, from this user
             case 1:  // text, from another user
                 friendListItem = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.left_chat_bubble, parent, false);
@@ -178,20 +177,12 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
         if (arr.length > 1) {
             if (arr[1].equals("IMAGE")) {
                 ImageView message = holder.view.findViewById(R.id.text_message_body_image);
-                message.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        ((ChatActivity) context).goToImagePreview(chatItem);
-                    }
-                });
+                message.setOnClickListener(v -> ((ChatActivity) context).goToImagePreview(chatItem));
             } else if (arr[1].equals("PDF")) {
                 TextView message = holder.view.findViewById(R.id.text_message_body);
-                message.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        String url = chatItem.getMessageBody().split("\t")[3];
-                        ((ChatActivity) context).viewPdf(url);
-                    }
+                message.setOnClickListener(v -> {
+                    String url = chatItem.getMessageBody().split("\t")[3];
+                    ((ChatActivity) context).viewPdf(url);
                 });
             }
         }
@@ -204,98 +195,71 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                         .load(arr[2])
                         .fit()
                         .into(message);
-                message.setOnLongClickListener(new View.OnLongClickListener() {
-                    @Override
-                    public boolean onLongClick(View v) {
-                        if (!chatItem.getSenderID().equals(userId))  return true;
-                        Dialog dialog = new Dialog(context);
-                        dialog.setContentView(R.layout.nontextmessagepopup);
-                        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                        dialog.setCancelable(true);
+                message.setOnLongClickListener(v -> {
+                    if (!chatItem.getSenderID().equals(userId))  return true;
+                    Dialog dialog = new Dialog(context);
+                    dialog.setContentView(R.layout.nontextmessagepopup);
+                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                    dialog.setCancelable(true);
 
 
 
-                        TextView delete = dialog.findViewById(R.id.delete_message_textview);
-                        delete.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                deleteMessage(chatItem.getSenderID(), chatItem.getReceiverID(),
-                                        chatItem.getTimestamp(), chatItem.getMessageBody(), dialog,  position);
-                            }
-                        });
+                    TextView delete = dialog.findViewById(R.id.delete_message_textview);
+                    delete.setOnClickListener(v14 -> deleteMessage(chatItem.getSenderID(), chatItem.getReceiverID(),
+                            chatItem.getTimestamp(), chatItem.getMessageBody(), dialog, position));
 
-                        dialog.show();
-                        dialog.getWindow().setGravity(Gravity.CENTER);
-                        return true;
-                    }
+                    dialog.show();
+                    dialog.getWindow().setGravity(Gravity.CENTER);
+                    return true;
                 });
             } else if (arr[1].equals("PDF")) {
                 if (!chatItem.getSenderID().equals(userId));
                 TextView message = holder.view.findViewById(R.id.text_message_body);
                 message.setText(arr[2]);
-                message.setOnLongClickListener(new View.OnLongClickListener() {
-                    @Override
-                    public boolean onLongClick(View v) {
-                        if (!chatItem.getSenderID().equals(userId))  return true;
+                message.setOnLongClickListener(v -> {
+                    if (!chatItem.getSenderID().equals(userId))  return true;
 
-                        Dialog dialog = new Dialog(context);
-                        dialog.setContentView(R.layout.nontextmessagepopup);
-                        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                        dialog.setCancelable(true);
+                    Dialog dialog = new Dialog(context);
+                    dialog.setContentView(R.layout.nontextmessagepopup);
+                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                    dialog.setCancelable(true);
 
-                        TextView delete = dialog.findViewById(R.id.delete_message_textview);
-                        delete.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                deleteMessage(chatItem.getSenderID(), chatItem.getReceiverID(),
-                                        chatItem.getTimestamp(), chatItem.getMessageBody(), dialog, position);
-                            }
-                        });
+                    TextView delete = dialog.findViewById(R.id.delete_message_textview);
+                    delete.setOnClickListener(v13 -> deleteMessage(chatItem.getSenderID(), chatItem.getReceiverID(),
+                            chatItem.getTimestamp(), chatItem.getMessageBody(), dialog, position));
 
-                        dialog.show();
-                        dialog.getWindow().setGravity(Gravity.CENTER);
-                        return true;
-                    }
+                    dialog.show();
+                    dialog.getWindow().setGravity(Gravity.CENTER);
+                    return true;
                 });
             }
         } else {
             TextView message = holder.view.findViewById(R.id.text_message_body);
             message.setText(mDataset.get(position).getMessageBody());
-            message.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    if (!chatItem.getSenderID().equals(userId))  return true;
+            message.setOnLongClickListener(v -> {
+                if (!chatItem.getSenderID().equals(userId))  return true;
 
-                    Dialog dialog = new Dialog(context);
-                    dialog.setContentView(R.layout.messageoptionpopup);
-                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                    dialog.setCancelable(true);
+                Dialog dialog = new Dialog(context);
+                dialog.setContentView(R.layout.messageoptionpopup);
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                dialog.setCancelable(true);
 
-                    TextView copy = dialog.findViewById(R.id.copy_message_textview);
-                    copy.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            android.content.ClipboardManager clipboard = (android.content.ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-                            android.content.ClipData clip = android.content.ClipData.newPlainText("text label",message.getText().toString());
-                            clipboard.setPrimaryClip(clip);
-                            dialog.dismiss();
-                            Toast.makeText(context, "Message copied to clipboard", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                TextView copy = dialog.findViewById(R.id.copy_message_textview);
+                copy.setOnClickListener(v12 -> {
+                    android.content.ClipboardManager clipboard = (android.content.ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+                    android.content.ClipData clip = android.content.ClipData.newPlainText("text label", message.getText().toString());
+                    clipboard.setPrimaryClip(clip);
+                    dialog.dismiss();
+                    Toast.makeText(context, "Message copied to clipboard", Toast.LENGTH_SHORT).show();
+                });
 
-                    TextView delete = dialog.findViewById(R.id.delete_message_textview);
-                    delete.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            deleteMessage(chatItem.getSenderID(), chatItem.getReceiverID(),
-                                    chatItem.getTimestamp(), chatItem.getMessageBody(), dialog,  position);
-                        }
-                    });
+                TextView delete = dialog.findViewById(R.id.delete_message_textview);
+                delete.setOnClickListener(v1 -> deleteMessage(chatItem.getSenderID(), chatItem.getReceiverID(),
+                        chatItem.getTimestamp(), chatItem.getMessageBody(), dialog, position));
 
-                    dialog.show();
-                    dialog.getWindow().setGravity(Gravity.CENTER);
-                    return true;
-                }
+                dialog.show();
+                dialog.getWindow().setGravity(Gravity.CENTER);
+                return true;
             });
         }
 
@@ -308,12 +272,7 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                         .fit()
                         .into(profilePicture);
             }
-            profilePicture.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Toast.makeText(context, " Profile photo clicked", Toast.LENGTH_SHORT).show();
-                }
-            });
+            profilePicture.setOnClickListener(v -> Toast.makeText(context, " Profile photo clicked", Toast.LENGTH_SHORT).show());
         }
 
         TextView time = holder.view.findViewById(R.id.text_message_time);
@@ -354,19 +313,13 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                     .whereEqualTo("timestamp", timestamp)
                     .whereEqualTo("messageBody", messageBody)
                     .get()
-                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                        @Override
-                        public void onSuccess(QuerySnapshot snapshots) {
-                            for (DocumentSnapshot d: snapshots.getDocuments()) {
-                                d.getReference().delete()
-                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                            @Override
-                                            public void onSuccess(Void aVoid) {
-                                                dialog.dismiss();
-                                                Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
-                            }
+                    .addOnSuccessListener(snapshots -> {
+                        for (DocumentSnapshot d: snapshots.getDocuments()) {
+                            d.getReference().delete()
+                                    .addOnSuccessListener(aVoid -> {
+                                        dialog.dismiss();
+                                        Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
+                                    });
                         }
                     });
         } else {
@@ -379,19 +332,13 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                     .whereEqualTo("timestamp", timestamp)
                     .whereEqualTo("messageBody", messageBody)
                     .get()
-                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                        @Override
-                        public void onSuccess(QuerySnapshot snapshots) {
-                            for (DocumentSnapshot d: snapshots.getDocuments()) {
-                                d.getReference().delete()
-                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                            @Override
-                                            public void onSuccess(Void aVoid) {
-                                                dialog.dismiss();
-                                                Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
-                            }
+                    .addOnSuccessListener(snapshots -> {
+                        for (DocumentSnapshot d: snapshots.getDocuments()) {
+                            d.getReference().delete()
+                                    .addOnSuccessListener(aVoid -> {
+                                        dialog.dismiss();
+                                        Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
+                                    });
                         }
                     });
         }
@@ -404,14 +351,19 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
             ChatItem chatItem = mDataset.get(mDataset.size() - 2);
             if (chatItem.getMessageBody().startsWith(userId)) {
                 String[] arr = chatItem.getMessageBody().split("\t");
-                if (arr[1].equals("IMAGE")) {
-                    chatItem.setMessageBody("[Image]");
-                } else if (arr[1].equals("PDF")) {
-                    chatItem.setMessageBody("[Pdf]");
-                } else if (arr[1].equals("INFO")) {
-                    chatItem.setMessageBody(arr[2]);
-                } else {
-                    chatItem.setMessageBody("[Unknown file type]");
+                switch (arr[1]) {
+                    case "IMAGE":
+                        chatItem.setMessageBody("[Image]");
+                        break;
+                    case "PDF":
+                        chatItem.setMessageBody("[Pdf]");
+                        break;
+                    case "INFO":
+                        chatItem.setMessageBody(arr[2]);
+                        break;
+                    default:
+                        chatItem.setMessageBody("[Unknown file type]");
+                        break;
                 }
             }
             if (mDataset.size() >= 2) {

@@ -3,7 +3,6 @@ package com.example.chatdraw.AccountActivity;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,7 +10,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.chatdraw.R;
@@ -37,64 +35,53 @@ public class ContactUsActivity extends AppCompatActivity {
         final AlertDialog.Builder builder = new AlertDialog.Builder(ContactUsActivity.this);
         final String[] list = getResources().getStringArray(R.array.contact_question_code);
 
-        final Button contact_button = (Button) findViewById(R.id.contact_click);
-        Button submitButton = (Button) findViewById(R.id.contact_submit_button);
+        final Button contact_button = findViewById(R.id.contact_click);
+        Button submitButton = findViewById(R.id.contact_submit_button);
 
-        final EditText tvQuestion = (EditText) findViewById(R.id.question_section);
-        final EditText tvMessage = (EditText) findViewById(R.id.message_section);
+        final EditText tvQuestion = findViewById(R.id.question_section);
+        final EditText tvMessage = findViewById(R.id.message_section);
 
-        contact_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                builder.create().show();
-            }
-        });
+        contact_button.setOnClickListener(view -> builder.create().show());
 
         builder.setTitle("Select your question code")
-                .setSingleChoiceItems(list, mSelected, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        contact_button.setText(list[i]);
-                        mSelected = i;
-                        dialogInterface.dismiss();
-                    }
+                .setSingleChoiceItems(list, mSelected, (dialogInterface, i) -> {
+                    contact_button.setText(list[i]);
+                    mSelected = i;
+                    dialogInterface.dismiss();
                 });
 
-        submitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(ContactUsActivity.this);
+        submitButton.setOnClickListener(view -> {
+            GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(ContactUsActivity.this);
 
-                String userID = "";
+            String userID = "";
 
-                if (acct != null) {
-                    userID = acct.getId();
-                } else {
-                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            if (acct != null) {
+                userID = acct.getId();
+            } else {
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-                    if (user != null) {
-                        userID = user.getUid();
-                    }
+                if (user != null) {
+                    userID = user.getUid();
                 }
+            }
 
 
-                Intent i = new Intent(Intent.ACTION_SEND);
-                i.setType("message/rfc822");
-                i.putExtra(Intent.EXTRA_EMAIL  , new String[]{"chatdrawfeedback@gmail.com"});
+            Intent i = new Intent(Intent.ACTION_SEND);
+            i.setType("message/rfc822");
+            i.putExtra(Intent.EXTRA_EMAIL  , new String[]{"chatdrawfeedback@gmail.com"});
 
-                if (mSelected == -1) {
-                    i.putExtra(Intent.EXTRA_SUBJECT, "" + tvQuestion.getText());
-                } else {
-                    i.putExtra(Intent.EXTRA_SUBJECT, "[" + list[mSelected] + "] " + tvQuestion.getText());
-                }
-                //message is your details
-                i.putExtra(Intent.EXTRA_TEXT, "Dear " + userID + ",\n\n" + tvMessage.getText());
+            if (mSelected == -1) {
+                i.putExtra(Intent.EXTRA_SUBJECT, "" + tvQuestion.getText());
+            } else {
+                i.putExtra(Intent.EXTRA_SUBJECT, "[" + list[mSelected] + "] " + tvQuestion.getText());
+            }
+            //message is your details
+            i.putExtra(Intent.EXTRA_TEXT, "Dear " + userID + ",\n\n" + tvMessage.getText());
 
-                try {
-                    startActivity(Intent.createChooser(i, "Send email using..."));
-                } catch (android.content.ActivityNotFoundException ex) {
-                    Toast.makeText(ContactUsActivity.this, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
-                }
+            try {
+                startActivity(Intent.createChooser(i, "Send email using..."));
+            } catch (android.content.ActivityNotFoundException ex) {
+                Toast.makeText(ContactUsActivity.this, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
             }
         });
     }

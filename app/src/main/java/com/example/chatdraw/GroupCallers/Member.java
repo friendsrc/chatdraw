@@ -25,7 +25,6 @@ public class Member {
     }
 
     public void setimageUrl() {
-        this.imageUrl = imageUrl;
     }
 }
 

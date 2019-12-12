@@ -53,12 +53,7 @@ public class CallScreenActivity extends BaseActivity {
 
         @Override
         public void run() {
-            CallScreenActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    updateCallDuration();
-                }
-            });
+            CallScreenActivity.this.runOnUiThread(() -> updateCallDuration());
         }
     }
 
@@ -68,29 +63,19 @@ public class CallScreenActivity extends BaseActivity {
         setContentView(R.layout.activity_call_screen);
 
         mAudioPlayer = new AudioPlayer(this);
-        mCallDuration = (TextView) findViewById(R.id.callDuration);
-        mCallerName = (TextView) findViewById(R.id.remoteUser);
-        mCallState = (TextView) findViewById(R.id.callState);
-        mImageCall = (ImageView) findViewById(R.id.profileImgID);
-        mCallBack = (ImageButton) findViewById(R.id.btnCallBack);
-        Button endCallButton = (Button) findViewById(R.id.hangupButton);
+        mCallDuration = findViewById(R.id.callDuration);
+        mCallerName = findViewById(R.id.remoteUser);
+        mCallState = findViewById(R.id.callState);
+        mImageCall = findViewById(R.id.profileImgID);
+        mCallBack = findViewById(R.id.btnCallBack);
+        Button endCallButton = findViewById(R.id.hangupButton);
 
-        endCallButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                endCall();
-            }
-        });
+        endCallButton.setOnClickListener(v -> endCall());
 
         mCallId = getIntent().getStringExtra(SinchService.CALL_ID);
         mFriendCallID = getIntent().getStringExtra("FriendID");
 
-        mCallBack.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        mCallBack.setOnClickListener(v -> finish());
     }
 
     @Override

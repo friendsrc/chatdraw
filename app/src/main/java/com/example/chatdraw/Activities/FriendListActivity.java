@@ -40,16 +40,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.llollox.androidtoggleswitch.widgets.ToggleSwitch;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -88,11 +80,8 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
 
         // specify an adapter
         friendList = new ArrayList<>();
-        mAdapter = new RecyclerViewAdapter(friendList, this, new RecyclerViewClickListener() {
-            @Override
-            public void recyclerViewListClicked(View v, int position) {
-                // do nothing
-            }
+        mAdapter = new RecyclerViewAdapter(friendList, this, (v, position) -> {
+            // do nothing
         });
         recyclerView.setAdapter(mAdapter);
 
@@ -111,12 +100,9 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
 
         // set the "add" button to go to the FindFriendActivity
         ImageView imageView = findViewById(R.id.add_friend_imageview);
-        imageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent  = new Intent(FriendListActivity.this, FindFriendActivity.class);
-                startActivityForResult(intent, FIND_FRIEND_REQUEST_CODE);
-            }
+        imageView.setOnClickListener(v -> {
+            Intent intent  = new Intent(FriendListActivity.this, FindFriendActivity.class);
+            startActivityForResult(intent, FIND_FRIEND_REQUEST_CODE);
         });
 
         // set the Action Bar title
@@ -136,15 +122,12 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
         ToggleSwitch toggleSwitch = findViewById(R.id.friend_list_toggleswitch);
         final RecyclerView recyclerView = findViewById(R.id.friend_list_recycler_view);
         toggleSwitch.setCheckedPosition(0);
-        toggleSwitch.setOnChangeListener(new ToggleSwitch.OnChangeListener() {
-            @Override
-            public void onToggleSwitchChanged(int i) {
-                if (i == 1) {
-                    if (mGroupAdapter == null) getGroups();
-                    recyclerView.setAdapter(mGroupAdapter);
-                } else {
-                    recyclerView.setAdapter(mAdapter);
-                }
+        toggleSwitch.setOnChangeListener(i -> {
+            if (i == 1) {
+                if (mGroupAdapter == null) getGroups();
+                recyclerView.setAdapter(mGroupAdapter);
+            } else {
+                recyclerView.setAdapter(mAdapter);
             }
         });
     }
@@ -179,33 +162,20 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
             db.collection("Users")
                     .document(currentUserID)
                     .update("contacts", FieldValue.arrayUnion(uID))
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            Toast.makeText(FriendListActivity.this,
-                                    "Contact added successfully.",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Map<String, Object> map = new HashMap<>();
-                            map.put("contacts", new ArrayList<String>());
-                            map.put("groups", new ArrayList<String>());
-                            db.collection("Users").document(currentUserID).set(map);
-                            db.collection("Users")
-                                    .document(currentUserID)
-                                    .update("contacts", FieldValue.arrayUnion(uID))
-                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
-                                            Toast.makeText(FriendListActivity.this,
-                                                    "Contact added successfully.",
-                                                    Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                        }
+                    .addOnSuccessListener(aVoid -> Toast.makeText(FriendListActivity.this,
+                            "Contact added successfully.",
+                            Toast.LENGTH_SHORT).show())
+                    .addOnFailureListener(e -> {
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("contacts", new ArrayList<String>());
+                        map.put("groups", new ArrayList<String>());
+                        db.collection("Users").document(currentUserID).set(map);
+                        db.collection("Users")
+                                .document(currentUserID)
+                                .update("contacts", FieldValue.arrayUnion(uID))
+                                .addOnSuccessListener(aVoid -> Toast.makeText(FriendListActivity.this,
+                                        "Contact added successfully.",
+                                        Toast.LENGTH_SHORT).show());
                     });
             addUserWithID(uID);
         }
@@ -259,15 +229,12 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
         db.collection("Users")
                 .document(currentUserID)
                 .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
-                            if (arr != null ) {
-                                for (String s: arr) {
-                                    addUserWithID(s);
-                                }
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
+                        if (arr != null ) {
+                            for (String s: arr) {
+                                addUserWithID(s);
                             }
                         }
                     }
@@ -282,20 +249,17 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
         db.collection("Users")
                 .document(currentUserID)
                 .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
-                            if (arr != null ) {
-                                for (String s: arr) {
-                                    addUserWithID(s);
-                                }
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
+                        if (arr != null ) {
+                            for (String s: arr) {
+                                addUserWithID(s);
                             }
-                            db.enableNetwork();
-                        } else {
-                            getContactsFromFirestore();
                         }
+                        db.enableNetwork();
+                    } else {
+                        getContactsFromFirestore();
                     }
                 });
 
@@ -345,40 +309,32 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
 
         FirebaseFirestore.getInstance().collection("Users").document(currentUserID)
                 .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        ArrayList<String> arr = (ArrayList<String>) task.getResult().get("groups");
-                        if (arr != null && !arr.isEmpty()) {
-                            for (String s: arr) {
-                                final String groupID = s;
-                                FirebaseFirestore.getInstance().collection("Groups").document(groupID)
-                                        .get()
-                                        .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                                if (task.isSuccessful()) {
-                                                    DocumentSnapshot doc = task.getResult();
-                                                    if (doc == null) {
-                                                        return;
-                                                    }
-
-                                                    String name = (String) doc.get("groupName");
-                                                    String imageURL = (String) doc.get("groupImageUrl");
-
-                                                    NewFriendItem newFriendItem = new NewFriendItem(name, groupID, imageURL);
-                                                    adapter.addData(newFriendItem);
-                                                } else {
-                                                    getGroupsFromFirestore();
-                                                }
+                .addOnCompleteListener(task -> {
+                    ArrayList<String> arr = (ArrayList<String>) task.getResult().get("groups");
+                    if (arr != null && !arr.isEmpty()) {
+                        for (String s: arr) {
+                            final String groupID = s;
+                            FirebaseFirestore.getInstance().collection("Groups").document(groupID)
+                                    .get()
+                                    .addOnCompleteListener(task1 -> {
+                                        if (task1.isSuccessful()) {
+                                            DocumentSnapshot doc = task1.getResult();
+                                            if (doc == null) {
+                                                return;
                                             }
-                                        });
 
-                            }
+                                            String name = (String) doc.get("groupName");
+                                            String imageURL = (String) doc.get("groupImageUrl");
+
+                                            NewFriendItem newFriendItem = new NewFriendItem(name, groupID, imageURL);
+                                            adapter.addData(newFriendItem);
+                                        } else {
+                                            getGroupsFromFirestore();
+                                        }
+                                    });
+
                         }
                     }
-
                 });
     }
 
@@ -391,33 +347,27 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
 
         FirebaseFirestore.getInstance().collection("Users").document(currentUserID)
                 .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        ArrayList<String> arr = (ArrayList<String>) task.getResult().get("groups");
-                        if (arr != null && !arr.isEmpty()) {
-                            for (String s: arr) {
-                                final String groupID = s;
-                                FirebaseFirestore.getInstance().collection("Groups").document(groupID)
-                                        .get()
-                                        .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                                if (task.isSuccessful()) {
-                                                    DocumentSnapshot doc = task.getResult();
-                                                    if (doc == null) {
-                                                        return;
-                                                    }
-
-                                                    String name = (String) doc.get("groupName");
-                                                    String imageURL = (String) doc.get("groupImageUrl");
-
-                                                    NewFriendItem newFriendItem = new NewFriendItem(name, groupID, imageURL);
-                                                    mGroupAdapter.addData(newFriendItem);
-                                                }
+                .addOnCompleteListener(task -> {
+                    ArrayList<String> arr = (ArrayList<String>) task.getResult().get("groups");
+                    if (arr != null && !arr.isEmpty()) {
+                        for (String s: arr) {
+                            final String groupID = s;
+                            FirebaseFirestore.getInstance().collection("Groups").document(groupID)
+                                    .get()
+                                    .addOnCompleteListener(task1 -> {
+                                        if (task1.isSuccessful()) {
+                                            DocumentSnapshot doc = task1.getResult();
+                                            if (doc == null) {
+                                                return;
                                             }
-                                        });
-                            }
+
+                                            String name = (String) doc.get("groupName");
+                                            String imageURL = (String) doc.get("groupImageUrl");
+
+                                            NewFriendItem newFriendItem = new NewFriendItem(name, groupID, imageURL);
+                                            mGroupAdapter.addData(newFriendItem);
+                                        }
+                                    });
                         }
                     }
                 });

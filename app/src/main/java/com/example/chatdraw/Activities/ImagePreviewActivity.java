@@ -8,23 +8,18 @@ import android.Manifest;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
-import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Display;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,14 +28,9 @@ import com.example.chatdraw.R;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.sql.Timestamp;
 
 public class ImagePreviewActivity extends AppCompatActivity {
@@ -76,12 +66,7 @@ public class ImagePreviewActivity extends AppCompatActivity {
 
         // set the back button
         final ImageView closeButton = findViewById(R.id.photo_close_button);
-        closeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        closeButton.setOnClickListener(v -> finish());
 
         // set the senderName
         final TextView senderName = findViewById(R.id.photo_sender_name_textview);
@@ -89,12 +74,7 @@ public class ImagePreviewActivity extends AppCompatActivity {
 
         // set the saveButton to save image into internal storage
         final ImageView saveButton = findViewById(R.id.photo_save_button);
-        saveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveToInternalStorage(imageUrl);
-            }
-        });
+        saveButton.setOnClickListener(v -> saveToInternalStorage(imageUrl));
 
         // get the two half-transparent Views
         final View viewTop = findViewById(R.id.photo_view1);
@@ -102,24 +82,21 @@ public class ImagePreviewActivity extends AppCompatActivity {
 
         // create a toggle to hide all the views except the photo if the photo imageView is tapped
         final boolean[] isToggledOff = {false};
-        imageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (isToggledOff[0]) {
-                    closeButton.animate().translationY(-300);
-                    senderName.animate().translationY(-300);
-                    viewTop.animate().translationY(-300);
-                    viewBottom.animate().translationY(300);
-                    saveButton.animate().translationY(300);
-                } else {
-                    closeButton.animate().translationY(0);
-                    senderName.animate().translationY(0);
-                    viewTop.animate().translationY(0);
-                    viewBottom.animate().translationY(0);
-                    saveButton.animate().translationY(0);
-                }
-                isToggledOff[0] = !isToggledOff[0];
+        imageView.setOnClickListener(v -> {
+            if (isToggledOff[0]) {
+                closeButton.animate().translationY(-300);
+                senderName.animate().translationY(-300);
+                viewTop.animate().translationY(-300);
+                viewBottom.animate().translationY(300);
+                saveButton.animate().translationY(300);
+            } else {
+                closeButton.animate().translationY(0);
+                senderName.animate().translationY(0);
+                viewTop.animate().translationY(0);
+                viewBottom.animate().translationY(0);
+                saveButton.animate().translationY(0);
             }
+            isToggledOff[0] = !isToggledOff[0];
         });
 
     }
@@ -174,40 +151,36 @@ public class ImagePreviewActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String[] permissions, int[] grantResults) {
-        switch (requestCode) {
-            case WRITE_EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // permission was granted, continue to save the image
-                    String name = "" + new Timestamp(System.currentTimeMillis()).getTime() + ".jpg";
-                    insertImage(
-                            getContentResolver(),
-                            mBitmap,
-                            name,
-                            "Sent by " + mSenderName
-                    );
-                    Toast.makeText(ImagePreviewActivity.this,
-                            "Image saved", Toast.LENGTH_SHORT).show();
+        if (requestCode == WRITE_EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE) {// If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // permission was granted, continue to save the image
+                String name = "" + new Timestamp(System.currentTimeMillis()).getTime() + ".jpg";
+                insertImage(
+                        getContentResolver(),
+                        mBitmap,
+                        name,
+                        "Sent by " + mSenderName
+                );
+                Toast.makeText(ImagePreviewActivity.this,
+                        "Image saved", Toast.LENGTH_SHORT).show();
 
-                } else {
-                    // permission denied
-                    Toast.makeText(ImagePreviewActivity.this,
-                            "Permission not granted, failed to save image",
-                            Toast.LENGTH_SHORT).show();
+            } else {
+                // permission denied
+                Toast.makeText(ImagePreviewActivity.this,
+                        "Permission not granted, failed to save image",
+                        Toast.LENGTH_SHORT).show();
 
-                }
-                return;
             }
-
+            return;
         }
     }
 
 
-    public static final String insertImage(ContentResolver cr,
-                                           Bitmap source,
-                                           String title,
-                                           String description) {
+    public static final void insertImage(ContentResolver cr,
+                                         Bitmap source,
+                                         String title,
+                                         String description) {
 
         ContentValues values = new ContentValues();
         values.put(MediaStore.Images.Media.TITLE, title);
@@ -238,7 +211,7 @@ public class ImagePreviewActivity extends AppCompatActivity {
                 // Wait until MINI_KIND thumbnail is generated.
                 Bitmap miniThumb = MediaStore.Images.Thumbnails.getThumbnail(cr, id, MediaStore.Images.Thumbnails.MINI_KIND, null);
                 // This is for backward compatibility.
-                storeThumbnail(cr, miniThumb, id, 50F, 50F, MediaStore.Images.Thumbnails.MICRO_KIND);
+                storeThumbnail(cr, miniThumb, id);
             } else {
                 cr.delete(url, null, null);
                 url = null;
@@ -254,22 +227,18 @@ public class ImagePreviewActivity extends AppCompatActivity {
             stringUrl = url.toString();
         }
 
-        return stringUrl;
     }
 
-    private static final Bitmap storeThumbnail(
+    private static final void storeThumbnail(
             ContentResolver cr,
             Bitmap source,
-            long id,
-            float width,
-            float height,
-            int kind) {
+            long id) {
 
         // create the matrix to scale it
         Matrix matrix = new Matrix();
 
-        float scaleX = width / source.getWidth();
-        float scaleY = height / source.getHeight();
+        float scaleX = (float) 50.0 / source.getWidth();
+        float scaleY = (float) 50.0 / source.getHeight();
 
         matrix.setScale(scaleX, scaleY);
 
@@ -280,7 +249,7 @@ public class ImagePreviewActivity extends AppCompatActivity {
         );
 
         ContentValues values = new ContentValues(4);
-        values.put(MediaStore.Images.Thumbnails.KIND,kind);
+        values.put(MediaStore.Images.Thumbnails.KIND, MediaStore.Images.Thumbnails.MICRO_KIND);
         values.put(MediaStore.Images.Thumbnails.IMAGE_ID,(int)id);
         values.put(MediaStore.Images.Thumbnails.HEIGHT,thumb.getHeight());
         values.put(MediaStore.Images.Thumbnails.WIDTH,thumb.getWidth());
@@ -291,11 +260,8 @@ public class ImagePreviewActivity extends AppCompatActivity {
             OutputStream thumbOut = cr.openOutputStream(url);
             thumb.compress(Bitmap.CompressFormat.JPEG, 100, thumbOut);
             thumbOut.close();
-            return thumb;
         } catch (FileNotFoundException ex) {
-            return null;
         } catch (IOException ex) {
-            return null;
         }
     }
 

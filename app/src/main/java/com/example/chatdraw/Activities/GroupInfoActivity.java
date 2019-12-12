@@ -6,20 +6,14 @@ import androidx.appcompat.widget.Toolbar;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.chatdraw.R;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -42,25 +36,22 @@ public class GroupInfoActivity extends AppCompatActivity {
                 .collection("Groups")
                 .document(groupUID)
                 .get()
-                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                    @Override
-                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        // get group data
-                        groupName = documentSnapshot.get("groupName").toString();
-                        if (documentSnapshot.get("groupImageUrl") != null) {
-                            groupImageUrl = documentSnapshot.get("groupImageUrl").toString();
-                        }
-                        groupMembers = (ArrayList<String>) documentSnapshot.get("members");
+                .addOnSuccessListener(documentSnapshot -> {
+                    // get group data
+                    groupName = documentSnapshot.get("groupName").toString();
+                    if (documentSnapshot.get("groupImageUrl") != null) {
+                        groupImageUrl = documentSnapshot.get("groupImageUrl").toString();
+                    }
+                    groupMembers = (ArrayList<String>) documentSnapshot.get("members");
 
-                        // set the toolbar
-                        Toolbar myToolbar = findViewById(R.id.my_toolbar);
-                        setSupportActionBar(myToolbar);
+                    // set the toolbar
+                    Toolbar myToolbar = findViewById(R.id.my_toolbar);
+                    setSupportActionBar(myToolbar);
 
-                        ActionBar actionBar = getSupportActionBar();
-                        if (actionBar != null) {
-                            actionBar.setDisplayHomeAsUpEnabled(true);
-                            actionBar.setTitle("Group Info");
-                        }
+                    ActionBar actionBar = getSupportActionBar();
+                    if (actionBar != null) {
+                        actionBar.setDisplayHomeAsUpEnabled(true);
+                        actionBar.setTitle("Group Info");
                     }
                 });
 

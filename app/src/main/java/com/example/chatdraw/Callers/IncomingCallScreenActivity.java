@@ -1,6 +1,5 @@
 package com.example.chatdraw.Callers;
 
-import com.example.chatdraw.Activities.MainActivity;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -14,7 +13,6 @@ import com.sinch.android.rtc.calling.CallListener;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -43,12 +41,12 @@ public class IncomingCallScreenActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_incoming_call_screen);
 
-        Button answer = (Button) findViewById(R.id.answerButton);
+        Button answer = findViewById(R.id.answerButton);
         answer.setOnClickListener(mClickListener);
-        Button decline = (Button) findViewById(R.id.declineButton);
+        Button decline = findViewById(R.id.declineButton);
         decline.setOnClickListener(mClickListener);
 
-        mImageProfile = (ImageView) findViewById(R.id.profileImageID);
+        mImageProfile = findViewById(R.id.profileImageID);
 
         mAudioPlayer = new AudioPlayer(this);
         mAudioPlayer.playRingtone();
@@ -64,7 +62,7 @@ public class IncomingCallScreenActivity extends BaseActivity {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     call.addCallListener(new SinchCallListener());
-                    TextView remoteUser = (TextView) findViewById(R.id.remoteUser);
+                    TextView remoteUser = findViewById(R.id.remoteUser);
 
                     String userUID = call.getRemoteUserId();
                     String name = (String) dataSnapshot.child(userUID).child("name").getValue();
@@ -150,17 +148,14 @@ public class IncomingCallScreenActivity extends BaseActivity {
 
     }
 
-    private OnClickListener mClickListener = new OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()) {
-                case R.id.answerButton:
-                    answerClicked();
-                    break;
-                case R.id.declineButton:
-                    declineClicked();
-                    break;
-            }
+    private OnClickListener mClickListener = v -> {
+        switch (v.getId()) {
+            case R.id.answerButton:
+                answerClicked();
+                break;
+            case R.id.declineButton:
+                declineClicked();
+                break;
         }
     };
 }

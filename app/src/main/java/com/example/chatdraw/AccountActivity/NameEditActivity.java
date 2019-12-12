@@ -26,45 +26,42 @@ public class NameEditActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_name_edit);
 
-        final EditText inputName = (EditText) findViewById(R.id.input_name);
-        Button name_butt = (Button) findViewById(R.id.name_submit);
-        name_butt.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View view) {
-                String temp = inputName.getText().toString().trim();
+        final EditText inputName = findViewById(R.id.input_name);
+        Button name_butt = findViewById(R.id.name_submit);
+        name_butt.setOnClickListener(view -> {
+            String temp = inputName.getText().toString().trim();
 
-                if (temp.length() < 3) {
-                    inputName.setError(getString(R.string.short_name));
-                    inputName.requestFocus();
-                    return;
+            if (temp.length() < 3) {
+                inputName.setError(getString(R.string.short_name));
+                inputName.requestFocus();
+                return;
+            }
+
+            if (temp.length() > 20) {
+                inputName.setError(getString(R.string.long_name));
+                inputName.requestFocus();
+                return;
+            }
+
+            String profile = temp.substring(0, 1).toUpperCase() + temp.substring(1).toLowerCase();
+            GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(NameEditActivity.this);
+
+            if (acct != null) {
+                String personId = acct.getId();
+
+                if (updateUser(personId, profile)) {
+                    finish();
+                } else {
+                    Toast.makeText(NameEditActivity.this, "Name update failed", Toast.LENGTH_SHORT).show();
                 }
-
-                if (temp.length() > 20) {
-                    inputName.setError(getString(R.string.long_name));
-                    inputName.requestFocus();
-                    return;
-                }
-
-                String profile = temp.substring(0, 1).toUpperCase() + temp.substring(1).toLowerCase();
-                GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(NameEditActivity.this);
-
-                if (acct != null) {
-                    String personId = acct.getId();
-
-                    if (updateUser(personId, profile)) {
+            } else {
+                FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                if (currentFirebaseUser != null) {
+                    if (updateUser(currentFirebaseUser.getUid(), profile)) {
                         finish();
-                    } else {
-                        Toast.makeText(NameEditActivity.this, "Name update failed", Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-                    if (currentFirebaseUser != null) {
-                        if (updateUser(currentFirebaseUser.getUid(), profile)) {
-                            finish();
-                        }
-                    } else {
-                        Toast.makeText(NameEditActivity.this, "Name update failed. User is not validated!", Toast.LENGTH_SHORT).show();
-                    }
+                    Toast.makeText(NameEditActivity.this, "Name update failed. User is not validated!", Toast.LENGTH_SHORT).show();
                 }
             }
         });

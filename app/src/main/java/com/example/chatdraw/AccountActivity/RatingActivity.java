@@ -6,7 +6,6 @@ import androidx.appcompat.widget.Toolbar;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
@@ -28,10 +27,10 @@ public class RatingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rating);
 
-        final TextView ratingThankyou = (TextView) findViewById(R.id.rating_thankyou);
-        final TextView commentHeader = (TextView) findViewById(R.id.comment_header);
-        final EditText commentSection = (EditText) findViewById(R.id.comment_section);
-        final Button submitButton = (Button) findViewById(R.id.submit_button);
+        final TextView ratingThankyou = findViewById(R.id.rating_thankyou);
+        final TextView commentHeader = findViewById(R.id.comment_header);
+        final EditText commentSection = findViewById(R.id.comment_section);
+        final Button submitButton = findViewById(R.id.submit_button);
 
         ratingThankyou.setVisibility(View.GONE);
         commentHeader.setVisibility(View.GONE);
@@ -44,60 +43,54 @@ public class RatingActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 
-        RatingBar ratingBar = (RatingBar) findViewById(R.id.rating_bar);
-        ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
-            @Override
-            public void onRatingChanged(RatingBar ratingBar, float rating, boolean b) {
-                if (rating >= 4) {
-                    ratingThankyou.setVisibility(View.VISIBLE);
-                    commentHeader.setVisibility(View.GONE);
-                    commentSection.setVisibility(View.GONE);
-                    submitButton.setVisibility(View.GONE);
+        RatingBar ratingBar = findViewById(R.id.rating_bar);
+        ratingBar.setOnRatingBarChangeListener((ratingBar12, rating, b) -> {
+            if (rating >= 4) {
+                ratingThankyou.setVisibility(View.VISIBLE);
+                commentHeader.setVisibility(View.GONE);
+                commentSection.setVisibility(View.GONE);
+                submitButton.setVisibility(View.GONE);
 
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse(
-                            "https://play.google.com/store/apps/details?id=com.example.chatdraw&reviewId=0"));
-                    startActivity(intent);
-                } else {
-                    ratingThankyou.setVisibility(View.GONE);
-                    commentHeader.setVisibility(View.VISIBLE);
-                    commentSection.setVisibility(View.VISIBLE);
-                    submitButton.setVisibility(View.VISIBLE);
-                }
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse(
+                        "https://play.google.com/store/apps/details?id=com.example.chatdraw&reviewId=0"));
+                startActivity(intent);
+            } else {
+                ratingThankyou.setVisibility(View.GONE);
+                commentHeader.setVisibility(View.VISIBLE);
+                commentSection.setVisibility(View.VISIBLE);
+                submitButton.setVisibility(View.VISIBLE);
             }
         });
 
-        submitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                RatingBar ratingBar = (RatingBar) findViewById(R.id.rating_bar);
-                GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(RatingActivity.this);
+        submitButton.setOnClickListener(view -> {
+            RatingBar ratingBar1 = (RatingBar) findViewById(R.id.rating_bar);
+            GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(RatingActivity.this);
 
-                String userID = "";
+            String userID = "";
 
-                if (acct != null) {
-                    userID = acct.getId();
-                } else {
-                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            if (acct != null) {
+                userID = acct.getId();
+            } else {
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-                    if (user != null) {
-                        userID = user.getUid();
-                    }
+                if (user != null) {
+                    userID = user.getUid();
                 }
+            }
 
-                Intent i = new Intent(Intent.ACTION_SEND);
-                i.setType("message/rfc822");
-                i.putExtra(Intent.EXTRA_EMAIL  , new String[]{"chatdrawfeedback@gmail.com"});
-                i.putExtra(Intent.EXTRA_SUBJECT, "Feedback id: " + userID);
+            Intent i = new Intent(Intent.ACTION_SEND);
+            i.setType("message/rfc822");
+            i.putExtra(Intent.EXTRA_EMAIL  , new String[]{"chatdrawfeedback@gmail.com"});
+            i.putExtra(Intent.EXTRA_SUBJECT, "Feedback id: " + userID);
 
-                //message is your details
-                i.putExtra(Intent.EXTRA_TEXT, "I give you " + (int) ratingBar.getRating() + " stars because: \n\n" + commentSection.getText());
+            //message is your details
+            i.putExtra(Intent.EXTRA_TEXT, "I give you " + (int) ratingBar1.getRating() + " stars because: \n\n" + commentSection.getText());
 
-                try {
-                    startActivity(Intent.createChooser(i, "Send email using..."));
-                } catch (android.content.ActivityNotFoundException ex) {
-                    Toast.makeText(RatingActivity.this, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
-                }
+            try {
+                startActivity(Intent.createChooser(i, "Send email using..."));
+            } catch (android.content.ActivityNotFoundException ex) {
+                Toast.makeText(RatingActivity.this, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
             }
         });
     }

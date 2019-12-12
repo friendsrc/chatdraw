@@ -33,11 +33,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreSettings;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.ObjectInputStream;
 import java.util.ArrayList;
 
 public class NewMessageActivity extends AppCompatActivity implements RecyclerViewClickListener {
@@ -84,12 +80,9 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
 
 
         LinearLayout linearLayout = findViewById(R.id.new_group_chat_linearlayout);
-        linearLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(NewMessageActivity.this, NewGroupActivity.class);
-                startActivityForResult(intent, NEW_GROUP_REQUEST_CODE);
-            }
+        linearLayout.setOnClickListener(v -> {
+            Intent intent = new Intent(NewMessageActivity.this, NewGroupActivity.class);
+            startActivityForResult(intent, NEW_GROUP_REQUEST_CODE);
         });
 
         // set the action bar
@@ -144,23 +137,20 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
                 .collection("ChatPreviews")
                 .document(friendListItem.getUID())
                 .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            DocumentSnapshot document = task.getResult();
-                            if (document.exists()) {
-                                Toast.makeText(NewMessageActivity.this,
-                                        "Chat already exists.", Toast.LENGTH_SHORT).show();
-                            } else {
-                                Intent intent = new Intent();
-                                intent.putExtra("uID", friendListItem.getUID());
-                                setResult(Activity.RESULT_OK, intent);
-                                finish();
-                            }
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot document = task.getResult();
+                        if (document.exists()) {
+                            Toast.makeText(NewMessageActivity.this,
+                                    "Chat already exists.", Toast.LENGTH_SHORT).show();
                         } else {
-                            Log.d(TAG, "Failed with: ", task.getException());
+                            Intent intent = new Intent();
+                            intent.putExtra("uID", friendListItem.getUID());
+                            setResult(Activity.RESULT_OK, intent);
+                            finish();
                         }
+                    } else {
+                        Log.d(TAG, "Failed with: ", task.getException());
                     }
                 });
     }
@@ -182,15 +172,12 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
         db.collection("Users")
                 .document(userUID)
                 .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
-                            if (arr != null ) {
-                                for (String s: arr) {
-                                    addUserWithID(s);
-                                }
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
+                        if (arr != null ) {
+                            for (String s: arr) {
+                                addUserWithID(s);
                             }
                         }
                     }
@@ -204,20 +191,17 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
         db.collection("Users")
                 .document(userUID)
                 .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
-                            if (arr != null) {
-                                for (String s : arr) {
-                                    addUserWithID(s);
-                                }
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
+                        if (arr != null) {
+                            for (String s : arr) {
+                                addUserWithID(s);
                             }
-                            db.enableNetwork();
-                        } else {
-                            getContactsFromFirestore();
                         }
+                        db.enableNetwork();
+                    } else {
+                        getContactsFromFirestore();
                     }
                 });
     }

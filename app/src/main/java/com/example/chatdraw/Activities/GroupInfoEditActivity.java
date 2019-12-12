@@ -21,7 +21,6 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
@@ -51,8 +50,6 @@ import com.squareup.picasso.Picasso;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.security.acl.Group;
-import java.util.ArrayList;
 
 public class GroupInfoEditActivity extends AppCompatActivity {
 
@@ -98,12 +95,7 @@ public class GroupInfoEditActivity extends AppCompatActivity {
                     .into(imageView);
         }
 
-        imageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                selectImage();
-            }
-        });
+        imageView.setOnClickListener(v -> selectImage());
 
         EditText editText = findViewById(R.id.group_info_edit_edittext);
         editText.setText(groupName);
@@ -126,24 +118,21 @@ public class GroupInfoEditActivity extends AppCompatActivity {
         });
 
         Button saveButton = findViewById(R.id.group_info_edit_save_button);
-        saveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (isPhotoChanged) {
-                    FirebaseFirestore.getInstance()
-                            .collection("Groups")
-                            .document(groupUID)
-                            .update("groupImageUrl", url);
-                }
-                if (isNameChanged) {
-                    FirebaseFirestore.getInstance()
-                            .collection("Groups")
-                            .document(groupUID)
-                            .update("groupName", groupName);
-
-                }
-                sendMessage();
+        saveButton.setOnClickListener(v -> {
+            if (isPhotoChanged) {
+                FirebaseFirestore.getInstance()
+                        .collection("Groups")
+                        .document(groupUID)
+                        .update("groupImageUrl", url);
             }
+            if (isNameChanged) {
+                FirebaseFirestore.getInstance()
+                        .collection("Groups")
+                        .document(groupUID)
+                        .update("groupName", groupName);
+
+            }
+            sendMessage();
         });
     }
 
@@ -166,30 +155,27 @@ public class GroupInfoEditActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(GroupInfoEditActivity.this);
         builder.setTitle("Get image from");
 
-        builder.setItems(items, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                if (items[i].equals("Camera")) {
-                    // ask for Camera permission
-                    if (ContextCompat.checkSelfPermission(GroupInfoEditActivity.this, Manifest.permission.CAMERA)
-                            == PackageManager.PERMISSION_DENIED) {
-                        ActivityCompat.requestPermissions(
-                                GroupInfoEditActivity.this, new String[] {Manifest.permission.CAMERA},
-                                REQUEST_CAMERA);
-                    }
-
-                    if (ContextCompat.checkSelfPermission(GroupInfoEditActivity.this, Manifest.permission.CAMERA)
-                            == PackageManager.PERMISSION_DENIED) {
-                        Toast.makeText(GroupInfoEditActivity.this, "Camera permission not granted", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                        startActivityForResult(intent, REQUEST_CAMERA);
-                    }
-                } else if (items[i].equals("Gallery")) {
-                    Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    intent.setType("image/*");
-                    startActivityForResult(intent, SELECT_FILE);
+        builder.setItems(items, (dialogInterface, i) -> {
+            if (items[i].equals("Camera")) {
+                // ask for Camera permission
+                if (ContextCompat.checkSelfPermission(GroupInfoEditActivity.this, Manifest.permission.CAMERA)
+                        == PackageManager.PERMISSION_DENIED) {
+                    ActivityCompat.requestPermissions(
+                            GroupInfoEditActivity.this, new String[] {Manifest.permission.CAMERA},
+                            REQUEST_CAMERA);
                 }
+
+                if (ContextCompat.checkSelfPermission(GroupInfoEditActivity.this, Manifest.permission.CAMERA)
+                        == PackageManager.PERMISSION_DENIED) {
+                    Toast.makeText(GroupInfoEditActivity.this, "Camera permission not granted", Toast.LENGTH_SHORT).show();
+                } else {
+                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    startActivityForResult(intent, REQUEST_CAMERA);
+                }
+            } else if (items[i].equals("Gallery")) {
+                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                intent.setType("image/*");
+                startActivityForResult(intent, SELECT_FILE);
             }
         });
         builder.show();
@@ -237,32 +223,20 @@ public class GroupInfoEditActivity extends AppCompatActivity {
                 byte[] byteArray = stream.toByteArray();
 
                 UploadTask uploadTask = fileReference.putBytes(byteArray);
-                uploadTask.addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        // Handle unsuccessful uploads
-                        mProgressDialog.dismiss();
-                        Toast.makeText(GroupInfoEditActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        mProgressDialog.dismiss();
-                        Toast.makeText(GroupInfoEditActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
-                        fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            public void onSuccess(Uri uri) {
-                                url = uri.toString();
-                                Toast.makeText(GroupInfoEditActivity.this, url, Toast.LENGTH_LONG).show();
-                            }
-                        });
-                    }
-                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                        mProgressDialog.setMessage("Uploading Image...");
-                        mProgressDialog.show();
-                    }
+                uploadTask.addOnFailureListener(e -> {
+                    // Handle unsuccessful uploads
+                    mProgressDialog.dismiss();
+                    Toast.makeText(GroupInfoEditActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                }).addOnSuccessListener(taskSnapshot -> {
+                    mProgressDialog.dismiss();
+                    Toast.makeText(GroupInfoEditActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
+                    fileReference.getDownloadUrl().addOnSuccessListener(uri -> {
+                        url = uri.toString();
+                        Toast.makeText(GroupInfoEditActivity.this, url, Toast.LENGTH_LONG).show();
+                    });
+                }).addOnProgressListener(taskSnapshot -> {
+                    mProgressDialog.setMessage("Uploading Image...");
+                    mProgressDialog.show();
                 });
 
                 selectedImageUri = null;
@@ -276,32 +250,20 @@ public class GroupInfoEditActivity extends AppCompatActivity {
                         .child("image.jpg");
 
                 UploadTask uploadTask = imageRef.putBytes(dataforbmp);
-                uploadTask.addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        // Handle unsuccessful uploads
-                        mProgressDialog.dismiss();
-                        Toast.makeText(GroupInfoEditActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        mProgressDialog.dismiss();
-                        Toast.makeText(GroupInfoEditActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
-                        imageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            public void onSuccess(Uri uri) {
-                                url = uri.toString();
-                                Toast.makeText(GroupInfoEditActivity.this, url, Toast.LENGTH_LONG).show();
-                            }
-                        });
-                    }
-                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                        mProgressDialog.setMessage("Uploading Image...");
-                        mProgressDialog.show();
-                    }
+                uploadTask.addOnFailureListener(e -> {
+                    // Handle unsuccessful uploads
+                    mProgressDialog.dismiss();
+                    Toast.makeText(GroupInfoEditActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                }).addOnSuccessListener(taskSnapshot -> {
+                    mProgressDialog.dismiss();
+                    Toast.makeText(GroupInfoEditActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
+                    imageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                        url = uri.toString();
+                        Toast.makeText(GroupInfoEditActivity.this, url, Toast.LENGTH_LONG).show();
+                    });
+                }).addOnProgressListener(taskSnapshot -> {
+                    mProgressDialog.setMessage("Uploading Image...");
+                    mProgressDialog.show();
                 });
 
                 bmp = null;

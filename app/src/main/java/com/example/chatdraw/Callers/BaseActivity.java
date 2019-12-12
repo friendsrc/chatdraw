@@ -1,6 +1,5 @@
 package com.example.chatdraw.Callers;
 
-import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -69,12 +68,10 @@ public abstract class BaseActivity extends AppCompatActivity implements ServiceC
     private Messenger messenger = new Messenger(new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case SinchService.MESSAGE_PERMISSIONS_NEEDED:
-                    Bundle bundle = msg.getData();
-                    String requiredPermission = bundle.getString(SinchService.REQUIRED_PERMISSION);
-                    ActivityCompat.requestPermissions(BaseActivity.this, new String[]{requiredPermission}, 0);
-                    break;
+            if (msg.what == SinchService.MESSAGE_PERMISSIONS_NEEDED) {
+                Bundle bundle = msg.getData();
+                String requiredPermission = bundle.getString(SinchService.REQUIRED_PERMISSION);
+                ActivityCompat.requestPermissions(BaseActivity.this, new String[]{requiredPermission}, 0);
             }
         }
     });

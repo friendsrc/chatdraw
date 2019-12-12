@@ -30,66 +30,63 @@ public class UsernameEditActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_username_edit);
 
-        final EditText inputUsername = (EditText) findViewById(R.id.input_username);
-        Button username_butt = (Button) findViewById(R.id.username_submit);
-        username_butt.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View view) {
-                final String username = inputUsername.getText().toString().trim().toLowerCase();
+        final EditText inputUsername = findViewById(R.id.input_username);
+        Button username_butt = findViewById(R.id.username_submit);
+        username_butt.setOnClickListener(view -> {
+            final String username = inputUsername.getText().toString().trim().toLowerCase();
 
-                if (username.length() < 3) {
-                    inputUsername.setError(getString(R.string.short_username));
-                    inputUsername.requestFocus();
-                    return;
-                }
+            if (username.length() < 3) {
+                inputUsername.setError(getString(R.string.short_username));
+                inputUsername.requestFocus();
+                return;
+            }
 
-                if (username.length() > 20) {
-                    inputUsername.setError(getString(R.string.long_username));
-                    inputUsername.requestFocus();
-                    return;
-                }
+            if (username.length() > 20) {
+                inputUsername.setError(getString(R.string.long_username));
+                inputUsername.requestFocus();
+                return;
+            }
 
-                DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
-                ref.child("Users").orderByChild("username").equalTo("@" +username).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        Log.v("tag", "" + dataSnapshot);
-                        if (dataSnapshot.exists()) {
-                            // use "username" already exists
-                            inputUsername.setError(getString(R.string.username_exists));
-                            inputUsername.requestFocus();
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+            ref.child("Users").orderByChild("username").equalTo("@" +username).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Log.v("tag", "" + dataSnapshot);
+                    if (dataSnapshot.exists()) {
+                        // use "username" already exists
+                        inputUsername.setError(getString(R.string.username_exists));
+                        inputUsername.requestFocus();
+                    } else {
+                        // "username" does not exist yet.
+                        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(UsernameEditActivity.this);
+
+                        if (acct != null) {
+                            String personId = acct.getId();
+
+                            if (updateUser(personId, username)) {
+                                finish();
+                            } else {
+                                Toast.makeText(UsernameEditActivity.this, "Username update failed", Toast.LENGTH_SHORT).show();
+                            }
                         } else {
-                            // "username" does not exist yet.
-                            GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(UsernameEditActivity.this);
-
-                            if (acct != null) {
-                                String personId = acct.getId();
-
-                                if (updateUser(personId, username)) {
+                            FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                            if (currentFirebaseUser != null) {
+                                if (updateUser(currentFirebaseUser.getUid(), username)) {
                                     finish();
-                                } else {
-                                    Toast.makeText(UsernameEditActivity.this, "Username update failed", Toast.LENGTH_SHORT).show();
                                 }
                             } else {
-                                FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-                                if (currentFirebaseUser != null) {
-                                    if (updateUser(currentFirebaseUser.getUid(), username)) {
-                                        finish();
-                                    }
-                                } else {
-                                    Toast.makeText(UsernameEditActivity.this, "Username update failed", Toast.LENGTH_SHORT).show();
-                                }
+                                Toast.makeText(UsernameEditActivity.this, "Username update failed", Toast.LENGTH_SHORT).show();
                             }
                         }
                     }
+                }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Toast.makeText(UsernameEditActivity.this , "cancelled", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Toast.makeText(UsernameEditActivity.this , "cancelled", Toast.LENGTH_SHORT).show();
+                }
+            });
 
-            }
         });
 
         Toolbar myToolbar = findViewById(R.id.toolbar);

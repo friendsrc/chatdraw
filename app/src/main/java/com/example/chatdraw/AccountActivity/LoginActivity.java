@@ -15,7 +15,6 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.example.chatdraw.Activities.FriendListActivity;
 import com.example.chatdraw.Activities.MainActivity;
 import com.example.chatdraw.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -76,13 +75,8 @@ public class LoginActivity extends AppCompatActivity
         // Build a GoogleSignInClient with the options specified by gso.
         mGoogleSignInClient= GoogleSignIn.getClient(this, signInOptions);
 
-        signIn = (SignInButton) findViewById(R.id.bn_login);
-        signIn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                signInMethod();
-            }
-        });
+        signIn = findViewById(R.id.bn_login);
+        signIn.setOnClickListener(view -> signInMethod());
 
         /* Get Firebase auth instance
            Returns an instance of this class corresponding
@@ -106,80 +100,64 @@ public class LoginActivity extends AppCompatActivity
         }
 
         // setContentView(R.layout.activity_login);
-        inputEmail = (EditText) findViewById(R.id.email);
-        inputPassword = (EditText) findViewById(R.id.password);
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        btnSignup = (Button) findViewById(R.id.btn_signup);
-        btnLogin = (Button) findViewById(R.id.btn_login);
-        btnReset = (Button) findViewById(R.id.btn_reset_password);
+        inputEmail = findViewById(R.id.email);
+        inputPassword = findViewById(R.id.password);
+        progressBar = findViewById(R.id.progressBar);
+        btnSignup = findViewById(R.id.btn_signup);
+        btnLogin = findViewById(R.id.btn_login);
+        btnReset = findViewById(R.id.btn_reset_password);
 
         //Get Firebase auth instance
         // auth = FirebaseAuth.getInstance();
 
         // Signup button clicked
-        btnSignup.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(LoginActivity.this, SignupActivity.class));
-            }
-        });
+        btnSignup.setOnClickListener(v -> startActivity(new Intent(LoginActivity.this, SignupActivity.class)));
 
         // Reset button clicked
-        btnReset.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(LoginActivity.this, ResetPasswordActivity.class));
-            }
-        });
+        btnReset.setOnClickListener(v -> startActivity(new Intent(LoginActivity.this, ResetPasswordActivity.class)));
 
         // Login button clicked
-        btnLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String email = inputEmail.getText().toString();
-                final String password = inputPassword.getText().toString();
+        btnLogin.setOnClickListener(v -> {
+            String email = inputEmail.getText().toString();
+            final String password = inputPassword.getText().toString();
 
-                // text utility to check whether the email is empty -> if (email.equals(""))
-                if (TextUtils.isEmpty(email)) {
-                    Toast.makeText(getApplicationContext(), "Enter email address!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                // text utility to check whether the password is empty -> if (password.equals(""))
-                if (TextUtils.isEmpty(password)) {
-                    Toast.makeText(getApplicationContext(), "Enter password!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                progressBar.setVisibility(View.VISIBLE);
-
-                //authenticate user to firebase
-                auth.signInWithEmailAndPassword(email, password)
-                        .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<AuthResult> task) {
-                    /* If sign in fails, display a message to the user. If sign in succeeds
-                       the auth state listener will be notified and logic to handle the
-                       signed in user can be handled in the listener.
-                    */
-                                progressBar.setVisibility(View.GONE);
-
-                                // if everything has been input but didn't meet the criteria (email and password not match)
-                                if (!task.isSuccessful()) {
-                                    // there was an error
-                                    if (password.length() < 6) {
-                                        inputPassword.setError(getString(R.string.minimum_password));
-                                    } else {
-                                        Toast.makeText(LoginActivity.this, getString(R.string.auth_failed), Toast.LENGTH_LONG).show();
-                                    }
-                                } else {
-                                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                                    startActivity(intent);
-                                    finish();
-                                }
-                            }
-                        });
+            // text utility to check whether the email is empty -> if (email.equals(""))
+            if (TextUtils.isEmpty(email)) {
+                Toast.makeText(getApplicationContext(), "Enter email address!", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            // text utility to check whether the password is empty -> if (password.equals(""))
+            if (TextUtils.isEmpty(password)) {
+                Toast.makeText(getApplicationContext(), "Enter password!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            progressBar.setVisibility(View.VISIBLE);
+
+            //authenticate user to firebase
+            auth.signInWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(LoginActivity.this, task -> {
+                /* If sign in fails, display a message to the user. If sign in succeeds
+                   the auth state listener will be notified and logic to handle the
+                   signed in user can be handled in the listener.
+                */
+                        progressBar.setVisibility(View.GONE);
+
+                        // if everything has been input but didn't meet the criteria (email and password not match)
+                        if (!task.isSuccessful()) {
+                            // there was an error
+                            if (password.length() < 6) {
+                                inputPassword.setError(getString(R.string.minimum_password));
+                            } else {
+                                Toast.makeText(LoginActivity.this, getString(R.string.auth_failed), Toast.LENGTH_LONG).show();
+                            }
+                        } else {
+                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                            startActivity(intent);
+                            finish();
+                        }
+                    });
         });
     }
 
@@ -234,33 +212,27 @@ public class LoginActivity extends AppCompatActivity
                             db.collection("Users")
                                     .document(userID)
                                     .get()
-                                    .addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-                                            Map<String, Object> map = new HashMap<>();
-                                            map.put("contacts", new ArrayList<String>());
-                                            map.put("groups", new ArrayList<String>());
-                                            db.collection("Users").document(userID).set(map);
-                                        }
+                                    .addOnFailureListener(e -> {
+                                        Map<String, Object> map = new HashMap<>();
+                                        map.put("contacts", new ArrayList<String>());
+                                        map.put("groups", new ArrayList<String>());
+                                        db.collection("Users").document(userID).set(map);
                                     });
 
                             final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users");
                             databaseReference
                                     .child(personId)
-                                    .setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if (task.isSuccessful()) {
-                                        // startActivity(new Intent(SignupActivity.this, FriendListActivity.class));
-                                        Intent intention = new Intent(LoginActivity.this, PersonalActivity.class);
-                                        intention.putExtra("GoogleName", name);
-                                        intention.putExtra("userID", personId);
-                                        startActivity(intention);
-                                    } else {
-                                        Toast.makeText(LoginActivity.this, "error at signup through google", Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-                            });
+                                    .setValue(user).addOnCompleteListener(task -> {
+                                        if (task.isSuccessful()) {
+                                            // startActivity(new Intent(SignupActivity.this, FriendListActivity.class));
+                                            Intent intention = new Intent(LoginActivity.this, PersonalActivity.class);
+                                            intention.putExtra("GoogleName", name);
+                                            intention.putExtra("userID", personId);
+                                            startActivity(intention);
+                                        } else {
+                                            Toast.makeText(LoginActivity.this, "error at signup through google", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
 
                         }
                     }

@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -34,8 +33,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -66,76 +63,70 @@ public class FindFriendActivity extends AppCompatActivity {
         // set onClickListener on the button
         // if clicked, go back to FriendListActivity
         // put extra containing the name of the clicked profile
-        newButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // create Intent to send selected friend's name back to FriendListActivity
-                final Intent intent = new Intent();
+        newButton.setOnClickListener(v -> {
+            // create Intent to send selected friend's name back to FriendListActivity
+            final Intent intent = new Intent();
 
-                // get new friend's uID, add to intent, and then destroy this activity
-                FirebaseDatabase database = FirebaseDatabase.getInstance();
-                database.getReference("Users")
-                        .orderByChild("username")
-                        .equalTo(newUsername)
-                        .addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                if (dataSnapshot.exists()) {
-                                    for (DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
-                                        final String uID = userSnapshot.getKey();
-                                        final String currentUserID = getCurrentUid();
+            // get new friend's uID, add to intent, and then destroy this activity
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
+            database.getReference("Users")
+                    .orderByChild("username")
+                    .equalTo(newUsername)
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            if (dataSnapshot.exists()) {
+                                for (DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
+                                    final String uID = userSnapshot.getKey();
+                                    final String currentUserID = getCurrentUid();
 
-                                        if (currentUserID.equals("")) {
-                                            Toast.makeText(FindFriendActivity.this, "User is not validated!", Toast.LENGTH_SHORT).show();
-                                        } else {
-                                            FirebaseFirestore.getInstance()
-                                                    .collection("Users")
-                                                    .document(currentUserID)
-                                                    .get()
-                                                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                                        @Override
-                                                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                                            ArrayList<String> contacts
-                                                                    = (ArrayList<String>)
-                                                                    task.getResult().get("contacts");
-                                                            // if the chosen contact already exist in
-                                                            // this user's contacts list, make a toast
-                                                            if (contacts != null && contacts.contains(uID)) {
-                                                                Toast.makeText(
-                                                                        FindFriendActivity.this,
-                                                                        "Already in Contacts",
-                                                                        Toast.LENGTH_SHORT
-                                                                ).show();
-                                                            } else if (uID.equals(currentUserID)) {
-                                                                Toast.makeText(
-                                                                        FindFriendActivity.this,
-                                                                        "Can't add your own account",
-                                                                        Toast.LENGTH_SHORT
-                                                                ).show();
-                                                            } else {
-                                                                intent.putExtra("uID", uID);
+                                    if (currentUserID.equals("")) {
+                                        Toast.makeText(FindFriendActivity.this, "User is not validated!", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        FirebaseFirestore.getInstance()
+                                                .collection("Users")
+                                                .document(currentUserID)
+                                                .get()
+                                                .addOnCompleteListener(task -> {
+                                                    ArrayList<String> contacts
+                                                            = (ArrayList<String>)
+                                                            task.getResult().get("contacts");
+                                                    // if the chosen contact already exist in
+                                                    // this user's contacts list, make a toast
+                                                    if (contacts != null && contacts.contains(uID)) {
+                                                        Toast.makeText(
+                                                                FindFriendActivity.this,
+                                                                "Already in Contacts",
+                                                                Toast.LENGTH_SHORT
+                                                        ).show();
+                                                    } else if (uID.equals(currentUserID)) {
+                                                        Toast.makeText(
+                                                                FindFriendActivity.this,
+                                                                "Can't add your own account",
+                                                                Toast.LENGTH_SHORT
+                                                        ).show();
+                                                    } else {
+                                                        intent.putExtra("uID", uID);
 
-                                                                // set the result as successful
-                                                                setResult(Activity.RESULT_OK, intent);
+                                                        // set the result as successful
+                                                        setResult(Activity.RESULT_OK, intent);
 
-                                                                // destroy this activity
-                                                                finish();
-                                                            }
-                                                        }
-                                                    });
-                                        }
+                                                        // destroy this activity
+                                                        finish();
+                                                    }
+                                                });
                                     }
-                                } else {
-                                    Toast.makeText(FindFriendActivity.this, "No record found!", Toast.LENGTH_SHORT).show();
                                 }
+                            } else {
+                                Toast.makeText(FindFriendActivity.this, "No record found!", Toast.LENGTH_SHORT).show();
                             }
+                        }
 
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                            }
-                        });
-            }
+                        }
+                    });
         });
 
         // set the action bar
@@ -151,14 +142,11 @@ public class FindFriendActivity extends AppCompatActivity {
 
         final EditText editText = findViewById(R.id.find_friend_edittext);
         ImageView searchButton = findViewById(R.id.find_friend_search_button);
-        searchButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String str = editText.getText().toString();
-                if (!str.trim().equals("")) {
-                    // find user and update list view
-                    findUserInDatabase(str.trim());
-                }
+        searchButton.setOnClickListener(v -> {
+            String str = editText.getText().toString();
+            if (!str.trim().equals("")) {
+                // find user and update list view
+                findUserInDatabase(str.trim());
             }
         });
     }

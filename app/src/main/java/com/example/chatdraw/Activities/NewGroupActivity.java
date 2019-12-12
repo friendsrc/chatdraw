@@ -26,7 +26,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -34,12 +33,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreSettings;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -97,23 +91,20 @@ public class NewGroupActivity extends AppCompatActivity implements RecyclerViewC
 
 
         ImageView imageView = findViewById(R.id.new_group_nextbutton_imageview);
-        imageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (chosenContacts.size() > 0) {
-                    Intent intent = new Intent(NewGroupActivity.this, GroupCreateActivity.class);
-                    String[] memberList = new String[chosenContacts.size()];
-                    int i = 0;
-                    for (FriendListItem f: chosenContacts.values()) {
-                        memberList[i] = f.getUID();
-                        i++;
-                    }
-                    intent.putExtra("memberList", memberList);
-                    startActivityForResult(intent, GROUP_CREATE_REQUEST_CODE);
-                } else {
-                    Toast.makeText(NewGroupActivity.this,
-                            "Select at least one group member", Toast.LENGTH_SHORT).show();
+        imageView.setOnClickListener(v -> {
+            if (chosenContacts.size() > 0) {
+                Intent intent = new Intent(NewGroupActivity.this, GroupCreateActivity.class);
+                String[] memberList = new String[chosenContacts.size()];
+                int i = 0;
+                for (FriendListItem f: chosenContacts.values()) {
+                    memberList[i] = f.getUID();
+                    i++;
                 }
+                intent.putExtra("memberList", memberList);
+                startActivityForResult(intent, GROUP_CREATE_REQUEST_CODE);
+            } else {
+                Toast.makeText(NewGroupActivity.this,
+                        "Select at least one group member", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -141,15 +132,12 @@ public class NewGroupActivity extends AppCompatActivity implements RecyclerViewC
         db.collection("Users")
                 .document(userUID)
                 .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
-                            if (arr != null ) {
-                                for (String s: arr) {
-                                    addUserWithID(s);
-                                }
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
+                        if (arr != null ) {
+                            for (String s: arr) {
+                                addUserWithID(s);
                             }
                         }
                     }
@@ -164,20 +152,17 @@ public class NewGroupActivity extends AppCompatActivity implements RecyclerViewC
         db.collection("Users")
                 .document(userUID)
                 .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
-                            if (arr != null) {
-                                for (String s : arr) {
-                                    addUserWithID(s);
-                                }
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
+                        if (arr != null) {
+                            for (String s : arr) {
+                                addUserWithID(s);
                             }
-                            db.enableNetwork();
-                        } else {
-                            getContactsFromFirestore();
                         }
+                        db.enableNetwork();
+                    } else {
+                        getContactsFromFirestore();
                     }
                 });
     }

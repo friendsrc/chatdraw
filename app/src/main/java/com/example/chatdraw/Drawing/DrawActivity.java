@@ -13,13 +13,11 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Toast;
@@ -122,22 +120,19 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
         mColorButton = findViewById(R.id.color_picker_imageview);
         mColorButton.setColorFilter(
                 Color.parseColor("#000000"), PorterDuff.Mode.MULTIPLY);
-        mColorButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int[] colorPresets = {Color.parseColor("#000000"),
-                        Color.parseColor("#293462"),
-                        Color.parseColor("#216583"),
-                        Color.parseColor("#f76262"),
-                        Color.parseColor("#fff1c1"),
-                };
-                mColorPickerDialog = ColorPickerDialog.newBuilder();
-                mColorPickerDialog
-                        .setShowAlphaSlider(true)
-                        .setColor(Color.parseColor("#000000"))
-                        .setPresets(colorPresets)
-                        .show(DrawActivity.this);
-            }
+        mColorButton.setOnClickListener(v -> {
+            int[] colorPresets = {Color.parseColor("#000000"),
+                    Color.parseColor("#293462"),
+                    Color.parseColor("#216583"),
+                    Color.parseColor("#f76262"),
+                    Color.parseColor("#fff1c1"),
+            };
+            mColorPickerDialog = ColorPickerDialog.newBuilder();
+            mColorPickerDialog
+                    .setShowAlphaSlider(true)
+                    .setColor(Color.parseColor("#000000"))
+                    .setPresets(colorPresets)
+                    .show(DrawActivity.this);
         });
 
         // set brush size picker seekbar
@@ -246,7 +241,6 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
             } else {
                 Toast.makeText(this, "Permission not granted", Toast.LENGTH_SHORT).show();
             }
-            return;
         }
     }
 }
