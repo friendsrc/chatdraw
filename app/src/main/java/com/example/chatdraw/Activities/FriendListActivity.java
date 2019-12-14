@@ -119,20 +119,9 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
 
         // get Contacts list
         getContacts();
+        getGroups();
 
         // set toggle switch
-//        ToggleSwitch toggleSwitch = findViewById(R.id.friend_list_toggleswitch);
-//        final RecyclerView recyclerView = findViewById(R.id.friend_list_recycler_view);
-//        toggleSwitch.setCheckedPosition(0);
-//        toggleSwitch.setOnChangeListener(i -> {
-//            if (i == 1) {
-//                if (mGroupAdapter == null) getGroups();
-//                recyclerView.setAdapter(mGroupAdapter);
-//            } else {
-//                recyclerView.setAdapter(mAdapter);
-//            }
-//        });
-
         Button groupsButton = findViewById(R.id.friend_list_groups_button);
         Button friendsButton = findViewById(R.id.friend_list_friends_button);
         groupsButton.setBackgroundColor(getResources().getColor(R.color.bluegray100));
@@ -279,36 +268,6 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                         getContactsFromFirestore();
                     }
                 });
-
-
-//        try {
-//            FileInputStream fis = getApplicationContext().openFileInput("FRIEND" + currentUserID);
-//            ObjectInputStream oi = new ObjectInputStream(fis);
-//            ArrayList<FriendListItem> friendList = (ArrayList<FriendListItem>) oi.readObject();
-//            mAdapter.clearData();
-//            mAdapter.addAll(friendList);
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//            Log.e("InternalStorage", e.getMessage());
-//            // if file doesn't exist, get data from Firestore
-//            FirebaseFirestore.getInstance().collection("Users").document(currentUserID)
-//                    .get()
-//                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-//                        @Override
-//                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-//                            ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
-//                            if (arr != null && !arr.isEmpty()) {
-//                                for (String s: arr) {
-//                                    addUserWithID(s);
-//                                }
-//                            }
-//                        }
-//                    });
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } catch (ClassNotFoundException e) {
-//            e.printStackTrace();
-//        }
     }
 
     public void getGroups() {

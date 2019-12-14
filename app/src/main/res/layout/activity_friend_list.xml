@@ -21,18 +21,6 @@
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
 
-<!--        <com.llollox.androidtoggleswitch.widgets.ToggleSwitch-->
-<!--            android:id="@+id/friend_list_toggleswitch"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:minWidth="200dp"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_margin="8dp"-->
-<!--            app:uncheckedBackgroundColor="@color/bluegray100"-->
-<!--            app:checkedBackgroundColor="@color/secondary"-->
-<!--            app:uncheckedTextColor="@color/colorPrimary"-->
-<!--            app:textToggleLeft="Contacts"-->
-<!--            app:textToggleRight="Groups" />-->
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
