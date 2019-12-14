@@ -83,10 +83,10 @@ public class GroupCallActivity extends BaseActivity {
         Intent intent = getIntent();
 
         mAudioPlayer = new AudioPlayer(this);
-        tvGroupName = (TextView) findViewById(R.id.groupName);
-        tvCallStatus = (TextView) findViewById(R.id.callStatus);
-        tvGroupTitle = (TextView) findViewById(R.id.groupDetails);
-        mCallDuration = (TextView) findViewById(R.id.callDuration);
+        tvGroupName = findViewById(R.id.groupName);
+        tvCallStatus = findViewById(R.id.callStatus);
+        tvGroupTitle = findViewById(R.id.groupDetails);
+        mCallDuration = findViewById(R.id.callDuration);
 
         groupSize = intent.getIntExtra("participant", 0);
         imageUrl = intent.getStringExtra("imageUrl");
@@ -97,9 +97,9 @@ public class GroupCallActivity extends BaseActivity {
 
         tvGroupName.setText(groupName);
 
-        table = (TableLayout) findViewById(R.id.tableForImages);
+        table = findViewById(R.id.tableForImages);
 
-        btnCancel = (Button) findViewById(R.id.btnCancel);
+        btnCancel = findViewById(R.id.btnCancel);
         btnCancel.setEnabled(false);
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override

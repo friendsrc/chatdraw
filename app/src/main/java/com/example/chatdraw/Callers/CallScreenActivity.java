@@ -1,6 +1,5 @@
 package com.example.chatdraw.Callers;
 
-import com.example.chatdraw.Activities.ChatActivity;
 import com.example.chatdraw.Drawing.DrawActivity;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -17,8 +16,6 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;

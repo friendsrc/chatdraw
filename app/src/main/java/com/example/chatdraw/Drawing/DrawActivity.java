@@ -13,13 +13,11 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Toast;
@@ -246,7 +244,6 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
             } else {
                 Toast.makeText(this, "Permission not granted", Toast.LENGTH_SHORT).show();
             }
-            return;
         }
     }
 }

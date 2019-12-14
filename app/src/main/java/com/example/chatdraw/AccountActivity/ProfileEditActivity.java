@@ -84,7 +84,7 @@ public class ProfileEditActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile_edit);
 
-        circleImageView = (CircleImageView) findViewById(R.id.new_profile_picture_image_view);
+        circleImageView = findViewById(R.id.new_profile_picture_image_view);
         mProgressDialog = new ProgressDialog(ProfileEditActivity.this);
         auth = FirebaseAuth.getInstance();
 
@@ -125,7 +125,7 @@ public class ProfileEditActivity extends AppCompatActivity {
                     }
                 }
 
-                CircleImageView imgview = (CircleImageView) findViewById(R.id.new_profile_picture_image_view);
+                CircleImageView imgview = findViewById(R.id.new_profile_picture_image_view);
 
                 if (imgurl == null) {
                     imgview.setImageResource(R.drawable.account_circle_black_75dp);
@@ -135,10 +135,10 @@ public class ProfileEditActivity extends AppCompatActivity {
                             .into(imgview);
                 }
 
-                TextView tv = (TextView) findViewById(R.id.profiles_field);
+                TextView tv = findViewById(R.id.profiles_field);
                 tv.setText(tempName);
 
-                TextView tv1 = (TextView) findViewById(R.id.usernames_field);
+                TextView tv1 = findViewById(R.id.usernames_field);
                 tv1.setText(tempUsername);
             }
 
@@ -149,7 +149,7 @@ public class ProfileEditActivity extends AppCompatActivity {
         });
 
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.photo_button);
+        FloatingActionButton fab = findViewById(R.id.photo_button);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

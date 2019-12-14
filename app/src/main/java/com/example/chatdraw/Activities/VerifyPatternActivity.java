@@ -5,15 +5,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.andrognito.patternlockview.PatternLockView;
 import com.andrognito.patternlockview.listener.PatternLockViewListener;
 import com.andrognito.patternlockview.utils.PatternLockUtils;
-import com.example.chatdraw.AccountActivity.LoginActivity;
-import com.example.chatdraw.AccountActivity.SetPatternActivity;
 import com.example.chatdraw.R;
 
 import java.util.List;
@@ -35,7 +31,7 @@ public class VerifyPatternActivity extends AppCompatActivity {
         Paper.init(this);
         String save_pattern = Paper.book().read(save_pattern_key);
         if (save_pattern != null && !save_pattern.equals("null")) {
-            mPatternLockView = (PatternLockView) findViewById(R.id.pattern_lock_view);
+            mPatternLockView = findViewById(R.id.pattern_lock_view);
             mPatternLockView.addPatternLockListener(new PatternLockViewListener() {
                 @Override
                 public void onStarted() {

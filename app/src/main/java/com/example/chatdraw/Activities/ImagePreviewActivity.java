@@ -172,7 +172,6 @@ public class ImagePreviewActivity extends AppCompatActivity {
                         Toast.LENGTH_SHORT).show();
 
             }
-            return;
         }
     }
 

@@ -64,7 +64,7 @@ public class RatingActivity extends AppCompatActivity {
         });
 
         submitButton.setOnClickListener(view -> {
-            RatingBar ratingBar1 = (RatingBar) findViewById(R.id.rating_bar);
+            RatingBar ratingBar1 = findViewById(R.id.rating_bar);
             GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(RatingActivity.this);
 
             String userID = "";

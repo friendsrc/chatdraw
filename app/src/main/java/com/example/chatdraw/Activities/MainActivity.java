@@ -1,15 +1,12 @@
 package com.example.chatdraw.Activities;
 
 import android.app.Activity;
-import android.app.NotificationManager;
-import android.content.Context;
 import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.chatdraw.AccountActivity.LoginActivity;
 import com.example.chatdraw.AccountActivity.ProfileEditActivity;
-import com.example.chatdraw.AccountActivity.SettingsActivity;
 import com.example.chatdraw.Callers.BaseActivity;
 import com.example.chatdraw.Callers.SinchService;
 import com.example.chatdraw.Credits.CreditActivity;
@@ -25,7 +22,6 @@ import androidx.appcompat.app.ActionBar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import androidx.appcompat.widget.Toolbar;
@@ -54,15 +50,12 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.sinch.android.rtc.SinchError;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, SinchService.StartFailedListener {
     private static final String TAG = "MainActivity";
@@ -128,13 +121,13 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 tempUsername = (String) dataSnapshot.child(userUID).child("username").getValue();
                 imgurl = (String) dataSnapshot.child(userUID).child("imageUrl").getValue();
 
-                TextView tv = (TextView) hView.findViewById(R.id.profile_field);
+                TextView tv = hView.findViewById(R.id.profile_field);
                 tv.setText(tempName);
 
-                TextView tv1 = (TextView) hView.findViewById(R.id.username_field);
+                TextView tv1 = hView.findViewById(R.id.username_field);
                 tv1.setText(tempUsername);
 
-                ImageButton imgbut = (ImageButton) hView.findViewById(R.id.profile_edit_button);
+                ImageButton imgbut = hView.findViewById(R.id.profile_edit_button);
 
                 if (imgurl == null) {
                     imgbut.setImageResource(R.drawable.account_circle_black_75dp);
@@ -173,7 +166,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             }
         });
 
-        ImageButton imgbutt = (ImageButton) hView.findViewById(R.id.profile_edit_button);
+        ImageButton imgbutt = hView.findViewById(R.id.profile_edit_button);
         imgbutt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -398,14 +391,19 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                             // Check if the message is not a text message
                             if (chatItem[0].getMessageBody().startsWith(chatItem[0].getSenderID())) {
                                 String[] arr = chatItem[0].getMessageBody().split("\t");
-                                if (arr[1].equals("IMAGE")) {
-                                    chatItem[0].setMessageBody("[Image]");
-                                } else if (arr[1].equals("PDF")) {
-                                    chatItem[0].setMessageBody("[Pdf]");
-                                } else if (arr[1].equals("INFO")) {
-                                    chatItem[0].setMessageBody(arr[2]);
-                                } else {
-                                    chatItem[0].setMessageBody("[Unknown file type]");
+                                switch (arr[1]) {
+                                    case "IMAGE":
+                                        chatItem[0].setMessageBody("[Image]");
+                                        break;
+                                    case "PDF":
+                                        chatItem[0].setMessageBody("[Pdf]");
+                                        break;
+                                    case "INFO":
+                                        chatItem[0].setMessageBody(arr[2]);
+                                        break;
+                                    default:
+                                        chatItem[0].setMessageBody("[Unknown file type]");
+                                        break;
                                 }
 
                             }

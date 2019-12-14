@@ -54,16 +54,16 @@ public class SettingsActivity extends AppCompatActivity {
            to the default FirebaseApp instance.
         */
         auth = FirebaseAuth.getInstance();
-        email = (TextView) findViewById(R.id.useremail);
+        email = findViewById(R.id.useremail);
 
-        btnChangePassword = (Button) findViewById(R.id.change_password_button);
-        btnRemoveUser = (Button) findViewById(R.id.remove_user_button);
+        btnChangePassword = findViewById(R.id.change_password_button);
+        btnRemoveUser = findViewById(R.id.remove_user_button);
 
-        changePassword = (Button) findViewById(R.id.changePass);
-        signOut = (Button) findViewById(R.id.sign_out);
+        changePassword = findViewById(R.id.changePass);
+        signOut = findViewById(R.id.sign_out);
 
-        newPassword = (EditText) findViewById(R.id.newPassword);
-        password = (EditText) findViewById(R.id.password);
+        newPassword = findViewById(R.id.newPassword);
+        password = findViewById(R.id.password);
 
         user = FirebaseAuth.getInstance().getCurrentUser();
         GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(SettingsActivity.this);
@@ -97,7 +97,7 @@ public class SettingsActivity extends AppCompatActivity {
         password.setVisibility(View.GONE);
         changePassword.setVisibility(View.GONE);
 
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        progressBar = findViewById(R.id.progressBar);
 
         if (progressBar != null) {
             progressBar.setVisibility(View.GONE);

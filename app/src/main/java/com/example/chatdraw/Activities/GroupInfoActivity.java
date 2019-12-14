@@ -11,8 +11,6 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.example.chatdraw.R;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;

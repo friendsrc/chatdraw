@@ -30,13 +30,13 @@ public class CreatePatternActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_pattern);
 
-        TextView textView = (TextView) findViewById(R.id.createPatternText);
+        TextView textView = findViewById(R.id.createPatternText);
         textView.setText("Set a new pattern passcode");
 
-        Button btnSetup = (Button) findViewById(R.id.btnSetPattern);
+        Button btnSetup = findViewById(R.id.btnSetPattern);
         btnSetup.setEnabled(false);
 
-        mPatternLockView = (PatternLockView) findViewById(R.id.pattern_lock_view);
+        mPatternLockView = findViewById(R.id.pattern_lock_view);
         mPatternLockView.addPatternLockListener(new PatternLockViewListener() {
             @Override
             public void onStarted() {

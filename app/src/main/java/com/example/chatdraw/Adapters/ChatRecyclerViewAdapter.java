@@ -4,7 +4,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,9 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
-import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.chatdraw.Activities.ChatActivity;
@@ -23,7 +20,6 @@ import com.example.chatdraw.R;
 import com.example.chatdraw.Listeners.RecyclerViewClickListener;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -82,24 +78,30 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
 
         if (chatItem.getSenderID().equals(userId)) { // chat is sent by this user
             if (chatItem.getMessageBody().startsWith(userId)) {
-                if (arr[1].equals("IMAGE")) {
-                    return 20; // chat item is of type image
-                } else if (arr[1].equals("PDF")) {
-                    return 30; // chat item is of type pdf
-                } else if (arr[1].equals("INFO")) {
-                    return 44;
+                switch (arr[1]) {
+                    case "IMAGE":
+                        return 20; // chat item is of type image
+
+                    case "PDF":
+                        return 30; // chat item is of type pdf
+
+                    case "INFO":
+                        return 44;
                 }
             }
             return 0; // chat item is of type text
 
         } else { // chat is not sent by this user
             if (chatItem.getMessageBody().startsWith(chatItem.getSenderID())) {
-                if (arr[1].equals("IMAGE")) {
-                    return 21; // chat item is of type image
-                } else if (arr[1].equals("PDF")) {
-                    return 31; // chat item is of type pdf
-                } else if (arr[1].equals("INFO")) {
-                    return 44;
+                switch (arr[1]) {
+                    case "IMAGE":
+                        return 21; // chat item is of type image
+
+                    case "PDF":
+                        return 31; // chat item is of type pdf
+
+                    case "INFO":
+                        return 44;
                 }
             }
             return 1; // chat item is of type text
@@ -404,14 +406,19 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
             ChatItem chatItem = mDataset.get(mDataset.size() - 2);
             if (chatItem.getMessageBody().startsWith(userId)) {
                 String[] arr = chatItem.getMessageBody().split("\t");
-                if (arr[1].equals("IMAGE")) {
-                    chatItem.setMessageBody("[Image]");
-                } else if (arr[1].equals("PDF")) {
-                    chatItem.setMessageBody("[Pdf]");
-                } else if (arr[1].equals("INFO")) {
-                    chatItem.setMessageBody(arr[2]);
-                } else {
-                    chatItem.setMessageBody("[Unknown file type]");
+                switch (arr[1]) {
+                    case "IMAGE":
+                        chatItem.setMessageBody("[Image]");
+                        break;
+                    case "PDF":
+                        chatItem.setMessageBody("[Pdf]");
+                        break;
+                    case "INFO":
+                        chatItem.setMessageBody(arr[2]);
+                        break;
+                    default:
+                        chatItem.setMessageBody("[Unknown file type]");
+                        break;
                 }
             }
             if (mDataset.size() >= 2) {

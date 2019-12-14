@@ -52,7 +52,7 @@
 
     <string name="congrats_text">You are one more step to go!</string>
     <string name="chat_hint">Start typing...</string>
-    <string name="add" translatable="false"></string>
+    <string name="add" translatable="false" />
     <string name="settings_butt">Account</string>
 
     <string name="password_butt">Password Lock</string>

@@ -39,14 +39,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
-import com.example.chatdraw.Drawing.DrawActivity;
 import com.example.chatdraw.Callers.BaseActivity;
 import com.example.chatdraw.Callers.CallScreenActivity;
 import com.example.chatdraw.Callers.SinchService;
@@ -82,18 +74,13 @@ import com.sinch.android.rtc.MissingPermissionException;
 import com.sinch.android.rtc.calling.Call;
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 
 import javax.annotation.Nullable;
 

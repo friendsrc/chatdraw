@@ -5,8 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,14 +29,14 @@ public class SetPatternActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_set_pattern);
 
-        TextView textView = (TextView)findViewById(R.id.setPatternText);
+        TextView textView = findViewById(R.id.setPatternText);
 
         Paper.init(this);
         String save_pattern = Paper.book().read(save_pattern_key);
         if (save_pattern != null && !save_pattern.equals("null")) {
 
             textView.setText("Enter current password");
-            mPatternLockView = (PatternLockView) findViewById(R.id.pattern_lock_view);
+            mPatternLockView = findViewById(R.id.pattern_lock_view);
             mPatternLockView.addPatternLockListener(new PatternLockViewListener() {
                 @Override
                 public void onStarted() {
