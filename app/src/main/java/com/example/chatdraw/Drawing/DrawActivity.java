@@ -6,29 +6,36 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
+import com.example.chatdraw.Activities.ChatActivity;
+import com.example.chatdraw.Items.ChatItem;
 import com.example.chatdraw.R;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.jaredrummler.android.colorpicker.ColorPickerDialog;
 import com.jaredrummler.android.colorpicker.ColorPickerDialogListener;
 import com.otaliastudios.zoom.ZoomLayout;
+import com.squareup.picasso.Picasso;
 
 public class DrawActivity extends AppCompatActivity implements ColorPickerDialogListener {
 
@@ -42,6 +49,8 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
 
     private ImageView mColorButton;
     private ColorPickerDialog.Builder mColorPickerDialog;
+
+    private Dialog mCloseDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,14 +100,6 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
         canvasView.widthMultiplier = 2048f / mRealSizeWidth;
         canvasView.heightMultiplier = 2048f / mRealSizeHeight;
 
-
-        // set drawing scale
-//        DisplayMetrics displayMetrics = new DisplayMetrics();
-//        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-//        int height = displayMetrics.heightPixels;
-//        int width = displayMetrics.widthPixels;
-//        canvasView.widthMultiplier = 2048f / width;
-//        canvasView.heightMultiplier = 2048f / (height);
         canvasView.setIDs(userUID, friendsUID, findViewById(R.id.canvas), mZoomLayout);
         canvasView.getFromFirebase();
 
@@ -163,7 +164,7 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
 
     @Override
     public boolean onSupportNavigateUp() {
-        finish();
+        showClosePopup();
         return true;
     }
 
@@ -247,5 +248,24 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
                 Toast.makeText(this, "Permission not granted", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    public void showClosePopup() {
+        mCloseDialog = new Dialog(this);
+        mCloseDialog.setContentView(R.layout.confirmationpopup);
+        mCloseDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        mCloseDialog.setCancelable(true);
+
+        Button yesButton = mCloseDialog.findViewById(R.id.close_canvas_agree_btn);
+        Button cancelButton = mCloseDialog.findViewById(R.id.close_canvas_cancel_btn);
+
+        cancelButton.setOnClickListener(view -> mCloseDialog.dismiss());
+        yesButton.setOnClickListener(view -> {
+            mCloseDialog.dismiss();
+            finish();
+        });
+
+        mCloseDialog.show();
+        mCloseDialog.getWindow().setGravity(Gravity.CENTER);
     }
 }
