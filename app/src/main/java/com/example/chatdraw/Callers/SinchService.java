@@ -63,6 +63,7 @@ public class SinchService extends Service {
     private Messenger messenger;
 
     public static final String CALL_ID = "CALL_ID";
+    public static final String FRIEND_ID = "FRIEND_ID";
     static final String TAG = SinchService.class.getSimpleName();
 
     private SinchServiceInterface mSinchServiceInterface = new SinchServiceInterface();
@@ -70,7 +71,15 @@ public class SinchService extends Service {
     private String mUserId, mFriendUserId, mGroupUserId;
     private String currentUserCallID = null;
     private String currentGroupCallID = null;
+
+    private String mFriendName = null;
+    private String mGroupName = null;
+    private String mTryConnectUser = null;
+    private String mTryConnectCallID = null;
+
+    private boolean isGroupOnGoingCall = false;
     private boolean isOnGoingCall = false;
+    private boolean isDrawingCall = false;
 
     private StartFailedListener mListener;
     private PersistedSettings mSettings;
@@ -223,12 +232,44 @@ public class SinchService extends Service {
             stopSelf();
         }
 
+        public void setIsDrawingCall(boolean callingDraw){
+            isDrawingCall = callingDraw;
+        }
+
+        public void setTryConnectUser(String friendID) {
+            mTryConnectUser = friendID;
+        }
+
+        public void setTryConnectCallID(String callID) {
+            mTryConnectCallID = callID;
+        }
+
         public void setIsOnGoingCall(boolean input) {
             isOnGoingCall = input;
         }
 
+        public void setGroupIsOnGoingCall(boolean input) {
+            isGroupOnGoingCall = input;
+        }
+
+        public String getTryConnectUser() {
+            return mTryConnectUser;
+        }
+
+        public String getTryConnectCallID() {
+            return mTryConnectCallID;
+        }
+
+        public boolean getIsDrawingCall() {
+            return isDrawingCall;
+        }
+
         public boolean getIsOnGoingCall() {
             return isOnGoingCall;
+        }
+
+        public boolean getGroupIsOnGoingCall() {
+            return isGroupOnGoingCall;
         }
 
         public String getUserName() {
@@ -250,6 +291,14 @@ public class SinchService extends Service {
         public void setGroupUserName(String groupId) {
             mGroupUserId = groupId;
         }
+
+        public String getGroupName() { return mGroupName; }
+
+        public void setGroupName(String groupName) { mGroupName = groupName; }
+
+        public String getFriendName() { return mFriendName; }
+
+        public void setFriendName(String groupName) { mFriendName = groupName; }
 
         public void setCurrentUserCallID (String callID) {
             currentUserCallID = callID;
@@ -361,6 +410,7 @@ public class SinchService extends Service {
             Log.d(TAG, "Incoming call");
             Intent intent = new Intent(SinchService.this, IncomingCallScreenActivity.class);
             intent.putExtra(CALL_ID, call.getCallId());
+            intent.putExtra(FRIEND_ID, call.getRemoteUserId());
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             SinchService.this.startActivity(intent);
         }

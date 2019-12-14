@@ -31,10 +31,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
+        <activity android:name=".AccountActivity.CreatePatternActivity"></activity>
+        <activity android:name=".Activities.VerifyPatternActivity" />
+        <activity
+            android:name=".AccountActivity.SetPatternActivity"
+            android:theme="@style/FullScreen" />
         <activity android:name=".GroupCallers.GroupCallActivity" />
-
-        <activity android:name=".Activities.GroupInfoEditActivity"></activity>
+        <activity android:name=".Activities.GroupInfoEditActivity" />
         <activity android:name=".Activities.GroupInfoActivity" />
         <activity android:name=".Drawing.DrawActivity" />
         <activity android:name=".Callers.IncomingCallScreenActivity" />
