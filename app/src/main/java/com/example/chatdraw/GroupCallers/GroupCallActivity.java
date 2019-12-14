@@ -17,8 +17,10 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
+import com.example.chatdraw.Activities.ChatActivity;
 import com.example.chatdraw.Callers.AudioPlayer;
 import com.example.chatdraw.Callers.BaseActivity;
+import com.example.chatdraw.Drawing.DrawActivity;
 import com.example.chatdraw.R;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -144,6 +146,14 @@ public class GroupCallActivity extends BaseActivity {
         btnBack.setOnClickListener(view -> finish());
 
         btnDraw = findViewById(R.id.btnDraw);
+        btnDraw.setOnClickListener(view -> {
+            // Go to draw activity
+            Intent drawIntent = new Intent(GroupCallActivity.this, DrawActivity.class);
+            drawIntent.putExtra("userUID", userID);
+            Log.d("TESTT", groupID);
+            drawIntent.putExtra("friendsUID", groupID);
+            startActivity(drawIntent);
+        });
     }
 
     private void populateImages(Map hmap) {

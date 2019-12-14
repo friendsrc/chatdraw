@@ -80,14 +80,31 @@
         android:layout_height="0dp"
         android:background="@color/greyish"
         android:layout_weight="1">
-        <Button
-            android:id="@+id/hangupButton"
-            android:paddingBottom="20dp"
-            android:paddingTop="20dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:background="@drawable/button_end"/>
+        <LinearLayout
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <Button
+                android:id="@+id/hangupButton"
+                android:paddingBottom="20dp"
+                android:paddingTop="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:background="@drawable/button_end"/>
+
+            <ImageButton
+                android:id="@+id/btnDraw"
+                android:background="@color/bg_login"
+                android:src="@drawable/brush_black"
+                android:padding="11sp"
+                android:layout_marginLeft="5sp"
+                android:layout_marginRight="5sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
 
     </RelativeLayout>
 

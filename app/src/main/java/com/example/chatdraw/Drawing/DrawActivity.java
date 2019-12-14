@@ -13,6 +13,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -102,6 +103,7 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
         canvasView.getFromFirebase();
 
         if (friendsUID.startsWith("GROUP_")) {
+            Log.d("TESTT", "Draw starts with " + friendsUID);
             mRef = FirebaseDatabase.getInstance().getReference()
                     .child("Drawing")
                     .child(friendsUID);

@@ -1,6 +1,7 @@
 package com.example.chatdraw.Callers;
 
 import com.example.chatdraw.Drawing.DrawActivity;
+import com.example.chatdraw.GroupCallers.GroupCallActivity;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -53,6 +54,7 @@ public class CallScreenActivity extends BaseActivity {
 
     private ImageView mImageCall;
     private ImageButton mCallBack;
+    private ImageButton mDraw;
 
     private class UpdateCallDurationTask extends TimerTask {
 
@@ -73,6 +75,7 @@ public class CallScreenActivity extends BaseActivity {
         mCallState = findViewById(R.id.callState);
         mImageCall = findViewById(R.id.profileImgID);
         mCallBack = findViewById(R.id.btnCallBack);
+        mDraw = findViewById(R.id.btnDraw);
         Button endCallButton = findViewById(R.id.hangupButton);
 
         endCallButton.setOnClickListener(v -> endCall());
@@ -89,6 +92,14 @@ public class CallScreenActivity extends BaseActivity {
         mFriendName = getIntent().getStringExtra("FriendName");
 
         mCallBack.setOnClickListener(v -> finish());
+
+        mDraw.setOnClickListener(view -> {
+            // Go to draw activity
+            Intent drawIntent = new Intent(CallScreenActivity.this, DrawActivity.class);
+            drawIntent.putExtra("userUID", mUserID + mCallId);
+            drawIntent.putExtra("friendsUID", mFriendCallID + mCallId);
+            startActivity(drawIntent);
+        });
     }
 
     @Override
