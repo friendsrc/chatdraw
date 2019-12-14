@@ -55,6 +55,8 @@
     <string name="add" translatable="false"></string>
     <string name="settings_butt">Account</string>
 
+    <string name="password_butt">Password Lock</string>
+
     <string name="notification_butt">Notification</string>
     <string name="sound_butt">Sound</string>
     <string name="settings_pref">Settings Preference</string>

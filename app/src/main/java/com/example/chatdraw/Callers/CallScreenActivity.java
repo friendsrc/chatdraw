@@ -111,6 +111,7 @@ public class CallScreenActivity extends BaseActivity {
 
     @Override
     public void onServiceConnected() {
+        // TODO Need to fix HERE for Drawing
         Call call = getSinchServiceInterface().getCall(mCallId);
 
         if ((call != null) || getSinchServiceInterface().getIsOnGoingCall()) {
