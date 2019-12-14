@@ -56,7 +56,7 @@ public class GroupCallActivity extends BaseActivity {
     private Timer mTimer;
     private UpdateCallDurationTask mDurationTask;
     private Button btnCancel;
-    private ImageButton btnSpeaker, btnMute, btnBack;
+    private ImageButton btnSpeaker, btnMute, btnBack, btnDraw;
     private String userID, groupID, callID, groupName, userName, imageUrl;
     private int groupSize;
     private TextView tvCallStatus, tvGroupTitle, tvGroupName;
@@ -142,6 +142,8 @@ public class GroupCallActivity extends BaseActivity {
 
         btnBack = findViewById(R.id.btnBack);
         btnBack.setOnClickListener(view -> finish());
+
+        btnDraw = findViewById(R.id.btnDraw);
     }
 
     private void populateImages(Map hmap) {
