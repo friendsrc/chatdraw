@@ -42,6 +42,7 @@ import android.widget.Toast;
 import com.example.chatdraw.Callers.BaseActivity;
 import com.example.chatdraw.Callers.CallScreenActivity;
 import com.example.chatdraw.Callers.SinchService;
+import com.example.chatdraw.Drawing.DrawActivity;
 import com.example.chatdraw.GroupCallers.GroupCallActivity;
 import com.example.chatdraw.Items.ChatItem;
 import com.example.chatdraw.R;
@@ -637,28 +638,11 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         switch (item.getItemId()) {
             case R.id.draw:
-                if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
-                        connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
-                    // we are connected to a network
-
-                    if (isGroup) {
-                        if (isServiceReady) {
-                            getSinchServiceInterface().setIsDrawingCall(true);
-                            groupCallButtonClicked();
-                        } else {
-                            Toast.makeText(this, "Calling service not ready", Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        if (isServiceReady) {
-                            getSinchServiceInterface().setIsDrawingCall(true);
-                            callButtonClicked();
-                        } else {
-                            Toast.makeText(this, "Calling service not ready", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                } else {
-                    Toast.makeText(this, "No internet connection detected", Toast.LENGTH_SHORT).show();
-                }
+                // Go to draw activity
+                Intent intent = new Intent(ChatActivity.this, DrawActivity.class);
+                intent.putExtra("userUID", userUID);
+                intent.putExtra("friendsUID", friendsUID);
+                startActivity(intent);
 
                 return true;
             case R.id.call:
