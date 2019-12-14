@@ -47,10 +47,7 @@
                     android:text="Cancel"/>
             </LinearLayout>
 
-
-
         </LinearLayout>
-
 
     </androidx.cardview.widget.CardView>
 

@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    tools:context=".Activities.FindFriendActivity">
+    tools:context=".activities.FindFriendActivity">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/my_toolbar"

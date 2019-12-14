@@ -31,21 +31,21 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".AccountActivity.CreatePatternActivity" />
-        <activity android:name=".Activities.VerifyPatternActivity" />
+        <activity android:name=".accountactivity.CreatePatternActivity" />
+        <activity android:name=".activities.VerifyPatternActivity" />
         <activity
-            android:name=".AccountActivity.SetPatternActivity"
+            android:name=".accountactivity.SetPatternActivity"
             android:theme="@style/FullScreen" />
-        <activity android:name=".GroupCallers.GroupCallActivity" />
-        <activity android:name=".Activities.GroupInfoEditActivity" />
-        <activity android:name=".Activities.GroupInfoActivity" />
-        <activity android:name=".Drawing.DrawActivity" />
-        <activity android:name=".Callers.IncomingCallScreenActivity" />
-        <activity android:name=".Callers.CallScreenActivity" />
+        <activity android:name=".groupcallers.GroupCallActivity" />
+        <activity android:name=".activities.GroupInfoEditActivity" />
+        <activity android:name=".activities.GroupInfoActivity" />
+        <activity android:name=".drawing.DrawActivity" />
+        <activity android:name=".callers.IncomingCallScreenActivity" />
+        <activity android:name=".callers.CallScreenActivity" />
 
-        <service android:name=".Callers.SinchService" />
+        <service android:name=".callers.SinchService" />
         <service
-            android:name=".Services.ChatService"
+            android:name=".services.ChatService"
             android:enabled="true"
             android:exported="true" />
 
@@ -53,21 +53,21 @@
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-6617407029399736~9775527525" />
 
-        <activity android:name=".Credits.TransactionActivity" />
-        <activity android:name=".Activities.ImagePreviewActivity" />
-        <activity android:name=".Credits.CreditActivity" />
-        <activity android:name=".Activities.InviteFriendActivity" />
-        <activity android:name=".AccountActivity.ContactUsActivity" />
-        <activity android:name=".AccountActivity.RatingActivity" />
-        <activity android:name=".Activities.GroupCreateActivity" />
-        <activity android:name=".AccountActivity.UsernameEditActivity" />
-        <activity android:name=".AccountActivity.NameEditActivity" />
+        <activity android:name=".credits.TransactionActivity" />
+        <activity android:name=".activities.ImagePreviewActivity" />
+        <activity android:name=".credits.CreditActivity" />
+        <activity android:name=".activities.InviteFriendActivity" />
+        <activity android:name=".accountactivity.ContactUsActivity" />
+        <activity android:name=".accountactivity.RatingActivity" />
+        <activity android:name=".activities.GroupCreateActivity" />
+        <activity android:name=".accountactivity.UsernameEditActivity" />
+        <activity android:name=".accountactivity.NameEditActivity" />
         <activity
-            android:name=".AccountActivity.ProfileEditActivity"
+            android:name=".accountactivity.ProfileEditActivity"
             android:theme="@style/AppThemeWithActionBar" />
 
         <service
-            android:name=".Services.MyFirebaseMessagingService"
+            android:name=".services.MyFirebaseMessagingService"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
@@ -76,22 +76,22 @@
         </service>
 
         <activity
-            android:name=".AccountActivity.NotificationHeaderActivity"
+            android:name=".accountactivity.NotificationHeaderActivity"
             android:theme="@style/AppThemeWithActionBar" />
-        <activity android:name=".AccountActivity.PersonalActivity" />
-        <activity android:name=".Activities.ChatActivity" />
-        <activity android:name=".Activities.NewGroupActivity" />
-        <activity android:name=".Activities.NewMessageActivity" />
-        <activity android:name=".AccountActivity.SettingsActivity" />
-        <activity android:name=".Activities.FindFriendActivity" />
-        <activity android:name=".Activities.FriendListActivity" />
-        <activity android:name=".AccountActivity.ResetPasswordActivity" />
-        <activity android:name=".AccountActivity.SignupActivity" />
+        <activity android:name=".accountactivity.PersonalActivity" />
+        <activity android:name=".activities.ChatActivity" />
+        <activity android:name=".activities.NewGroupActivity" />
+        <activity android:name=".activities.NewMessageActivity" />
+        <activity android:name=".accountactivity.SettingsActivity" />
+        <activity android:name=".activities.FindFriendActivity" />
+        <activity android:name=".activities.FriendListActivity" />
+        <activity android:name=".accountactivity.ResetPasswordActivity" />
+        <activity android:name=".accountactivity.SignupActivity" />
         <activity
-            android:name=".Activities.MainActivity"
+            android:name=".activities.MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".AccountActivity.LoginActivity"
+            android:name=".accountactivity.LoginActivity"
             android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

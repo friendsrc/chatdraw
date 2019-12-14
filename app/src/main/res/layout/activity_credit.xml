@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="top|center"
-    tools:context=".Credits.CreditActivity">
+    tools:context=".credits.CreditActivity">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/my_toolbar"

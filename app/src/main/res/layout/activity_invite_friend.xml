@@ -8,7 +8,7 @@
     android:background="@color/btn_login_bg"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Activities.InviteFriendActivity">
+    tools:context=".activities.InviteFriendActivity">
 
     <ImageView
         android:layout_width="@dimen/logo_w_h"
