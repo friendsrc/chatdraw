@@ -1,12 +1,15 @@
 package com.example.chatdraw.Activities;
 
 import android.app.Activity;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.chatdraw.AccountActivity.LoginActivity;
 import com.example.chatdraw.AccountActivity.ProfileEditActivity;
+import com.example.chatdraw.AccountActivity.SettingsActivity;
 import com.example.chatdraw.Callers.BaseActivity;
 import com.example.chatdraw.Callers.SinchService;
 import com.example.chatdraw.Credits.CreditActivity;
@@ -22,6 +25,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import androidx.appcompat.widget.Toolbar;
@@ -50,12 +54,15 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.sinch.android.rtc.SinchError;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, SinchService.StartFailedListener {
     private static final String TAG = "MainActivity";
@@ -121,13 +128,13 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 tempUsername = (String) dataSnapshot.child(userUID).child("username").getValue();
                 imgurl = (String) dataSnapshot.child(userUID).child("imageUrl").getValue();
 
-                TextView tv = hView.findViewById(R.id.profile_field);
+                TextView tv = (TextView) hView.findViewById(R.id.profile_field);
                 tv.setText(tempName);
 
-                TextView tv1 = hView.findViewById(R.id.username_field);
+                TextView tv1 = (TextView) hView.findViewById(R.id.username_field);
                 tv1.setText(tempUsername);
 
-                ImageButton imgbut = hView.findViewById(R.id.profile_edit_button);
+                ImageButton imgbut = (ImageButton) hView.findViewById(R.id.profile_edit_button);
 
                 if (imgurl == null) {
                     imgbut.setImageResource(R.drawable.account_circle_black_75dp);
@@ -158,15 +165,21 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         // set the 'add-message' ImageView
         // if clicked -> go to NewMessageActivity
         ImageView newChatImageView = findViewById(R.id.main_chat_add_message_imageview);
-        newChatImageView.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, NewMessageActivity.class);
-            startActivityForResult(intent, NEW_MESSAGE_REQUEST_CODE);
+        newChatImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, NewMessageActivity.class);
+                startActivityForResult(intent, NEW_MESSAGE_REQUEST_CODE);
+            }
         });
 
-        ImageButton imgbutt = hView.findViewById(R.id.profile_edit_button);
-        imgbutt.setOnClickListener(view -> {
-            Intent intent = new Intent(MainActivity.this, ProfileEditActivity.class);
-            startActivity(intent);
+        ImageButton imgbutt = (ImageButton) hView.findViewById(R.id.profile_edit_button);
+        imgbutt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, ProfileEditActivity.class);
+                startActivity(intent);
+            }
         });
 
         // remove service
@@ -223,26 +236,32 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         FirebaseFirestore.getInstance().collection("Users")
                 .document(userUID)
                 .get()
-                .addOnCompleteListener(task -> {
-                    ArrayList<String> groups = (ArrayList<String>) task.getResult().get("groups");
-                    // add change listener for groups
-                    if (groups != null && !groups.isEmpty()) {
-                        for (String s : groups) {
-                            addListener(s);
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        ArrayList<String> groups = (ArrayList<String>) task.getResult().get("groups");
+                        // add change listener for groups
+                        if (groups != null && !groups.isEmpty()) {
+                            for (String s : groups) {
+                                addListener(s);
+                            }
                         }
+                        // add the message previews to RecyclerView
+                        getMessageList(mFriendListAdapter);
                     }
-                    // add the message previews to RecyclerView
-                    getMessageList(mFriendListAdapter);
                 });
 
         // set on click listener to the ListView
         ListView listView = findViewById(R.id.main_chat_listview);
-        listView.setOnItemClickListener((parent, view, position, id) -> {
-            Intent intent = new Intent(MainActivity.this, ChatActivity.class);
-            FriendListItem friendListItem = (FriendListItem) mFriendListAdapter.getItem(position);
-            intent.putExtra("name", friendListItem.getName());
-            intent.putExtra("uID", friendListItem.getUID());
-            startActivity(intent);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(MainActivity.this, ChatActivity.class);
+                FriendListItem friendListItem = (FriendListItem) mFriendListAdapter.getItem(position);
+                intent.putExtra("name", friendListItem.getName());
+                intent.putExtra("uID", friendListItem.getUID());
+                startActivity(intent);
+            }
         });
     }
 
@@ -287,20 +306,23 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             String uID = data.getStringExtra("uID");
             FirebaseFirestore.getInstance().collection("Users").document(uID)
                     .get()
-                    .addOnCompleteListener(task -> {
-                        DocumentSnapshot snapshot = task.getResult();
-                        String uID1 = snapshot.getId();
-                        String name = snapshot.getString("name");
-                        String username = snapshot.getString("username");
-                        String imageUrl = snapshot.getString("imageUrl");
+                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            DocumentSnapshot snapshot = task.getResult();
+                            String uID = snapshot.getId();
+                            String name = snapshot.getString("name");
+                            String username = snapshot.getString("username");
+                            String imageUrl = snapshot.getString("imageUrl");
 
-                        ChatItem chatItem = new ChatItem("No messages yet.",
-                                uID1, name, username, imageUrl,
-                                userUID, null, null, null);
+                            ChatItem chatItem = new ChatItem("No messages yet.",
+                                    uID, name, username, imageUrl,
+                                    userUID, null, null, null);
 
-                        FirebaseFirestore.getInstance().collection("Previews")
-                                .document(userUID).collection("ChatPreviews")
-                                .document(uID1).set(chatItem);
+                            FirebaseFirestore.getInstance().collection("Previews")
+                                    .document(userUID).collection("ChatPreviews")
+                                    .document(uID).set(chatItem);
+                        }
                     });
         } else if (requestCode == NEW_MESSAGE_REQUEST_CODE && resultCode == 55) {
             // has intent with string extras: groupID, groupName, and groupImageUrl
@@ -326,33 +348,36 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 .document(userUID)
                 .collection("ChatPreviews")
                 .orderBy("timestamp", Query.Direction.DESCENDING)
-                .addSnapshotListener((queryDocumentSnapshots, e) -> {
-                    mFriendListAdapter.clearData();
-                    for (DocumentSnapshot q: queryDocumentSnapshots) {
-                        // turn DocumentSnapshot into ChatItem
-                        ChatItem chatItem = q.toObject(ChatItem.class);
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                        mFriendListAdapter.clearData();
+                        for (DocumentSnapshot q: queryDocumentSnapshots) {
+                            // turn DocumentSnapshot into ChatItem
+                            ChatItem chatItem = q.toObject(ChatItem.class);
 
-                        // get the properties needed to make a new FriendListItem
-                        String uId = chatItem.getSenderID();
-                        String lastMessage = chatItem.getMessageBody();
-                        String name, imageUrl;
+                            // get the properties needed to make a new FriendListItem
+                            String uId = chatItem.getSenderID();
+                            String lastMessage = chatItem.getMessageBody();
+                            String name, imageUrl;
 
-                        // if the sender of this ChatItem is the current user, get the profile
-                        // of the receiver instead
-                        if (uId.equals(userUID) || chatItem.getReceiverID().startsWith("GROUP_")) {
-                            uId =chatItem.getReceiverID();
-                            name = chatItem.getReceiverName();
-                            imageUrl = chatItem.getReceiverImageUrl();
-                            // if the sender is not the user, use the sender's profile
-                        } else {
-                            name = chatItem.getSenderName();
-                            imageUrl = chatItem.getSenderImageUrl();
+                            // if the sender of this ChatItem is the current user, get the profile
+                            // of the receiver instead
+                            if (uId.equals(userUID) || chatItem.getReceiverID().startsWith("GROUP_")) {
+                                uId =chatItem.getReceiverID();
+                                name = chatItem.getReceiverName();
+                                imageUrl = chatItem.getReceiverImageUrl();
+                                // if the sender is not the user, use the sender's profile
+                            } else {
+                                name = chatItem.getSenderName();
+                                imageUrl = chatItem.getSenderImageUrl();
+                            }
+
+                            // create a new FriendListItem and add to ListView
+                            FriendListItem friendListItem = new FriendListItem(name, lastMessage, uId, imageUrl);
+                            friendListAdapter.addAdapterItem(friendListItem);
+                            friendListAdapter.notifyDataSetChanged();
                         }
-
-                        // create a new FriendListItem and add to ListView
-                        FriendListItem friendListItem = new FriendListItem(name, lastMessage, uId, imageUrl);
-                        friendListAdapter.addAdapterItem(friendListItem);
-                        friendListAdapter.notifyDataSetChanged();
                     }
                 });
     }
@@ -365,34 +390,37 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 .collection("ChatHistory")
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .limit(1)
-                .addSnapshotListener((queryDocumentSnapshots, e) -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        chatItem[0] = queryDocumentSnapshots.getDocuments().get(0).toObject(ChatItem.class);
-                        // Check if the message is not a text message
-                        if (chatItem[0].getMessageBody().startsWith(chatItem[0].getSenderID())) {
-                            String[] arr = chatItem[0].getMessageBody().split("\t");
-                            if (arr[1].equals("IMAGE")) {
-                                chatItem[0].setMessageBody("[Image]");
-                            } else if (arr[1].equals("PDF")) {
-                                chatItem[0].setMessageBody("[Pdf]");
-                            } else if (arr[1].equals("INFO")) {
-                                chatItem[0].setMessageBody(arr[2]);
-                            } else {
-                                chatItem[0].setMessageBody("[Unknown file type]");
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                        if (!queryDocumentSnapshots.isEmpty()) {
+                            chatItem[0] = queryDocumentSnapshots.getDocuments().get(0).toObject(ChatItem.class);
+                            // Check if the message is not a text message
+                            if (chatItem[0].getMessageBody().startsWith(chatItem[0].getSenderID())) {
+                                String[] arr = chatItem[0].getMessageBody().split("\t");
+                                if (arr[1].equals("IMAGE")) {
+                                    chatItem[0].setMessageBody("[Image]");
+                                } else if (arr[1].equals("PDF")) {
+                                    chatItem[0].setMessageBody("[Pdf]");
+                                } else if (arr[1].equals("INFO")) {
+                                    chatItem[0].setMessageBody(arr[2]);
+                                } else {
+                                    chatItem[0].setMessageBody("[Unknown file type]");
+                                }
+
                             }
 
+                            if (chatItem[0].getMessageBody().length() > 43) {
+                                chatItem[0].setMessageBody(chatItem[0]
+                                        .getMessageBody().substring(0, 40) + "...");
+                            }
+                            FirebaseFirestore.getInstance()
+                                    .collection("Previews")
+                                    .document(userUID)
+                                    .collection("ChatPreviews")
+                                    .document(groupID)
+                                    .set(chatItem[0]);
                         }
-
-                        if (chatItem[0].getMessageBody().length() > 43) {
-                            chatItem[0].setMessageBody(chatItem[0]
-                                    .getMessageBody().substring(0, 40) + "...");
-                        }
-                        FirebaseFirestore.getInstance()
-                                .collection("Previews")
-                                .document(userUID)
-                                .collection("ChatPreviews")
-                                .document(groupID)
-                                .set(chatItem[0]);
                     }
                 });
     }

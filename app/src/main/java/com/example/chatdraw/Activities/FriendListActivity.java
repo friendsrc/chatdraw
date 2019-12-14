@@ -11,10 +11,12 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -119,16 +121,31 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
         getContacts();
 
         // set toggle switch
-        ToggleSwitch toggleSwitch = findViewById(R.id.friend_list_toggleswitch);
-        final RecyclerView recyclerView = findViewById(R.id.friend_list_recycler_view);
-        toggleSwitch.setCheckedPosition(0);
-        toggleSwitch.setOnChangeListener(i -> {
-            if (i == 1) {
-                if (mGroupAdapter == null) getGroups();
-                recyclerView.setAdapter(mGroupAdapter);
-            } else {
-                recyclerView.setAdapter(mAdapter);
-            }
+//        ToggleSwitch toggleSwitch = findViewById(R.id.friend_list_toggleswitch);
+//        final RecyclerView recyclerView = findViewById(R.id.friend_list_recycler_view);
+//        toggleSwitch.setCheckedPosition(0);
+//        toggleSwitch.setOnChangeListener(i -> {
+//            if (i == 1) {
+//                if (mGroupAdapter == null) getGroups();
+//                recyclerView.setAdapter(mGroupAdapter);
+//            } else {
+//                recyclerView.setAdapter(mAdapter);
+//            }
+//        });
+
+        Button groupsButton = findViewById(R.id.friend_list_groups_button);
+        Button friendsButton = findViewById(R.id.friend_list_friends_button);
+        groupsButton.setBackgroundColor(getResources().getColor(R.color.bluegray100));
+        friendsButton.setBackgroundColor(getResources().getColor(R.color.secondary));
+        groupsButton.setOnClickListener(x -> {
+            recyclerView.setAdapter(mGroupAdapter);
+            groupsButton.setBackgroundColor(getResources().getColor(R.color.secondary));
+            friendsButton.setBackgroundColor(getResources().getColor(R.color.bluegray100));
+        });
+        friendsButton.setOnClickListener(x -> {
+            recyclerView.setAdapter(mAdapter);
+            groupsButton.setBackgroundColor(getResources().getColor(R.color.bluegray100));
+            friendsButton.setBackgroundColor(getResources().getColor(R.color.secondary));
         });
     }
 

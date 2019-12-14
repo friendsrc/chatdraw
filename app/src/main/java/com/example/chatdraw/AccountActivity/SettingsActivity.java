@@ -54,16 +54,16 @@ public class SettingsActivity extends AppCompatActivity {
            to the default FirebaseApp instance.
         */
         auth = FirebaseAuth.getInstance();
-        email = findViewById(R.id.useremail);
+        email = (TextView) findViewById(R.id.useremail);
 
-        btnChangePassword = findViewById(R.id.change_password_button);
-        btnRemoveUser = findViewById(R.id.remove_user_button);
+        btnChangePassword = (Button) findViewById(R.id.change_password_button);
+        btnRemoveUser = (Button) findViewById(R.id.remove_user_button);
 
-        changePassword = findViewById(R.id.changePass);
-        signOut = findViewById(R.id.sign_out);
+        changePassword = (Button) findViewById(R.id.changePass);
+        signOut = (Button) findViewById(R.id.sign_out);
 
-        newPassword = findViewById(R.id.newPassword);
-        password = findViewById(R.id.password);
+        newPassword = (EditText) findViewById(R.id.newPassword);
+        password = (EditText) findViewById(R.id.password);
 
         user = FirebaseAuth.getInstance().getCurrentUser();
         GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(SettingsActivity.this);
@@ -97,90 +97,109 @@ public class SettingsActivity extends AppCompatActivity {
         password.setVisibility(View.GONE);
         changePassword.setVisibility(View.GONE);
 
-        progressBar = findViewById(R.id.progressBar);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
         if (progressBar != null) {
             progressBar.setVisibility(View.GONE);
         }
 
-        btnChangePassword.setOnClickListener(v -> {
-            newPassword.setVisibility(View.VISIBLE);
-            password.setVisibility(View.VISIBLE);
-            newPassword.setFocusable(true);
-            changePassword.setVisibility(View.VISIBLE);
-            btnChangePassword.setVisibility(View.GONE);
+        btnChangePassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                newPassword.setVisibility(View.VISIBLE);
+                password.setVisibility(View.VISIBLE);
+                newPassword.setFocusable(true);
+                changePassword.setVisibility(View.VISIBLE);
+                btnChangePassword.setVisibility(View.GONE);
+            }
         });
 
         // change password button clicked do comparison check of password
-        changePassword.setOnClickListener(v -> {
-        String newpass = newPassword.getText().toString().trim();
-        String confirmpass = password.getText().toString().trim();
+        changePassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+            String newpass = newPassword.getText().toString().trim();
+            String confirmpass = password.getText().toString().trim();
 
-        progressBar.setVisibility(View.VISIBLE);
-        if (newpass.equals("")) {
-            newPassword.setError("Enter password");
-            progressBar.setVisibility(View.GONE);
-        } else if (confirmpass.equals("")) {
-            password.setError("Re-enter password");
-            progressBar.setVisibility(View.GONE);
-        } else if (user != null) {
-            if (!newpass.equals(confirmpass)) {
-                password.setError("Password not match");
+            progressBar.setVisibility(View.VISIBLE);
+            if (newpass.equals("")) {
+                newPassword.setError("Enter password");
                 progressBar.setVisibility(View.GONE);
-            } else if (newPassword.getText().toString().trim().length() < 6) {
-                newPassword.setError("Password too short, enter minimum 6 characters");
+            } else if (confirmpass.equals("")) {
+                password.setError("Re-enter password");
                 progressBar.setVisibility(View.GONE);
-            } else {
-                user.updatePassword(newPassword.getText().toString().trim())
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(SettingsActivity.this, "Password is updated, sign in with new password!", Toast.LENGTH_SHORT).show();
-                            signOut();
+            } else if (user != null) {
+                if (!newpass.equals(confirmpass)) {
+                    password.setError("Password not match");
+                    progressBar.setVisibility(View.GONE);
+                } else if (newPassword.getText().toString().trim().length() < 6) {
+                    newPassword.setError("Password too short, enter minimum 6 characters");
+                    progressBar.setVisibility(View.GONE);
+                } else {
+                    user.updatePassword(newPassword.getText().toString().trim())
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                Toast.makeText(SettingsActivity.this, "Password is updated, sign in with new password!", Toast.LENGTH_SHORT).show();
+                                signOut();
 
-                            Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
-                                    Intent.FLAG_ACTIVITY_CLEAR_TASK |
-                                    Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(intent);
-                            finish();
+                                Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                                        Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                                        Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+                                finish();
 
-                            progressBar.setVisibility(View.GONE);
-                        } else {
-                            Toast.makeText(SettingsActivity.this, "Failed to update password!", Toast.LENGTH_SHORT).show();
-                            progressBar.setVisibility(View.GONE);
-                        }
-                    });
+                                progressBar.setVisibility(View.GONE);
+                            } else {
+                                Toast.makeText(SettingsActivity.this, "Failed to update password!", Toast.LENGTH_SHORT).show();
+                                progressBar.setVisibility(View.GONE);
+                            }
+                            }
+                        });
+                }
             }
-        }
+            }
         });
 
         // when button remove user clicked, delete account
-        btnRemoveUser.setOnClickListener(v -> new AlertDialog.Builder(SettingsActivity.this)
-                .setTitle("Confirm")
-                .setMessage("Do you really want to delete your account?")
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                    if (user != null) {
-                        user.delete()
-                                .addOnCompleteListener(task -> {
-                                    if (task.isSuccessful()) {
-                                        Toast.makeText(SettingsActivity.this, "Your profile is deleted. Create an account now!", Toast.LENGTH_SHORT).show();
+        btnRemoveUser.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new AlertDialog.Builder(SettingsActivity.this)
+                        .setTitle("Confirm")
+                        .setMessage("Do you really want to delete your account?")
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                if (user != null) {
+                                    user.delete()
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if (task.isSuccessful()) {
+                                                    Toast.makeText(SettingsActivity.this, "Your profile is deleted. Create an account now!", Toast.LENGTH_SHORT).show();
 
-                                        Intent intent = new Intent(SettingsActivity.this, SignupActivity.class);
-                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
-                                                Intent.FLAG_ACTIVITY_CLEAR_TASK |
-                                                Intent.FLAG_ACTIVITY_NEW_TASK);
-                                        startActivity(intent);
-                                        finish();
-                                        progressBar.setVisibility(View.GONE);
-                                    } else {
-                                        Toast.makeText(SettingsActivity.this, "Failed to delete your account! Please re-open the app!", Toast.LENGTH_SHORT).show();
-                                        progressBar.setVisibility(View.GONE);
-                                    }
-                                });
-                    }
-                })
-                .setNegativeButton(android.R.string.no, null).show());
+                                                    Intent intent = new Intent(SettingsActivity.this, SignupActivity.class);
+                                                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                                                            Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                                                            Intent.FLAG_ACTIVITY_NEW_TASK);
+                                                    startActivity(intent);
+                                                    finish();
+                                                    progressBar.setVisibility(View.GONE);
+                                                } else {
+                                                    Toast.makeText(SettingsActivity.this, "Failed to delete your account! Please re-open the app!", Toast.LENGTH_SHORT).show();
+                                                    progressBar.setVisibility(View.GONE);
+                                                }
+                                            }
+                                        });
+                                }
+                            }})
+                        .setNegativeButton(android.R.string.no, null).show();
+
+            }
+        });
 
         // set the action bar title
         Toolbar myToolbar = findViewById(R.id.toolbar);
@@ -191,7 +210,12 @@ public class SettingsActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // delete and signout
-        signOut.setOnClickListener(v -> signOut());
+        signOut.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                signOut();
+            }
+        });
     }
 
     // this listener will be called when there is change in firebase user session
@@ -245,14 +269,17 @@ public class SettingsActivity extends AppCompatActivity {
             GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(this, signInOptions);
 
             mGoogleSignInClient.signOut()
-                    .addOnCompleteListener(this, task -> {
-                        Toast.makeText(SettingsActivity.this, "Signed out successfully", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
-                                Intent.FLAG_ACTIVITY_CLEAR_TASK |
-                                Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
-                        finish();
+                    .addOnCompleteListener(this, new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            Toast.makeText(SettingsActivity.this, "Signed out successfully", Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                                    Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                                    Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
+                            finish();
+                        }
                     });
         } else {
             auth.signOut();

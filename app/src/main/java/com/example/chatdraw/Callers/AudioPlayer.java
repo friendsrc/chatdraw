@@ -34,21 +34,23 @@ public class AudioPlayer {
         AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
 
         // Honour silent mode
-        if (audioManager.getRingerMode() == AudioManager.RINGER_MODE_NORMAL) {
-            mPlayer = new MediaPlayer();
-            mPlayer.setAudioStreamType(AudioManager.STREAM_RING);
+        switch (audioManager.getRingerMode()) {
+            case AudioManager.RINGER_MODE_NORMAL:
+                mPlayer = new MediaPlayer();
+                mPlayer.setAudioStreamType(AudioManager.STREAM_RING);
 
-            try {
-                mPlayer.setDataSource(mContext,
-                        Uri.parse("android.resource://" + mContext.getPackageName() + "/" + R.raw.phone_loud1));
-                mPlayer.prepare();
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Could not setup media player for ringtone");
-                mPlayer = null;
-                return;
-            }
-            mPlayer.setLooping(true);
-            mPlayer.start();
+                try {
+                    mPlayer.setDataSource(mContext,
+                            Uri.parse("android.resource://" + mContext.getPackageName() + "/" + R.raw.phone_loud1));
+                    mPlayer.prepare();
+                } catch (IOException e) {
+                    Log.e(LOG_TAG, "Could not setup media player for ringtone");
+                    mPlayer = null;
+                    return;
+                }
+                mPlayer.setLooping(true);
+                mPlayer.start();
+                break;
         }
     }
 
