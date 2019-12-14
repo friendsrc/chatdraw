@@ -16,6 +16,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.chatdraw.Activities.MainActivity;
+import com.example.chatdraw.Activities.VerifyPatternActivity;
 import com.example.chatdraw.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -41,9 +42,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.paperdb.Paper;
+
 public class LoginActivity extends AppCompatActivity
         implements GoogleApiClient.OnConnectionFailedListener,
         GoogleApiClient.ConnectionCallbacks {
+    private String save_pattern_key = "pattern_code";
     private EditText inputEmail, inputPassword;
     private FirebaseAuth auth;
     private ProgressBar progressBar;
@@ -87,15 +91,27 @@ public class LoginActivity extends AppCompatActivity
 
         // If there is user login already, start the MainActivity
         if (auth.getCurrentUser() != null) {
-            startActivity(new Intent(LoginActivity.this, MainActivity.class));
-
-            finish();
+            Paper.init(this);
+            String save_pattern = Paper.book().read(save_pattern_key);
+            if (save_pattern != null && !save_pattern.equals("null")) {
+                startActivity(new Intent(LoginActivity.this, VerifyPatternActivity.class));
+                finish();
+            } else {
+                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                finish();
+            }
         } else {
             GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(LoginActivity.this);
             if (acct != null) {
-                startActivity(new Intent(LoginActivity.this, MainActivity.class));
-
-                finish();
+                Paper.init(this);
+                String save_pattern = Paper.book().read(save_pattern_key);
+                if (save_pattern != null && !save_pattern.equals("null")) {
+                    startActivity(new Intent(LoginActivity.this, VerifyPatternActivity.class));
+                    finish();
+                } else {
+                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                    finish();
+                }
             }
         }
 

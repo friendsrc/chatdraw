@@ -278,6 +278,7 @@
             android:layout_marginTop="10sp"
             android:layout_marginLeft="5sp"
             android:layout_marginRight="5sp"
+            android:layout_marginBottom="10sp"
             android:text="@string/contact_us_step_three_example"
             android:textColor="@color/white"
             android:layout_width="match_parent"
