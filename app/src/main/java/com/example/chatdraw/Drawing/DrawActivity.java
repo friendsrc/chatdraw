@@ -20,18 +20,32 @@ import android.view.Display;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.example.chatdraw.R;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.jaredrummler.android.colorpicker.ColorPickerDialog;
 import com.jaredrummler.android.colorpicker.ColorPickerDialogListener;
 import com.otaliastudios.zoom.ZoomLayout;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class DrawActivity extends AppCompatActivity implements ColorPickerDialogListener {
 
@@ -45,8 +59,11 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
 
     private ImageView mColorButton;
     private ColorPickerDialog.Builder mColorPickerDialog;
+    private Spinner spinner;
 
     private Dialog mCloseDialog;
+
+    private boolean isGroup = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +74,7 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
         Intent intent = getIntent();
         userUID = intent.getStringExtra("userUID");
         friendsUID = intent.getStringExtra("friendsUID");
+
 
         // set the action bar
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
@@ -70,7 +88,6 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
 
         mZoomLayout = findViewById(R.id.zoom_layout);
         canvasView.actionBar = myToolbar;
-
 
         WindowManager windowManager =
                 (WindowManager) getApplication().getSystemService(Context.WINDOW_SERVICE);
@@ -100,6 +117,7 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
         canvasView.getFromFirebase();
 
         if (friendsUID.startsWith("GROUP_")) {
+            isGroup = true;
             Log.d("TESTT", "Draw starts with " + friendsUID);
             mRef = FirebaseDatabase.getInstance().getReference()
                     .child("Drawing")
@@ -114,6 +132,86 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
                     .child(friendsUID + "|" + userUID);
         }
 
+
+        spinner = findViewById(R.id.draw_spinner);
+        ArrayList<String> memberUids = new ArrayList<>();
+        HashMap<String, String> uidsToNames = new HashMap<>();
+        ArrayList<String> names = new ArrayList<>();
+        names.add("Show all");
+
+        if (isGroup) {
+            FirebaseFirestore.getInstance()
+                .collection("Groups")
+                .document(friendsUID)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    ArrayList<String>  membersUids =
+                        (ArrayList<String>) documentSnapshot.get("members");
+                    for (String s: membersUids) {
+                        memberUids.add(s);
+                        FirebaseDatabase.getInstance().getReference()
+                            .child("Users")
+                            .child(s)
+                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    String name = (String) dataSnapshot.child("name").getValue();
+                                    if (name == null) name = "anonymous";
+                                    uidsToNames.put(s, name);
+                                    names.add(name);
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            });
+                    }
+                });
+        } else {
+            memberUids.add(userUID);
+            memberUids.add(friendsUID);
+
+            for (String s: memberUids) {
+                FirebaseDatabase.getInstance().getReference()
+                    .child("Users")
+                    .child(s)
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            String name = (String) dataSnapshot.child("name").getValue();
+                            if (name == null) name = "anonymous";
+                            uidsToNames.put(s, name);
+                            names.add(name);
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+            }
+        }
+
+
+
+        ArrayAdapter adapter = new ArrayAdapter<>(this,
+            android.R.layout.simple_spinner_dropdown_item, names);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String id = (String) spinner.getItemAtPosition(i);
+                Log.d("TESTT", id);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
 
         // set color picker
         mColorButton = findViewById(R.id.color_picker_imageview);
