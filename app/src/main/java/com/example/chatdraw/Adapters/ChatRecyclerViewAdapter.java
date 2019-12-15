@@ -180,20 +180,12 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
         if (arr.length > 1) {
             if (arr[1].equals("IMAGE")) {
                 ImageView message = holder.view.findViewById(R.id.text_message_body_image);
-                message.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        ((ChatActivity) context).goToImagePreview(chatItem);
-                    }
-                });
+                message.setOnClickListener(v -> ((ChatActivity) context).goToImagePreview(chatItem));
             } else if (arr[1].equals("PDF")) {
                 TextView message = holder.view.findViewById(R.id.text_message_body);
-                message.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        String url = chatItem.getMessageBody().split("\t")[3];
-                        ((ChatActivity) context).viewPdf(url);
-                    }
+                message.setOnClickListener(v -> {
+                    String url = chatItem.getMessageBody().split("\t")[3];
+                    ((ChatActivity) context).viewPdf(url);
                 });
             }
         }
@@ -206,98 +198,71 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                         .load(arr[2])
                         .fit()
                         .into(message);
-                message.setOnLongClickListener(new View.OnLongClickListener() {
-                    @Override
-                    public boolean onLongClick(View v) {
-                        if (!chatItem.getSenderID().equals(userId))  return true;
-                        Dialog dialog = new Dialog(context);
-                        dialog.setContentView(R.layout.nontextmessagepopup);
-                        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                        dialog.setCancelable(true);
+                message.setOnLongClickListener(v -> {
+                    if (!chatItem.getSenderID().equals(userId))  return true;
+                    Dialog dialog = new Dialog(context);
+                    dialog.setContentView(R.layout.nontextmessagepopup);
+                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                    dialog.setCancelable(true);
 
 
 
-                        TextView delete = dialog.findViewById(R.id.delete_message_textview);
-                        delete.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                deleteMessage(chatItem.getSenderID(), chatItem.getReceiverID(),
-                                        chatItem.getTimestamp(), chatItem.getMessageBody(), dialog,  position);
-                            }
-                        });
+                    TextView delete = dialog.findViewById(R.id.delete_message_textview);
+                    delete.setOnClickListener(v14 -> deleteMessage(chatItem.getSenderID(), chatItem.getReceiverID(),
+                        chatItem.getTimestamp(), chatItem.getMessageBody(), dialog, position));
 
-                        dialog.show();
-                        dialog.getWindow().setGravity(Gravity.CENTER);
-                        return true;
-                    }
+                    dialog.show();
+                    dialog.getWindow().setGravity(Gravity.CENTER);
+                    return true;
                 });
             } else if (arr[1].equals("PDF")) {
                 if (!chatItem.getSenderID().equals(userId));
                 TextView message = holder.view.findViewById(R.id.text_message_body);
                 message.setText(arr[2]);
-                message.setOnLongClickListener(new View.OnLongClickListener() {
-                    @Override
-                    public boolean onLongClick(View v) {
-                        if (!chatItem.getSenderID().equals(userId))  return true;
+                message.setOnLongClickListener(v -> {
+                    if (!chatItem.getSenderID().equals(userId))  return true;
 
-                        Dialog dialog = new Dialog(context);
-                        dialog.setContentView(R.layout.nontextmessagepopup);
-                        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                        dialog.setCancelable(true);
+                    Dialog dialog = new Dialog(context);
+                    dialog.setContentView(R.layout.nontextmessagepopup);
+                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                    dialog.setCancelable(true);
 
-                        TextView delete = dialog.findViewById(R.id.delete_message_textview);
-                        delete.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                deleteMessage(chatItem.getSenderID(), chatItem.getReceiverID(),
-                                        chatItem.getTimestamp(), chatItem.getMessageBody(), dialog, position);
-                            }
-                        });
+                    TextView delete = dialog.findViewById(R.id.delete_message_textview);
+                    delete.setOnClickListener(v13 -> deleteMessage(chatItem.getSenderID(), chatItem.getReceiverID(),
+                        chatItem.getTimestamp(), chatItem.getMessageBody(), dialog, position));
 
-                        dialog.show();
-                        dialog.getWindow().setGravity(Gravity.CENTER);
-                        return true;
-                    }
+                    dialog.show();
+                    dialog.getWindow().setGravity(Gravity.CENTER);
+                    return true;
                 });
             }
         } else {
             TextView message = holder.view.findViewById(R.id.text_message_body);
             message.setText(mDataset.get(position).getMessageBody());
-            message.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    if (!chatItem.getSenderID().equals(userId))  return true;
+            message.setOnLongClickListener(v -> {
+                if (!chatItem.getSenderID().equals(userId))  return true;
 
-                    Dialog dialog = new Dialog(context);
-                    dialog.setContentView(R.layout.messageoptionpopup);
-                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                    dialog.setCancelable(true);
+                Dialog dialog = new Dialog(context);
+                dialog.setContentView(R.layout.messageoptionpopup);
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                dialog.setCancelable(true);
 
-                    TextView copy = dialog.findViewById(R.id.copy_message_textview);
-                    copy.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            android.content.ClipboardManager clipboard = (android.content.ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-                            android.content.ClipData clip = android.content.ClipData.newPlainText("text label",message.getText().toString());
-                            clipboard.setPrimaryClip(clip);
-                            dialog.dismiss();
-                            Toast.makeText(context, "Message copied to clipboard", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                TextView copy = dialog.findViewById(R.id.copy_message_textview);
+                copy.setOnClickListener(v12 -> {
+                    android.content.ClipboardManager clipboard = (android.content.ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+                    android.content.ClipData clip = android.content.ClipData.newPlainText("text label", message.getText().toString());
+                    clipboard.setPrimaryClip(clip);
+                    dialog.dismiss();
+                    Toast.makeText(context, "Message copied to clipboard", Toast.LENGTH_SHORT).show();
+                });
 
-                    TextView delete = dialog.findViewById(R.id.delete_message_textview);
-                    delete.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            deleteMessage(chatItem.getSenderID(), chatItem.getReceiverID(),
-                                    chatItem.getTimestamp(), chatItem.getMessageBody(), dialog,  position);
-                        }
-                    });
+                TextView delete = dialog.findViewById(R.id.delete_message_textview);
+                delete.setOnClickListener(v1 -> deleteMessage(chatItem.getSenderID(), chatItem.getReceiverID(),
+                    chatItem.getTimestamp(), chatItem.getMessageBody(), dialog, position));
 
-                    dialog.show();
-                    dialog.getWindow().setGravity(Gravity.CENTER);
-                    return true;
-                }
+                dialog.show();
+                dialog.getWindow().setGravity(Gravity.CENTER);
+                return true;
             });
         }
 
@@ -310,12 +275,7 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                         .fit()
                         .into(profilePicture);
             }
-            profilePicture.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Toast.makeText(context, " Profile photo clicked", Toast.LENGTH_SHORT).show();
-                }
-            });
+            profilePicture.setOnClickListener(v -> Toast.makeText(context, " Profile photo clicked", Toast.LENGTH_SHORT).show());
         }
 
         TextView time = holder.view.findViewById(R.id.text_message_time);
@@ -356,19 +316,13 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                     .whereEqualTo("timestamp", timestamp)
                     .whereEqualTo("messageBody", messageBody)
                     .get()
-                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                        @Override
-                        public void onSuccess(QuerySnapshot snapshots) {
-                            for (DocumentSnapshot d: snapshots.getDocuments()) {
-                                d.getReference().delete()
-                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                            @Override
-                                            public void onSuccess(Void aVoid) {
-                                                dialog.dismiss();
-                                                Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
-                            }
+                    .addOnSuccessListener(snapshots -> {
+                        for (DocumentSnapshot d: snapshots.getDocuments()) {
+                            d.getReference().delete()
+                                    .addOnSuccessListener(aVoid -> {
+                                        dialog.dismiss();
+                                        Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
+                                    });
                         }
                     });
         } else {
@@ -381,19 +335,13 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                     .whereEqualTo("timestamp", timestamp)
                     .whereEqualTo("messageBody", messageBody)
                     .get()
-                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                        @Override
-                        public void onSuccess(QuerySnapshot snapshots) {
-                            for (DocumentSnapshot d: snapshots.getDocuments()) {
-                                d.getReference().delete()
-                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                            @Override
-                                            public void onSuccess(Void aVoid) {
-                                                dialog.dismiss();
-                                                Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
-                            }
+                    .addOnSuccessListener(snapshots -> {
+                        for (DocumentSnapshot d: snapshots.getDocuments()) {
+                            d.getReference().delete()
+                                    .addOnSuccessListener(aVoid -> {
+                                        dialog.dismiss();
+                                        Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
+                                    });
                         }
                     });
         }

@@ -229,42 +229,31 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
 
         // solve confict here
         View v = findViewById(R.id.my_toolbar);
-        v.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (isGroup) {
-                    Intent  intent = new Intent(ChatActivity.this, GroupInfoActivity.class);
-                    intent.putExtra("id", groupID);
-                    startActivityForResult(intent, REQUEST_INFOEDIT);
-                } else {
-                    // TODO
-                }
+        v.setOnClickListener(v12 -> {
+            if (isGroup) {
+                Intent intent1 = new Intent(ChatActivity.this, GroupInfoActivity.class);
+                intent1.putExtra("id", groupID);
+                startActivityForResult(intent1, REQUEST_INFOEDIT);
+            } else {
+                // TODO
             }
         });
 
         // set onCLickListener on the 'More option' button
         ImageView fileImageView = findViewById(R.id.chat_attach_imageView);
-        fileImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                SelectImage();
-            }
-        });
+        fileImageView.setOnClickListener(view -> SelectImage());
 
         // set onClickListener on the 'Send Message' button
         ImageView sendImageView = findViewById(R.id.chat_send_imageview);
-        sendImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // get  the inputted  message
-                EditText editText = findViewById(R.id.chat_edittext);
-                String message = editText.getText().toString();
-                // create a new ChatItem
-                if (!message.trim().equals("")) {
-                    ChatItem newChatItem = addMessageToAdapter(message);
-                    sendMessage(newChatItem); // send the ChatItem to Firebase
-                    editText.setText(""); // erase the content of the EditText
-                }
+        sendImageView.setOnClickListener(v1 -> {
+            // get  the inputted  message
+            EditText editText = findViewById(R.id.chat_edittext);
+            String message = editText.getText().toString();
+            // create a new ChatItem
+            if (!message.trim().equals("")) {
+                ChatItem newChatItem = addMessageToAdapter(message);
+                sendMessage(newChatItem); // send the ChatItem to Firebase
+                editText.setText(""); // erase the content of the EditText
             }
         });
 
@@ -274,17 +263,14 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
             FirebaseFirestore.getInstance().collection("Groups")
                     .document(groupID)
                     .get()
-                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            DocumentSnapshot snapshot = task.getResult();
-                            ArrayList<String> arr = (ArrayList<String>) snapshot.get("members");
-                            membersID = new LinkedList<>();
-                            membersID.addAll(arr);
-                            groupName = snapshot.getString("groupName");
-                            groupImageUrl = snapshot.getString("groupImageUrl");
-                            getMessages();
-                        }
+                    .addOnCompleteListener(task -> {
+                        DocumentSnapshot snapshot = task.getResult();
+                        ArrayList<String> arr = (ArrayList<String>) snapshot.get("members");
+                        membersID = new LinkedList<>();
+                        membersID.addAll(arr);
+                        groupName = snapshot.getString("groupName");
+                        groupImageUrl = snapshot.getString("groupImageUrl");
+                        getMessages();
                     });
         } else {
             isGroup = false;
@@ -324,36 +310,33 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
         AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
         builder.setTitle("Send file from");
 
-        builder.setItems(items, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                if (items[i].equals("Camera")) {
-                    // ask for Camera permission
-                    if (ContextCompat.checkSelfPermission(ChatActivity.this, Manifest.permission.CAMERA)
-                            == PackageManager.PERMISSION_DENIED) {
-                        ActivityCompat.requestPermissions(
-                                ChatActivity.this, new String[] {Manifest.permission.CAMERA},
-                                REQUEST_CAMERA);
-                    } else {
-                        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                        startActivityForResult(intent, REQUEST_CAMERA);
-                    }
-                } else if (items[i].equals("Image")) {
-                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                    intent.setType("image/*");
-                    startActivityForResult(intent, SELECT_FILE);
-                } else if (items[i].equals("File Explorer")) {
-                    if (ContextCompat.checkSelfPermission(ChatActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                            == PackageManager.PERMISSION_DENIED) {
-                        ActivityCompat.requestPermissions(ChatActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_DOCUMENT);
-                    } else {
-                        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                        intent.setType("application/pdf");
-                        startActivityForResult(intent, REQUEST_DOCUMENT);
-                    }
-                } else if (items[i].equals("Cancel")) {
-                    dialogInterface.dismiss();
+        builder.setItems(items, (dialogInterface, i) -> {
+            if (items[i].equals("Camera")) {
+                // ask for Camera permission
+                if (ContextCompat.checkSelfPermission(ChatActivity.this, Manifest.permission.CAMERA)
+                        == PackageManager.PERMISSION_DENIED) {
+                    ActivityCompat.requestPermissions(
+                            ChatActivity.this, new String[] {Manifest.permission.CAMERA},
+                            REQUEST_CAMERA);
+                } else {
+                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    startActivityForResult(intent, REQUEST_CAMERA);
                 }
+            } else if (items[i].equals("Image")) {
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("image/*");
+                startActivityForResult(intent, SELECT_FILE);
+            } else if (items[i].equals("File Explorer")) {
+                if (ContextCompat.checkSelfPermission(ChatActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                        == PackageManager.PERMISSION_DENIED) {
+                    ActivityCompat.requestPermissions(ChatActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_DOCUMENT);
+                } else {
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.setType("application/pdf");
+                    startActivityForResult(intent, REQUEST_DOCUMENT);
+                }
+            } else if (items[i].equals("Cancel")) {
+                dialogInterface.dismiss();
             }
         });
         builder.show();
@@ -384,12 +367,9 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
             FirebaseFirestore.getInstance()
                     .collection("Groups")
                     .document(groupID)
-                    .addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                        @Override
-                        public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-                            Toolbar toolbar = findViewById(R.id.my_toolbar);
-                            toolbar.setTitle(documentSnapshot.get("groupName").toString());
-                        }
+                    .addSnapshotListener((documentSnapshot, e) -> {
+                        Toolbar toolbar = findViewById(R.id.my_toolbar);
+                        toolbar.setTitle(documentSnapshot.get("groupName").toString());
                     });
         }
 
@@ -465,41 +445,24 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                             .child(timestamp.getTime() + ".jpg");
 
                     UploadTask uploadTask = imageRef.putBytes(dataforbmp);
-                    uploadTask.addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            // Handle unsuccessful uploads
-                            mProgressDialog.dismiss();
-                            Toast.makeText(ChatActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            mProgressDialog.dismiss();
-                            Toast.makeText(ChatActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
-                            imageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                @Override
-                                public void onSuccess(Uri uri) {
-                                    String url = uri.toString();
+                    uploadTask.addOnFailureListener(e -> {
+                        // Handle unsuccessful uploads
+                        mProgressDialog.dismiss();
+                        Toast.makeText(ChatActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }).addOnSuccessListener(taskSnapshot -> {
+                        mProgressDialog.dismiss();
+                        Toast.makeText(ChatActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
+                        imageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                            String url = uri.toString();
 //                                     Upload upload = new Upload(name, url);
-                                    // update Firestore Chat
-                                    ChatItem newChatItem = addMessageToAdapter(userUID + "\tIMAGE\t" + url);
-                                    sendMessage(newChatItem);
-                                }
-                            });
-                        }
-                    }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                            int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                            mProgressDialog.setProgress(currentProgress);
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(ChatActivity.this, "Failed to upload images", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                            // update Firestore Chat
+                            ChatItem newChatItem = addMessageToAdapter(userUID + "\tIMAGE\t" + url);
+                            sendMessage(newChatItem);
+                        });
+                    }).addOnProgressListener(taskSnapshot -> {
+                        int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                        mProgressDialog.setProgress(currentProgress);
+                    }).addOnFailureListener(e -> Toast.makeText(ChatActivity.this, "Failed to upload images", Toast.LENGTH_SHORT).show());
 
                     bmp = null;
                 } else if (selectedImageUri != null) {
@@ -534,47 +497,30 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                     byte[] byteArray = stream.toByteArray();
 
                     UploadTask uploadTask = fileReference.putBytes(byteArray);
-                    uploadTask.addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            // Handle unsuccessful uploads
-                            mProgressDialog.dismiss();
-                            Toast.makeText(ChatActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            mProgressDialog.dismiss();
-                            Toast.makeText(ChatActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
-                            fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                @Override
-                                public void onSuccess(Uri uri) {
-                                    String url = uri.toString();
+                    uploadTask.addOnFailureListener(e -> {
+                        // Handle unsuccessful uploads
+                        mProgressDialog.dismiss();
+                        Toast.makeText(ChatActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }).addOnSuccessListener(taskSnapshot -> {
+                        mProgressDialog.dismiss();
+                        Toast.makeText(ChatActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
+                        fileReference.getDownloadUrl().addOnSuccessListener(uri -> {
+                            String url = uri.toString();
 //                                    Upload upload = new Upload(name, url);
 
-                                    // update realtime
-                                    String uploadId = mDatabaseRef.push().getKey();
-                                    mDatabaseRef.child(userID).child("imageUrl").setValue(url);
+                            // update realtime
+                            String uploadId = mDatabaseRef.push().getKey();
+                            mDatabaseRef.child(userID).child("imageUrl").setValue(url);
 
-                                    // update firestore
+                            // update firestore
 //                                Upload profileUpload = new Upload(url);
-                                    ChatItem newChatItem = addMessageToAdapter(userUID + "\tIMAGE\t" + url);
-                                    sendMessage(newChatItem);
-                                }
-                            });
-                        }
-                    }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                            int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                            mProgressDialog.setProgress(currentProgress);
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(ChatActivity.this, "Failed to upload images", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                            ChatItem newChatItem = addMessageToAdapter(userUID + "\tIMAGE\t" + url);
+                            sendMessage(newChatItem);
+                        });
+                    }).addOnProgressListener(taskSnapshot -> {
+                        int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                        mProgressDialog.setProgress(currentProgress);
+                    }).addOnFailureListener(e -> Toast.makeText(ChatActivity.this, "Failed to upload images", Toast.LENGTH_SHORT).show());
 
                     selectedImageUri = null;
                 } else if (pdfUri != null) {
@@ -586,37 +532,25 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                     String fileName = System.currentTimeMillis() + "";
                     final StorageReference storageReference = googleStorageRef.getReference().child(userID).child("Uploads").child(fileName);
                     storageReference.putFile(pdfUri)
-                            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                                @Override
-                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                    mProgressDialog.dismiss();
-                                    // url is the link that will redirect you to the FirebaseStorage
-                                    storageReference.getDownloadUrl()
-                                            .addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                                @Override
-                                                public void onSuccess(Uri uri) {
-                                                    // connect ke Firestore
-                                                    ChatItem newChatItem = addMessageToAdapter(userUID + "\tPDF\t" + pdfName +"\t" + uri);
-                                                    sendMessage(newChatItem);
-                                                }
-                                            });
+                            .addOnSuccessListener(taskSnapshot -> {
+                                mProgressDialog.dismiss();
+                                // url is the link that will redirect you to the FirebaseStorage
+                                storageReference.getDownloadUrl()
+                                        .addOnSuccessListener(uri -> {
+                                            // connect ke Firestore
+                                            ChatItem newChatItem = addMessageToAdapter(userUID + "\tPDF\t" + pdfName + "\t" + uri);
+                                            sendMessage(newChatItem);
+                                        });
 
 
-                                }
                             })
-                            .addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    mProgressDialog.dismiss();
-                                    Toast.makeText(ChatActivity.this, "Failed to upload files", Toast.LENGTH_SHORT).show();
-                                }
-                            }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                            int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                            mProgressDialog.setProgress(currentProgress);
-                        }
-                    });
+                            .addOnFailureListener(e -> {
+                                mProgressDialog.dismiss();
+                                Toast.makeText(ChatActivity.this, "Failed to upload files", Toast.LENGTH_SHORT).show();
+                            }).addOnProgressListener(taskSnapshot -> {
+                                int currentProgress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                                mProgressDialog.setProgress(currentProgress);
+                            });
                 } else {
                     Toast.makeText(this, "No file selected or camera picture not configured yet", Toast.LENGTH_SHORT).show();
                 }
@@ -870,23 +804,20 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                     .collection("ChatHistory")
                     .orderBy("timestamp", Query.Direction.DESCENDING)
                     .limit(docsOnScreen)
-                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                        @Override
-                        public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                            // remove previous data
-                            mAdapter.clearData();
-                            for (DocumentSnapshot q: queryDocumentSnapshots) {
-                                lastSnapshot = q;
-                                ChatItem chatItem = q.toObject(ChatItem.class);
-                                String[] arr = chatItem.getMessageBody().split("\t");
+                    .addSnapshotListener((queryDocumentSnapshots, e) -> {
+                        // remove previous data
+                        mAdapter.clearData();
+                        for (DocumentSnapshot q: queryDocumentSnapshots) {
+                            lastSnapshot = q;
+                            ChatItem chatItem = q.toObject(ChatItem.class);
+                            String[] arr = chatItem.getMessageBody().split("\t");
 
-                                if (chatItem != null && !chatItem.getSenderID().equals(userUID)) {
-                                    String updatedImageURL = friendImageUrl[0];
-                                    chatItem.setSenderImageUrl(updatedImageURL);
-                                }
-                                mAdapter.addData(chatItem);
-                                mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
+                            if (chatItem != null && !chatItem.getSenderID().equals(userUID)) {
+                                String updatedImageURL = friendImageUrl[0];
+                                chatItem.setSenderImageUrl(updatedImageURL);
                             }
+                            mAdapter.addData(chatItem);
+                            mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
                         }
                     });
         } else { // if its a group
@@ -895,21 +826,18 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                     .collection("ChatHistory")
                     .orderBy("timestamp", Query.Direction.DESCENDING)
                     .limit(docsOnScreen)
-                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                        @Override
-                        public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                            mAdapter.clearData();
-                            for (DocumentSnapshot q: queryDocumentSnapshots) {
-                                lastSnapshot = q;
-                                ChatItem chatItem = q.toObject(ChatItem.class);
+                    .addSnapshotListener((queryDocumentSnapshots, e) -> {
+                        mAdapter.clearData();
+                        for (DocumentSnapshot q: queryDocumentSnapshots) {
+                            lastSnapshot = q;
+                            ChatItem chatItem = q.toObject(ChatItem.class);
 
-                                if (chatItem != null && !chatItem.getSenderID().equals(userUID)) {
-                                    String updatedImageURL = friendImageUrl[0];
-                                    chatItem.setSenderImageUrl(updatedImageURL);
-                                }
-                                mAdapter.addData(chatItem);
-                                mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
+                            if (chatItem != null && !chatItem.getSenderID().equals(userUID)) {
+                                String updatedImageURL = friendImageUrl[0];
+                                chatItem.setSenderImageUrl(updatedImageURL);
                             }
+                            mAdapter.addData(chatItem);
+                            mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
                         }
                     });
         }
@@ -991,24 +919,21 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                     .orderBy("timestamp", Query.Direction.DESCENDING)
                     .startAfter(lastSnapshot)
                     .limit(docsPerRetrieval)
-                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                        @Override
-                        public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                            if (queryDocumentSnapshots.isEmpty()) {
-                                Toast.makeText(ChatActivity.this,
-                                        "No older messages.", Toast.LENGTH_SHORT).show();
-                            }
-                            for (DocumentSnapshot q: queryDocumentSnapshots) {
-                                lastSnapshot = q;
-                                ChatItem chatItem = q.toObject(ChatItem.class);
+                    .addSnapshotListener((queryDocumentSnapshots, e) -> {
+                        if (queryDocumentSnapshots.isEmpty()) {
+                            Toast.makeText(ChatActivity.this,
+                                    "No older messages.", Toast.LENGTH_SHORT).show();
+                        }
+                        for (DocumentSnapshot q: queryDocumentSnapshots) {
+                            lastSnapshot = q;
+                            ChatItem chatItem = q.toObject(ChatItem.class);
 
-                                if (chatItem != null && !chatItem.getSenderID().equals(userUID)) {
-                                    String updatedImageURL = friendImageUrl[0];
-                                    chatItem.setSenderImageUrl(updatedImageURL);
-                                }
-                                mAdapter.addData(chatItem);
-                                mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
+                            if (chatItem != null && !chatItem.getSenderID().equals(userUID)) {
+                                String updatedImageURL = friendImageUrl[0];
+                                chatItem.setSenderImageUrl(updatedImageURL);
                             }
+                            mAdapter.addData(chatItem);
+                            mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
                         }
                     });
         } else { // if its not a group
@@ -1018,24 +943,21 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
                     .orderBy("timestamp", Query.Direction.DESCENDING)
                     .startAfter(lastSnapshot)
                     .limit(docsPerRetrieval)
-                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                        @Override
-                        public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                            if (queryDocumentSnapshots.isEmpty()) {
-                                Toast.makeText(ChatActivity.this,
-                                        "No older messages.", Toast.LENGTH_SHORT).show();
-                            }
-                            for (DocumentSnapshot q: queryDocumentSnapshots) {
-                                lastSnapshot = q;
-                                ChatItem chatItem = q.toObject(ChatItem.class);
+                    .addSnapshotListener((queryDocumentSnapshots, e) -> {
+                        if (queryDocumentSnapshots.isEmpty()) {
+                            Toast.makeText(ChatActivity.this,
+                                    "No older messages.", Toast.LENGTH_SHORT).show();
+                        }
+                        for (DocumentSnapshot q: queryDocumentSnapshots) {
+                            lastSnapshot = q;
+                            ChatItem chatItem = q.toObject(ChatItem.class);
 
-                                if (chatItem != null && !chatItem.getSenderID().equals(userUID)) {
-                                    String updatedImageURL = friendImageUrl[0];
-                                    chatItem.setSenderImageUrl(updatedImageURL);
-                                }
-                                mAdapter.addData(chatItem);
-                                mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
+                            if (chatItem != null && !chatItem.getSenderID().equals(userUID)) {
+                                String updatedImageURL = friendImageUrl[0];
+                                chatItem.setSenderImageUrl(updatedImageURL);
                             }
+                            mAdapter.addData(chatItem);
+                            mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
                         }
                     });
         }
@@ -1056,20 +978,10 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
 
 
         ImageView closeButton = mPhotoDialog.findViewById(R.id.photo_popup_close_button);
-        closeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPhotoDialog.dismiss();
-            }
-        });
+        closeButton.setOnClickListener(v -> mPhotoDialog.dismiss());
 
         ImageView saveButton = mPhotoDialog.findViewById(R.id.photo_popup_save_button);
-        saveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(ChatActivity.this, "Not yet configured", Toast.LENGTH_SHORT).show();
-            }
-        });
+        saveButton.setOnClickListener(v -> Toast.makeText(ChatActivity.this, "Not yet configured", Toast.LENGTH_SHORT).show());
 
         mPhotoDialog.show();
         mPhotoDialog.getWindow().setGravity(Gravity.CENTER);

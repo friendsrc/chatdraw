@@ -95,144 +95,115 @@ public class GroupCreateActivity extends AppCompatActivity {
 
         cameraLogo = findViewById(R.id.camera_logo);
         groupPicture = findViewById(R.id.group_create_imageview);
-        groupPicture.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SelectImage();
-            }
-        });
+        groupPicture.setOnClickListener(v -> SelectImage());
 
         // if 'create group' button is clicked, send information to firestore
         final EditText editText = findViewById(R.id.group_create_edittext);
         Button button = findViewById(R.id.group_create_button);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        button.setOnClickListener(v -> {
 
-                // get group name from EditText
-                String groupName = editText.getText().toString().trim();
+            // get group name from EditText
+            String groupName = editText.getText().toString().trim();
 
-                if (!groupName.equals("")) {
-                    // create a group id
-                    groupID = "GROUP_" + userUID + "_" + UUID.randomUUID();
+            if (!groupName.equals("")) {
+                // create a group id
+                groupID = "GROUP_" + userUID + "_" + UUID.randomUUID();
 
-                    // get firestore
-                    FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-                    DocumentReference reference = firestore
-                            .collection("Groups")
-                            .document(groupID);
+                // get firestore
+                FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+                DocumentReference reference = firestore
+                        .collection("Groups")
+                        .document(groupID);
 
-                    firestore.collection("Users")
-                            .document(userUID)
-                            .update("groups", FieldValue.arrayUnion(groupID));
+                firestore.collection("Users")
+                        .document(userUID)
+                        .update("groups", FieldValue.arrayUnion(groupID));
 
-                    final FirebaseFirestore db = FirebaseFirestore.getInstance();
-                    db.collection("Users")
-                            .document(userUID)
+                final FirebaseFirestore db = FirebaseFirestore.getInstance();
+                db.collection("Users")
+                        .document(userUID)
+                        .update("groups", FieldValue.arrayUnion(groupID))
+                        .addOnSuccessListener(aVoid -> Toast.makeText(GroupCreateActivity.this,
+                            "Contact added successfully.",
+                            Toast.LENGTH_SHORT).show())
+                        .addOnFailureListener(e -> {
+                            Map<String, Object> map = new HashMap<>();
+                            map.put("contacts", new ArrayList<String>());
+                            map.put("groups", new ArrayList<String>());
+                            db.collection("Users").document(userUID).set(map);
+                            db.collection("Users")
+                                .document(userUID)
+                                .update("groups", FieldValue.arrayUnion(groupID))
+                                .addOnSuccessListener(aVoid -> Toast.makeText(GroupCreateActivity.this,
+                                    "Contact added successfully.",
+                                    Toast.LENGTH_SHORT).show());
+                        });
+
+                // add group name to group document
+                Map<String, Object> docData = new HashMap<>();
+                docData.put("groupName", groupName);
+                docData.put("groupID", groupID);
+                docData.put("groupImageUrl", url);
+                reference.set(docData);
+
+                // add group data to Realtime Database
+                FirebaseDatabase.getInstance()
+                        .getReference("Groups")
+                        .child(groupID)
+                        .setValue(docData);
+
+                // add each member's id to group document and add group id to each
+                // member's document
+                DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Groups/" + groupID);
+                for (String s: members) {
+                    // add member id to group
+                    reference.update("members", FieldValue.arrayUnion(s));
+
+                    // add group id to member
+                    final String memberID = s;
+                    FirebaseFirestore.getInstance()
+                            .collection("Users")
+                            .document(s)
                             .update("groups", FieldValue.arrayUnion(groupID))
-                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    Toast.makeText(GroupCreateActivity.this,
-                                            "Contact added successfully.",
-                                            Toast.LENGTH_SHORT).show();
-                                }
-                            })
-                            .addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Map<String, Object> map = new HashMap<>();
-                                    map.put("contacts", new ArrayList<String>());
-                                    map.put("groups", new ArrayList<String>());
-                                    db.collection("Users").document(userUID).set(map);
-                                    db.collection("Users")
-                                            .document(userUID)
-                                            .update("groups", FieldValue.arrayUnion(groupID))
-                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                @Override
-                                                public void onSuccess(Void aVoid) {
-                                                    Toast.makeText(GroupCreateActivity.this,
-                                                            "Contact added successfully.",
-                                                            Toast.LENGTH_SHORT).show();
-                                                }
-                                            });
-                                }
+                            .addOnFailureListener(e -> {
+                                Map<String, Object> map = new HashMap<>();
+                                map.put("contacts", new ArrayList<String>());
+                                map.put("groups", new ArrayList<String>());
+                                db.collection("Users").document(memberID).set(map);
+                                db.collection("Users")
+                                    .document(memberID)
+                                    .update("groups", FieldValue.arrayUnion(groupID))
+                                    .addOnSuccessListener(aVoid -> Toast.makeText(GroupCreateActivity.this,
+                                        "Contact added successfully.",
+                                        Toast.LENGTH_SHORT).show());
                             });
 
-                    // add group name to group document
-                    Map<String, Object> docData = new HashMap<>();
-                    docData.put("groupName", groupName);
-                    docData.put("groupID", groupID);
-                    docData.put("groupImageUrl", url);
-                    reference.set(docData);
+                    // create a placeholder chat item
+                    ChatItem chatItem = new ChatItem("", groupID, groupName,
+                            null, url, s,
+                            null, null, null);
 
-                    // add group data to Realtime Database
-                    FirebaseDatabase.getInstance()
-                            .getReference("Groups")
-                            .child(groupID)
-                            .setValue(docData);
-
-                    // add each member's id to group document and add group id to each
-                    // member's document
-                    DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Groups/" + groupID);
-                    for (String s: members) {
-                        // add member id to group
-                        reference.update("members", FieldValue.arrayUnion(s));
-
-                        // add group id to member
-                        final String memberID = s;
-                        FirebaseFirestore.getInstance()
-                                .collection("Users")
-                                .document(s)
-                                .update("groups", FieldValue.arrayUnion(groupID))
-                                .addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        Map<String, Object> map = new HashMap<>();
-                                        map.put("contacts", new ArrayList<String>());
-                                        map.put("groups", new ArrayList<String>());
-                                        db.collection("Users").document(memberID).set(map);
-                                        db.collection("Users")
-                                                .document(memberID)
-                                                .update("groups", FieldValue.arrayUnion(groupID))
-                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                    @Override
-                                                    public void onSuccess(Void aVoid) {
-                                                        Toast.makeText(GroupCreateActivity.this,
-                                                                "Contact added successfully.",
-                                                                Toast.LENGTH_SHORT).show();
-                                                    }
-                                                });
-                                    }
-                                });
-
-                        // create a placeholder chat item
-                        ChatItem chatItem = new ChatItem("", groupID, groupName,
-                                null, url, s,
-                                null, null, null);
-
-                        // Send to user's message preview collection
-                        FirebaseFirestore.getInstance()
-                                .collection("Previews")
-                                .document(s)
-                                .collection("ChatPreviews")
-                                .document(groupID)
-                                .set(chatItem);
-                    }
-
-                    // set the result as successful
-                    Intent intent = new Intent();
-                    intent.putExtra("groupID", groupID);
-                    intent.putExtra("groupName", groupName);
-                    intent.putExtra("groupImageUrl", url);
-                    setResult(Activity.RESULT_OK, intent);
-
-                    // destroy this activity
-                    finish();
-                } else {
-                    Toast.makeText(GroupCreateActivity.this,
-                            "Group name shouldn't be empty", Toast.LENGTH_SHORT).show();
+                    // Send to user's message preview collection
+                    FirebaseFirestore.getInstance()
+                            .collection("Previews")
+                            .document(s)
+                            .collection("ChatPreviews")
+                            .document(groupID)
+                            .set(chatItem);
                 }
+
+                // set the result as successful
+                Intent intent = new Intent();
+                intent.putExtra("groupID", groupID);
+                intent.putExtra("groupName", groupName);
+                intent.putExtra("groupImageUrl", url);
+                setResult(Activity.RESULT_OK, intent);
+
+                // destroy this activity
+                finish();
+            } else {
+                Toast.makeText(GroupCreateActivity.this,
+                        "Group name shouldn't be empty", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -259,30 +230,27 @@ public class GroupCreateActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(GroupCreateActivity.this);
         builder.setTitle("Get image from");
 
-        builder.setItems(items, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                if (items[i].equals("Camera")) {
-                    // ask for Camera permission
-                    if (ContextCompat.checkSelfPermission(GroupCreateActivity.this, Manifest.permission.CAMERA)
-                            == PackageManager.PERMISSION_DENIED) {
-                        ActivityCompat.requestPermissions(
-                                GroupCreateActivity.this, new String[] {Manifest.permission.CAMERA},
-                                REQUEST_CAMERA);
-                    }
-
-                    if (ContextCompat.checkSelfPermission(GroupCreateActivity.this, Manifest.permission.CAMERA)
-                            == PackageManager.PERMISSION_DENIED) {
-                        Toast.makeText(GroupCreateActivity.this, "Camera permission not granted", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                        startActivityForResult(intent, REQUEST_CAMERA);
-                    }
-                } else if (items[i].equals("Gallery")) {
-                    Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    intent.setType("image/*");
-                    startActivityForResult(intent, SELECT_FILE);
+        builder.setItems(items, (dialogInterface, i) -> {
+            if (items[i].equals("Camera")) {
+                // ask for Camera permission
+                if (ContextCompat.checkSelfPermission(GroupCreateActivity.this, Manifest.permission.CAMERA)
+                        == PackageManager.PERMISSION_DENIED) {
+                    ActivityCompat.requestPermissions(
+                            GroupCreateActivity.this, new String[] {Manifest.permission.CAMERA},
+                            REQUEST_CAMERA);
                 }
+
+                if (ContextCompat.checkSelfPermission(GroupCreateActivity.this, Manifest.permission.CAMERA)
+                        == PackageManager.PERMISSION_DENIED) {
+                    Toast.makeText(GroupCreateActivity.this, "Camera permission not granted", Toast.LENGTH_SHORT).show();
+                } else {
+                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    startActivityForResult(intent, REQUEST_CAMERA);
+                }
+            } else if (items[i].equals("Gallery")) {
+                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                intent.setType("image/*");
+                startActivityForResult(intent, SELECT_FILE);
             }
         });
         builder.show();
@@ -330,44 +298,32 @@ public class GroupCreateActivity extends AppCompatActivity {
                 byte[] byteArray = stream.toByteArray();
 
                 UploadTask uploadTask = fileReference.putBytes(byteArray);
-                uploadTask.addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        // Handle unsuccessful uploads
-                        mProgressDialog.dismiss();
-                        Toast.makeText(GroupCreateActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        mProgressDialog.dismiss();
-                        Toast.makeText(GroupCreateActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
-                        fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            public void onSuccess(Uri uri) {
-                                url = uri.toString();
-                                Toast.makeText(GroupCreateActivity.this, url, Toast.LENGTH_LONG).show();
+                uploadTask.addOnFailureListener(e -> {
+                    // Handle unsuccessful uploads
+                    mProgressDialog.dismiss();
+                    Toast.makeText(GroupCreateActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                }).addOnSuccessListener(taskSnapshot -> {
+                    mProgressDialog.dismiss();
+                    Toast.makeText(GroupCreateActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
+                    fileReference.getDownloadUrl().addOnSuccessListener(uri -> {
+                        url = uri.toString();
+                        Toast.makeText(GroupCreateActivity.this, url, Toast.LENGTH_LONG).show();
 
-                                // Upload upload = new Upload(name, url);
+                        // Upload upload = new Upload(name, url);
 
-                                // update realtime
+                        // update realtime
 //                                String uploadId = mDatabaseRef.push().getKey();
 //                                mDatabaseRef.child(userUID).child("imageUrl").setValue(url);
 
-                                // update firestore
+                        // update firestore
 //                                Upload profileUpload = new Upload(url);
 //                                Map<String, Object> map = new HashMap<>();
 //                                map.put("GroupImageUrl", url);
 //                                FirebaseFirestore.getInstance().collection("Groups").document(groupID).update(map);
-                            }
-                        });
-                    }
-                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                        mProgressDialog.setMessage("Uploading Image...");
-                        mProgressDialog.show();
-                    }
+                    });
+                }).addOnProgressListener(taskSnapshot -> {
+                    mProgressDialog.setMessage("Uploading Image...");
+                    mProgressDialog.show();
                 });
 
                 selectedImageUri = null;
@@ -381,27 +337,20 @@ public class GroupCreateActivity extends AppCompatActivity {
                         .child("image.jpg");
 
                 UploadTask uploadTask = imageRef.putBytes(dataforbmp);
-                uploadTask.addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        // Handle unsuccessful uploads
-                        mProgressDialog.dismiss();
-                        Toast.makeText(GroupCreateActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        mProgressDialog.dismiss();
-                        Toast.makeText(GroupCreateActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
-                        imageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            public void onSuccess(Uri uri) {
-                                url = uri.toString();
-                                Toast.makeText(GroupCreateActivity.this, url, Toast.LENGTH_LONG).show();
+                uploadTask.addOnFailureListener(e -> {
+                    // Handle unsuccessful uploads
+                    mProgressDialog.dismiss();
+                    Toast.makeText(GroupCreateActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                }).addOnSuccessListener(taskSnapshot -> {
+                    mProgressDialog.dismiss();
+                    Toast.makeText(GroupCreateActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
+                    imageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                        url = uri.toString();
+                        Toast.makeText(GroupCreateActivity.this, url, Toast.LENGTH_LONG).show();
 
-                                // Upload upload = new Upload(name, url);
+                        // Upload upload = new Upload(name, url);
 
-                                // update realtime
+                        // update realtime
 //                                String uploadId = mDatabaseRef.push().getKey();
 //                                mDatabaseRef.child(userUID).child("imageUrl").setValue(url);
 //
@@ -410,15 +359,10 @@ public class GroupCreateActivity extends AppCompatActivity {
 //                                Map<String, Object> map = new HashMap<>();
 //                                map.put("GroupImageUrl", url);
 //                                FirebaseFirestore.getInstance().collection("Groups").document(groupID).update(map);
-                            }
-                        });
-                    }
-                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                        mProgressDialog.setMessage("Uploading Image...");
-                        mProgressDialog.show();
-                    }
+                    });
+                }).addOnProgressListener(taskSnapshot -> {
+                    mProgressDialog.setMessage("Uploading Image...");
+                    mProgressDialog.show();
                 });
 
                 bmp = null;
