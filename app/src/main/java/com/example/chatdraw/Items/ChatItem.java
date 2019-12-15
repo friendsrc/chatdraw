@@ -22,7 +22,9 @@ public class ChatItem {
     public ChatItem() {
     }
 
-    public ChatItem(String messageBody, String senderID, String senderName, String senderUsername, String senderImageUrl, String receiverID, String receiverName, String receiverUsername, String receiverImageUrl) {
+    public ChatItem(String messageBody, String senderID, String senderName, String senderUsername,
+                    String senderImageUrl, String receiverID, String receiverName,
+                    String receiverUsername, String receiverImageUrl) {
 
         this.senderID = senderID;
         this.senderName = senderName;

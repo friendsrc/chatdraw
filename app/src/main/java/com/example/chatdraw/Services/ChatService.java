@@ -47,7 +47,8 @@ public class ChatService extends Service {
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("Users").document(id)
                 .get()
-                .addOnSuccessListener(documentSnapshot -> db.collection("Previews")
+                .addOnSuccessListener(documentSnapshot ->
+                    db.collection("Previews")
                         .document(id)
                         .collection("ChatPreviews")
                         .addSnapshotListener((snapshots, e) -> {
@@ -59,24 +60,30 @@ public class ChatService extends Service {
                             for (DocumentChange dc : snapshots.getDocumentChanges()) {
                                 String senderID = dc.getDocument().getString("senderID");
                                 if (!senderID.equals(id)) {
-                                    String messageBody = (String) dc.getDocument().get("messageBody");
-                                    String senderName = (String) dc.getDocument().get("senderName");
-                                    if (dc.getDocument().getString("receiverID").startsWith("GROUP_")) {
-                                        senderName = dc.getDocument().getString("receiverName");
-                                        senderID = dc.getDocument().getString("receiverID");
+                                    String messageBody =
+                                        (String) dc.getDocument().get("messageBody");
+                                    String senderName =
+                                        (String) dc.getDocument().get("senderName");
+                                    if (dc.getDocument()
+                                        .getString("receiverID").startsWith("GROUP_")) {
+                                        senderName =
+                                            dc.getDocument().getString("receiverName");
+                                        senderID =
+                                            dc.getDocument().getString("receiverID");
                                     }
                                     int messageId = senderID.hashCode();
                                     switch (dc.getType()) {
                                         case ADDED:
-//                                                        createNotification(messageId, messageBody, senderName, senderID);
-//                                                        Log.d(TAG, "New message: " + dc.getDocument().getData());
                                             break;
                                         case MODIFIED:
-                                            createNotification(messageId, messageBody, senderName, senderID);
-                                            Log.d(TAG, "Modified message: " + dc.getDocument().getData());
+                                            createNotification(
+                                                messageId, messageBody, senderName, senderID);
+                                            Log.d(TAG, "Modified message: "
+                                                + dc.getDocument().getData());
                                             break;
                                         case REMOVED:
-                                            Log.d(TAG, "Removed message: " + dc.getDocument().getData());
+                                            Log.d(TAG, "Removed message: "
+                                                + dc.getDocument().getData());
                                             break;
                                     }
                                 }
@@ -91,7 +98,8 @@ public class ChatService extends Service {
         return null;
     }
 
-    public void createNotification(int messageId, String messageBody, String senderName, String senderID) {
+    public void createNotification(int messageId, String messageBody, String senderName,
+                                   String senderID) {
         if (senderName == null) senderName = "Anonymous";
 
         // Create an Intent for the activity you want to start
@@ -107,7 +115,8 @@ public class ChatService extends Service {
         PendingIntent resultPendingIntent =
                 stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+        NotificationCompat.Builder builder =
+            new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.brush)
                 .setContentTitle(senderName)
                 .setContentText(messageBody)

@@ -76,7 +76,8 @@ public class NewGroupActivity extends AppCompatActivity implements RecyclerViewC
         // create a hashmap to store chosen contacts
         chosenContacts = new HashMap<>();
 
-        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(NewGroupActivity.this);
+        GoogleSignInAccount acct =
+            GoogleSignIn.getLastSignedInAccount(NewGroupActivity.this);
         if (acct != null) {
             userUID = acct.getId();
         } else {
@@ -90,7 +91,8 @@ public class NewGroupActivity extends AppCompatActivity implements RecyclerViewC
         ImageView imageView = findViewById(R.id.new_group_nextbutton_imageview);
         imageView.setOnClickListener(v -> {
             if (chosenContacts.size() > 0) {
-                Intent intent = new Intent(NewGroupActivity.this, GroupCreateActivity.class);
+                Intent intent =
+                    new Intent(NewGroupActivity.this, GroupCreateActivity.class);
                 String[] memberList = new String[chosenContacts.size()];
                 int i = 0;
                 for (FriendListItem f: chosenContacts.values()) {
@@ -131,7 +133,8 @@ public class NewGroupActivity extends AppCompatActivity implements RecyclerViewC
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
+                        ArrayList<String> arr =
+                            (ArrayList<String>) task.getResult().get("contacts");
                         if (arr != null ) {
                             for (String s: arr) {
                                 addUserWithID(s);
@@ -151,7 +154,8 @@ public class NewGroupActivity extends AppCompatActivity implements RecyclerViewC
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
+                        ArrayList<String> arr =
+                            (ArrayList<String>) task.getResult().get("contacts");
                         if (arr != null) {
                             for (String s : arr) {
                                 addUserWithID(s);

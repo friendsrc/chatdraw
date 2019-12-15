@@ -268,7 +268,8 @@ public class CanvasView extends View {
     }
 
     public void exportDrawing() {
-        File folder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        File folder =
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         folder.mkdirs();
         File imageFile = new File(folder, UUID.randomUUID() + ".png");
         try {
@@ -281,7 +282,8 @@ public class CanvasView extends View {
                 new String[]{},
                 new String[]{"image/png"},
                 null);
-        context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(imageFile)));
+        context.sendBroadcast(
+            new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(imageFile)));
     }
 
     private void storeBitmap(File file, Bitmap bitmap) throws Exception {

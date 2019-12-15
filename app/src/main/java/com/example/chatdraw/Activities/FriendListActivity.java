@@ -43,7 +43,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FriendListActivity extends AppCompatActivity implements RecyclerViewClickListener, Serializable {
+public class FriendListActivity extends AppCompatActivity
+    implements RecyclerViewClickListener, Serializable {
 
     private static String TAG = "FriendListActivity";
 
@@ -82,7 +83,8 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
         recyclerView.setAdapter(mAdapter);
 
         // get the current user's uID
-        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(FriendListActivity.this);
+        GoogleSignInAccount acct =
+            GoogleSignIn.getLastSignedInAccount(FriendListActivity.this);
         if (acct != null) {
             currentUserID = acct.getId();
         } else {
@@ -97,7 +99,8 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
         // set the "add" button to go to the FindFriendActivity
         ImageView imageView = findViewById(R.id.add_friend_imageview);
         imageView.setOnClickListener(v -> {
-            Intent intent  = new Intent(FriendListActivity.this, FindFriendActivity.class);
+            Intent intent  =
+                new Intent(FriendListActivity.this, FindFriendActivity.class);
             startActivityForResult(intent, FIND_FRIEND_REQUEST_CODE);
         });
 
@@ -173,7 +176,8 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                         db.collection("Users")
                                 .document(currentUserID)
                                 .update("contacts", FieldValue.arrayUnion(uID))
-                                .addOnSuccessListener(aVoid -> Toast.makeText(FriendListActivity.this,
+                                .addOnSuccessListener(v ->
+                                    Toast.makeText(FriendListActivity.this,
                                         "Contact added successfully.",
                                         Toast.LENGTH_SHORT).show());
                     });
@@ -196,22 +200,6 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
 
                 FriendListItem newFriend = new FriendListItem(name, status, uID, imageURL);
                 mAdapter.addItem(newFriend);
-
-//                if (currentUserID == null) {
-//                    return;
-//                }
-//
-//                try {
-//                    FileOutputStream fos = getApplicationContext().openFileOutput("FRIEND" + currentUserID, MODE_PRIVATE);
-//                    ObjectOutputStream of = new ObjectOutputStream(fos);
-//                    of.writeObject(friendList);
-//                    of.close();
-//                    fos.close();
-//                }
-//                catch (Exception e) {
-//                    Log.e("InternalStorage", e.getMessage());
-//                }
-
             }
 
             @Override
@@ -231,7 +219,8 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
+                        ArrayList<String> arr =
+                            (ArrayList<String>) task.getResult().get("contacts");
                         if (arr != null ) {
                             for (String s: arr) {
                                 addUserWithID(s);
@@ -251,7 +240,8 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
+                        ArrayList<String> arr =
+                            (ArrayList<String>) task.getResult().get("contacts");
                         if (arr != null ) {
                             for (String s: arr) {
                                 addUserWithID(s);
@@ -270,7 +260,8 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
         // specify an adapter
         ArrayList<NewFriendItem> myDataset = new ArrayList<>();
         final GroupListRecyclerViewAdapter adapter
-                = new GroupListRecyclerViewAdapter(myDataset, FriendListActivity.this, this);
+                = new GroupListRecyclerViewAdapter(myDataset, FriendListActivity.this,
+            this);
         mGroupAdapter = adapter;
 
         final FirebaseFirestore db  = FirebaseFirestore.getInstance();
@@ -284,7 +275,10 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                     if (arr != null && !arr.isEmpty()) {
                         for (String s: arr) {
                             final String groupID = s;
-                            FirebaseFirestore.getInstance().collection("Groups").document(groupID)
+                            FirebaseFirestore
+                                .getInstance()
+                                .collection("Groups")
+                                .document(groupID)
                                     .get()
                                     .addOnCompleteListener(task1 -> {
                                         if (task1.isSuccessful()) {
@@ -296,7 +290,8 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                                             String name = (String) doc.get("groupName");
                                             String imageURL = (String) doc.get("groupImageUrl");
 
-                                            NewFriendItem newFriendItem = new NewFriendItem(name, groupID, imageURL);
+                                            NewFriendItem newFriendItem =
+                                                new NewFriendItem(name, groupID, imageURL);
                                             adapter.addData(newFriendItem);
                                         } else {
                                             getGroupsFromFirestore();
@@ -322,20 +317,23 @@ public class FriendListActivity extends AppCompatActivity implements RecyclerVie
                     if (arr != null && !arr.isEmpty()) {
                         for (String s: arr) {
                             final String groupID = s;
-                            FirebaseFirestore.getInstance().collection("Groups").document(groupID)
-                                    .get()
-                                    .addOnCompleteListener(task1 -> {
-                                        if (task1.isSuccessful()) {
-                                            DocumentSnapshot doc = task1.getResult();
-                                            if (doc == null) {
-                                                return;
-                                            }
+                            FirebaseFirestore.getInstance()
+                                .collection("Groups")
+                                .document(groupID)
+                                .get()
+                                .addOnCompleteListener(task1 -> {
+                                    if (task1.isSuccessful()) {
+                                        DocumentSnapshot doc = task1.getResult();
+                                        if (doc == null) {
+                                            return;
+                                        }
 
-                                            String name = (String) doc.get("groupName");
-                                            String imageURL = (String) doc.get("groupImageUrl");
+                                        String name = (String) doc.get("groupName");
+                                        String imageURL = (String) doc.get("groupImageUrl");
 
-                                            NewFriendItem newFriendItem = new NewFriendItem(name, groupID, imageURL);
-                                            mGroupAdapter.addData(newFriendItem);
+                                        NewFriendItem newFriendItem =
+                                            new NewFriendItem(name, groupID, imageURL);
+                                        mGroupAdapter.addData(newFriendItem);
                                         }
                                     });
                         }

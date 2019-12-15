@@ -51,11 +51,13 @@ public class VerifyPatternActivity extends AppCompatActivity {
 
                     if (final_pattern.equals(save_pattern)) {
                         finish();
-                        Intent intention = new Intent(VerifyPatternActivity.this, MainActivity.class);
+                        Intent intention = new Intent(
+                            VerifyPatternActivity.this, MainActivity.class);
                         startActivity(intention);
                     } else {
                         mPatternLockView.setViewMode(PatternLockView.PatternViewMode.WRONG);
-                        Toast.makeText(VerifyPatternActivity.this, "Incorrect password", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(VerifyPatternActivity.this,
+                            "Incorrect password", Toast.LENGTH_SHORT).show();
                     }
                 }
 
@@ -66,7 +68,8 @@ public class VerifyPatternActivity extends AppCompatActivity {
             });
         } else {
             finish();
-            Intent intention = new Intent(VerifyPatternActivity.this, MainActivity.class);
+            Intent intention =
+                new Intent(VerifyPatternActivity.this, MainActivity.class);
             startActivity(intention);
         }
     }

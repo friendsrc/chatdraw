@@ -116,7 +116,8 @@ public class ImagePreviewActivity extends AppCompatActivity {
                     // Permission not yet granted, ask for permission
                     String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        requestPermissions(permissions, WRITE_EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE);
+                        requestPermissions(
+                            permissions, WRITE_EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE);
                     } else {
                         ActivityCompat.requestPermissions(ImagePreviewActivity.this,
                                 new String[]{Manifest.permission.READ_CONTACTS},
@@ -151,7 +152,7 @@ public class ImagePreviewActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String[] permissions, int[] grantResults) {
-        if (requestCode == WRITE_EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE) {// If request is cancelled, the result arrays are empty.
+        if (requestCode == WRITE_EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // permission was granted, continue to save the image
@@ -208,7 +209,8 @@ public class ImagePreviewActivity extends AppCompatActivity {
 
                 long id = ContentUris.parseId(url);
                 // Wait until MINI_KIND thumbnail is generated.
-                Bitmap miniThumb = MediaStore.Images.Thumbnails.getThumbnail(cr, id, MediaStore.Images.Thumbnails.MINI_KIND, null);
+                Bitmap miniThumb = MediaStore.Images.Thumbnails
+                    .getThumbnail(cr, id, MediaStore.Images.Thumbnails.MINI_KIND, null);
                 // This is for backward compatibility.
                 storeThumbnail(cr, miniThumb, id);
             } else {

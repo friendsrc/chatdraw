@@ -76,7 +76,8 @@ public class GroupInfoActivity extends AppCompatActivity {
                 Toast.makeText(this, "add", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.group_info_edit:
-                Intent intent = new Intent(GroupInfoActivity.this, GroupInfoEditActivity.class);
+                Intent intent = new Intent(GroupInfoActivity.this,
+                    GroupInfoEditActivity.class);
                 intent.putExtra("groupName", groupName);
                 intent.putExtra("groupUID", groupUID);
                 intent.putExtra("groupImageUrl", groupImageUrl);

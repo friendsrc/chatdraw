@@ -14,8 +14,6 @@ import com.example.chatdraw.Items.ChatItem;
 import com.example.chatdraw.Services.ChatService;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.appcompat.app.ActionBar;
@@ -29,7 +27,6 @@ import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -47,17 +44,15 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.sinch.android.rtc.SinchError;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, SinchService.StartFailedListener {
+public class MainActivity extends BaseActivity
+    implements NavigationView.OnNavigationItemSelectedListener, SinchService.StartFailedListener {
     private static final String TAG = "MainActivity";
 
     private static final int FIND_FRIEND_REQUEST_CODE = 101;
@@ -100,7 +95,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             if (user != null) {
                 userUID = user.getUid();
             } else {
-                Toast.makeText(this, "User is not verified", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "User is not verified",
+                    Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(MainActivity.this, LoginActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
                         Intent.FLAG_ACTIVITY_CLEAR_TASK |
@@ -141,7 +137,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(MainActivity.this, "Unknown error, please contact us", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Unknown error, please contact us",
+                    Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -172,11 +169,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         // remove service
         Intent stopIntent = new Intent(MainActivity.this, ChatService.class);
         stopService(stopIntent);
-
-        // remove notifications
-//        String ns = Context.NOTIFICATION_SERVICE;
-//        NotificationManager nMgr = (NotificationManager) getSystemService(ns);
-//        nMgr.cancelAll();
     }
 
     @Override
@@ -197,7 +189,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     @Override
     public void onStarted() {
-        Toast.makeText(this, "SERVICE IS READY", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "SERVICE IS READY",
+            Toast.LENGTH_SHORT).show();
     }
 
     private void loginClicked() {
@@ -296,7 +289,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
                         ChatItem chatItem = new ChatItem("No messages yet.",
                             uID1, name, username, imageUrl,
-                                userUID, null, null, null);
+                                userUID, null, null,
+                            null);
 
                         FirebaseFirestore.getInstance().collection("Previews")
                                 .document(userUID).collection("ChatPreviews")
@@ -350,7 +344,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                         }
 
                         // create a new FriendListItem and add to ListView
-                        FriendListItem friendListItem = new FriendListItem(name, lastMessage, uId, imageUrl);
+                        FriendListItem friendListItem =
+                            new FriendListItem(name, lastMessage, uId, imageUrl);
                         friendListAdapter.addAdapterItem(friendListItem);
                         friendListAdapter.notifyDataSetChanged();
                     }
@@ -367,7 +362,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 .limit(1)
                 .addSnapshotListener((queryDocumentSnapshots, e) -> {
                     if (!queryDocumentSnapshots.isEmpty()) {
-                        chatItem[0] = queryDocumentSnapshots.getDocuments().get(0).toObject(ChatItem.class);
+                        chatItem[0] =
+                            queryDocumentSnapshots.getDocuments().get(0).toObject(ChatItem.class);
                         // Check if the message is not a text message
                         if (chatItem[0].getMessageBody().startsWith(chatItem[0].getSenderID())) {
                             String[] arr = chatItem[0].getMessageBody().split("\t");
@@ -412,52 +408,3 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         super.onStop();
     }
 }
-
-// Changing image into bitmap from firebase storage
-//
-//            try {
-//                StorageReference storageRef = FirebaseStorage.getInstance().getReference("Users")
-//                        .child(user.getUid()).child("profilepic").child("image.jpg");
-//
-//                final ImageButton imgbut = (ImageButton) hView.findViewById(R.id.profile_edit_button);
-//
-//                storageRef.getBytes(1000 * 1000)
-//                        .addOnSuccessListener(new OnSuccessListener<byte[]>() {
-//                            @Override
-//                            public void onSuccess(byte[] bytes) {
-//                                Bitmap bm = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-//                                DisplayMetrics dm = new DisplayMetrics();
-//                                getWindowManager().getDefaultDisplay().getMetrics(dm);
-//
-//                                imgbut.setMinimumHeight(dm.heightPixels);
-//                                imgbut.setMinimumWidth(dm.widthPixels);
-//                                imgbut.setImageBitmap(bm);
-//                            }
-//                        }).addOnFailureListener(new OnFailureListener() {
-//                    @Override
-//                    public void onFailure(@NonNull Exception e) {
-//                        Toast.makeText(MainActivity.this, "no image detected", Toast.LENGTH_SHORT).show();
-//                    }
-//                });
-//            } catch (Exception e) {
-//                Toast.makeText(MainActivity.this, "no file path detected", Toast.LENGTH_SHORT).show();
-//            }
-
-
-// Updating profile picture and username from firestore
-
-//        // get user's UID
-//        userUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-//        // get user's display name and profile picture
-//        FirebaseFirestore.getInstance().collection("Users")
-//                .document(userUID)
-//                .get()
-//                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-//                        userName[0] = task.getResult().getString("name");
-//                        userUsername[0] = task.getResult().getString("username");
-//                        userImageUrl[0] = task.getResult().getString("imageUrl");
-//                    }
-//                });

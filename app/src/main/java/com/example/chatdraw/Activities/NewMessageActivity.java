@@ -61,12 +61,14 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
 
         // specify an adapter
         myDataset = new ArrayList<>();
-        mAdapter = new RecyclerViewAdapter(myDataset, NewMessageActivity.this, this);
+        mAdapter =
+            new RecyclerViewAdapter(myDataset, NewMessageActivity.this, this);
         recyclerView.setAdapter(mAdapter);
 
         // get Contacts list
         String id;
-        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(NewMessageActivity.this);
+        GoogleSignInAccount acct =
+            GoogleSignIn.getLastSignedInAccount(NewMessageActivity.this);
         if (acct != null) {
             id = acct.getId();
         } else {
@@ -79,7 +81,8 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
 
         LinearLayout linearLayout = findViewById(R.id.new_group_chat_linearlayout);
         linearLayout.setOnClickListener(v -> {
-            Intent intent = new Intent(NewMessageActivity.this, NewGroupActivity.class);
+            Intent intent =
+                new Intent(NewMessageActivity.this, NewGroupActivity.class);
             startActivityForResult(intent, NEW_GROUP_REQUEST_CODE);
         });
 
@@ -131,26 +134,28 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
     public void recyclerViewListClicked(View v, int position){
         final FriendListItem friendListItem = mAdapter.getItem(position);
 
-        FirebaseFirestore.getInstance().collection("Previews").document(userUID)
-                .collection("ChatPreviews")
-                .document(friendListItem.getUID())
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        DocumentSnapshot document = task.getResult();
-                        if (document.exists()) {
-                            Toast.makeText(NewMessageActivity.this,
-                                    "Chat already exists.", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Intent intent = new Intent();
-                            intent.putExtra("uID", friendListItem.getUID());
-                            setResult(Activity.RESULT_OK, intent);
-                            finish();
-                        }
+        FirebaseFirestore.getInstance().collection("Previews")
+            .document(userUID)
+            .collection("ChatPreviews")
+            .document(friendListItem.getUID())
+            .get()
+            .addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        Toast.makeText(NewMessageActivity.this,
+                            "Chat already exists.", Toast.LENGTH_SHORT).show();
                     } else {
-                        Log.d(TAG, "Failed with: ", task.getException());
+                        Intent intent = new Intent();
+                        intent.putExtra("uID", friendListItem.getUID());
+                        setResult(Activity.RESULT_OK, intent);
+                        finish();
                     }
-                });
+                } else {
+                    Log.d(TAG, "Failed with: ", task.getException());
+                }
+            });
+
     }
 
     @Override
@@ -172,7 +177,8 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
+                        ArrayList<String> arr =
+                            (ArrayList<String>) task.getResult().get("contacts");
                         if (arr != null ) {
                             for (String s: arr) {
                                 addUserWithID(s);
@@ -191,7 +197,8 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        ArrayList<String> arr = (ArrayList<String>) task.getResult().get("contacts");
+                        ArrayList<String> arr =
+                            (ArrayList<String>) task.getResult().get("contacts");
                         if (arr != null) {
                             for (String s : arr) {
                                 addUserWithID(s);

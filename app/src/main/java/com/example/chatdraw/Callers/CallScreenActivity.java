@@ -1,7 +1,6 @@
 package com.example.chatdraw.Callers;
 
 import com.example.chatdraw.Drawing.DrawActivity;
-import com.example.chatdraw.GroupCallers.GroupCallActivity;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;

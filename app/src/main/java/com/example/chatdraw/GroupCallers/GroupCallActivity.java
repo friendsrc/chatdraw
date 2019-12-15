@@ -17,7 +17,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
-import com.example.chatdraw.Activities.ChatActivity;
 import com.example.chatdraw.Callers.AudioPlayer;
 import com.example.chatdraw.Callers.BaseActivity;
 import com.example.chatdraw.Drawing.DrawActivity;

@@ -34,7 +34,9 @@ public class InviteFriendActivity extends AppCompatActivity {
         shareButton.setOnClickListener(view -> {
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
             shareIntent.setType("text/plain");
-            shareIntent.putExtra(Intent.EXTRA_TEXT, "Hello!\nI am using Chatdraw app to chat. Download and enjoy the experience of drawing while chatting with others. Download now at: " + link.getText());
+            shareIntent.putExtra(Intent.EXTRA_TEXT,
+                "Hello!\nI am using Chatdraw app to chat. Download and enjoy the experience "
+                    + "of drawing while chatting with others. Download now at: " + link.getText());
             Intent intent = Intent.createChooser(shareIntent,"Share");
             startActivity(intent);
         });

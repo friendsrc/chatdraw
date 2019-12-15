@@ -16,7 +16,8 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-public class GroupListRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.MyViewHolder> {
+public class GroupListRecyclerViewAdapter
+    extends RecyclerView.Adapter<RecyclerViewAdapter.MyViewHolder> {
     private ArrayList<NewFriendItem> mDataset;
     private Context context;
     private static RecyclerViewClickListener itemListener;
@@ -24,7 +25,8 @@ public class GroupListRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerV
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
     // you provide access to all the views for a data item in a view holder
-    public static class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public static class MyViewHolder extends RecyclerView.ViewHolder
+        implements View.OnClickListener {
         // each data item is just a string in this case
         public View view;
         public MyViewHolder(View v) {
@@ -44,7 +46,8 @@ public class GroupListRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerV
         mDataset = myDataset;
     }
 
-    public GroupListRecyclerViewAdapter(ArrayList<NewFriendItem> myDataset, Context context, RecyclerViewClickListener listener) {
+    public GroupListRecyclerViewAdapter(ArrayList<NewFriendItem> myDataset,
+                                        Context context, RecyclerViewClickListener listener) {
         mDataset = myDataset;
         this.context = context;
         itemListener = listener;

@@ -20,17 +20,16 @@ import com.example.chatdraw.R;
 import com.example.chatdraw.Listeners.RecyclerViewClickListener;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
 import java.util.Date;
 import java.util.LinkedList;
 
-public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerViewAdapter.MyViewHolder> {
+public class ChatRecyclerViewAdapter
+    extends RecyclerView.Adapter<ChatRecyclerViewAdapter.MyViewHolder> {
     private LinkedList<ChatItem> mDataset;
     private Context context;
     private static RecyclerViewClickListener itemListener;
@@ -39,7 +38,8 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
     // you provide access to all the views for a data item in a view holder
-    public static class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public static class MyViewHolder extends RecyclerView.ViewHolder
+        implements View.OnClickListener {
         // each data item is just a string in this case
         public View view;
         public MyViewHolder(View v) {
@@ -59,7 +59,8 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
         mDataset = myDataset;
     }
 
-    public ChatRecyclerViewAdapter(LinkedList<ChatItem> myDataset, Context context, RecyclerViewClickListener listener) {
+    public ChatRecyclerViewAdapter(LinkedList<ChatItem> myDataset, Context context,
+                                   RecyclerViewClickListener listener) {
         mDataset = myDataset;
         this.context = context;
         itemListener = listener;
@@ -180,7 +181,8 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
         if (arr.length > 1) {
             if (arr[1].equals("IMAGE")) {
                 ImageView message = holder.view.findViewById(R.id.text_message_body_image);
-                message.setOnClickListener(v -> ((ChatActivity) context).goToImagePreview(chatItem));
+                message.setOnClickListener(v ->
+                    ((ChatActivity) context).goToImagePreview(chatItem));
             } else if (arr[1].equals("PDF")) {
                 TextView message = holder.view.findViewById(R.id.text_message_body);
                 message.setOnClickListener(v -> {
@@ -208,7 +210,8 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
 
 
                     TextView delete = dialog.findViewById(R.id.delete_message_textview);
-                    delete.setOnClickListener(v14 -> deleteMessage(chatItem.getSenderID(), chatItem.getReceiverID(),
+                    delete.setOnClickListener(v14 ->
+                        deleteMessage(chatItem.getSenderID(), chatItem.getReceiverID(),
                         chatItem.getTimestamp(), chatItem.getMessageBody(), dialog, position));
 
                     dialog.show();
@@ -228,7 +231,8 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                     dialog.setCancelable(true);
 
                     TextView delete = dialog.findViewById(R.id.delete_message_textview);
-                    delete.setOnClickListener(v13 -> deleteMessage(chatItem.getSenderID(), chatItem.getReceiverID(),
+                    delete.setOnClickListener(v13 ->
+                        deleteMessage(chatItem.getSenderID(), chatItem.getReceiverID(),
                         chatItem.getTimestamp(), chatItem.getMessageBody(), dialog, position));
 
                     dialog.show();
@@ -249,15 +253,20 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
 
                 TextView copy = dialog.findViewById(R.id.copy_message_textview);
                 copy.setOnClickListener(v12 -> {
-                    android.content.ClipboardManager clipboard = (android.content.ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-                    android.content.ClipData clip = android.content.ClipData.newPlainText("text label", message.getText().toString());
+                    android.content.ClipboardManager clipboard =
+                        (android.content.ClipboardManager) context.getSystemService(
+                            Context.CLIPBOARD_SERVICE);
+                    android.content.ClipData clip = android.content.ClipData
+                        .newPlainText("text label", message.getText().toString());
                     clipboard.setPrimaryClip(clip);
                     dialog.dismiss();
-                    Toast.makeText(context, "Message copied to clipboard", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Message copied to clipboard",
+                        Toast.LENGTH_SHORT).show();
                 });
 
                 TextView delete = dialog.findViewById(R.id.delete_message_textview);
-                delete.setOnClickListener(v1 -> deleteMessage(chatItem.getSenderID(), chatItem.getReceiverID(),
+                delete.setOnClickListener(v1 -> deleteMessage(chatItem.getSenderID(),
+                    chatItem.getReceiverID(),
                     chatItem.getTimestamp(), chatItem.getMessageBody(), dialog, position));
 
                 dialog.show();
@@ -275,7 +284,8 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                         .fit()
                         .into(profilePicture);
             }
-            profilePicture.setOnClickListener(v -> Toast.makeText(context, " Profile photo clicked", Toast.LENGTH_SHORT).show());
+            profilePicture.setOnClickListener(v -> Toast.makeText(context,
+                " Profile photo clicked", Toast.LENGTH_SHORT).show());
         }
 
         TextView time = holder.view.findViewById(R.id.text_message_time);
@@ -321,7 +331,8 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                             d.getReference().delete()
                                     .addOnSuccessListener(aVoid -> {
                                         dialog.dismiss();
-                                        Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(context, "Message deleted",
+                                            Toast.LENGTH_SHORT).show();
                                     });
                         }
                     });
@@ -340,7 +351,8 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
                             d.getReference().delete()
                                     .addOnSuccessListener(aVoid -> {
                                         dialog.dismiss();
-                                        Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(context, "Message deleted",
+                                            Toast.LENGTH_SHORT).show();
                                     });
                         }
                     });

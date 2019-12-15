@@ -153,22 +153,27 @@ public class GroupInfoEditActivity extends AppCompatActivity {
         builder.setItems(items, (dialogInterface, i) -> {
             if (items[i].equals("Camera")) {
                 // ask for Camera permission
-                if (ContextCompat.checkSelfPermission(GroupInfoEditActivity.this, Manifest.permission.CAMERA)
+                if (ContextCompat.checkSelfPermission(GroupInfoEditActivity.this,
+                    Manifest.permission.CAMERA)
                         == PackageManager.PERMISSION_DENIED) {
                     ActivityCompat.requestPermissions(
-                            GroupInfoEditActivity.this, new String[] {Manifest.permission.CAMERA},
+                            GroupInfoEditActivity.this,
+                        new String[] {Manifest.permission.CAMERA},
                             REQUEST_CAMERA);
                 }
 
-                if (ContextCompat.checkSelfPermission(GroupInfoEditActivity.this, Manifest.permission.CAMERA)
+                if (ContextCompat.checkSelfPermission(GroupInfoEditActivity.this,
+                    Manifest.permission.CAMERA)
                         == PackageManager.PERMISSION_DENIED) {
-                    Toast.makeText(GroupInfoEditActivity.this, "Camera permission not granted", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(GroupInfoEditActivity.this,
+                        "Camera permission not granted", Toast.LENGTH_SHORT).show();
                 } else {
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                     startActivityForResult(intent, REQUEST_CAMERA);
                 }
             } else if (items[i].equals("Gallery")) {
-                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                Intent intent = new Intent(Intent.ACTION_PICK,
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 intent.setType("image/*");
                 startActivityForResult(intent, SELECT_FILE);
             }
@@ -192,15 +197,18 @@ public class GroupInfoEditActivity extends AppCompatActivity {
             }
 
             final String name = "profilePicture";
-            final StorageReference mStorageRef = FirebaseStorage.getInstance().getReference("Groups");
-            final ProgressDialog mProgressDialog = new ProgressDialog(GroupInfoEditActivity.this);
-            final DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference("Groups");
+            final StorageReference mStorageRef =
+                FirebaseStorage.getInstance().getReference("Groups");
+            final ProgressDialog mProgressDialog =
+                new ProgressDialog(GroupInfoEditActivity.this);
+            final DatabaseReference mDatabaseRef =
+                FirebaseDatabase.getInstance().getReference("Groups");
 
 
 
             if (selectedImageUri != null) {
-                final StorageReference fileReference = mStorageRef.child(groupUID).child("newGroupPic")
-                        .child("image.jpg");
+                final StorageReference fileReference =
+                    mStorageRef.child(groupUID).child("newGroupPic").child("image.jpg");
 
                 InputStream imageStream = null;
 
@@ -221,13 +229,16 @@ public class GroupInfoEditActivity extends AppCompatActivity {
                 uploadTask.addOnFailureListener(e -> {
                     // Handle unsuccessful uploads
                     mProgressDialog.dismiss();
-                    Toast.makeText(GroupInfoEditActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(GroupInfoEditActivity.this, e.getMessage(),
+                        Toast.LENGTH_SHORT).show();
                 }).addOnSuccessListener(taskSnapshot -> {
                     mProgressDialog.dismiss();
-                    Toast.makeText(GroupInfoEditActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
+                    Toast.makeText(GroupInfoEditActivity.this, "Upload successful",
+                        Toast.LENGTH_LONG).show();
                     fileReference.getDownloadUrl().addOnSuccessListener(uri -> {
                         url = uri.toString();
-                        Toast.makeText(GroupInfoEditActivity.this, url, Toast.LENGTH_LONG).show();
+                        Toast.makeText(GroupInfoEditActivity.this, url,
+                            Toast.LENGTH_LONG).show();
                     });
                 }).addOnProgressListener(taskSnapshot -> {
                     mProgressDialog.setMessage("Uploading Image...");
@@ -240,21 +251,25 @@ public class GroupInfoEditActivity extends AppCompatActivity {
                 bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                 byte[] dataforbmp = baos.toByteArray();
 
-                StorageReference fileReference = FirebaseStorage.getInstance().getReference("Users");
-                final StorageReference imageRef = fileReference.child(groupUID).child("newGroupPic")
-                        .child("image.jpg");
+                StorageReference fileReference =
+                    FirebaseStorage.getInstance().getReference("Users");
+                final StorageReference imageRef =
+                    fileReference.child(groupUID).child("newGroupPic").child("image.jpg");
 
                 UploadTask uploadTask = imageRef.putBytes(dataforbmp);
                 uploadTask.addOnFailureListener(e -> {
                     // Handle unsuccessful uploads
                     mProgressDialog.dismiss();
-                    Toast.makeText(GroupInfoEditActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(GroupInfoEditActivity.this, e.getMessage(),
+                        Toast.LENGTH_SHORT).show();
                 }).addOnSuccessListener(taskSnapshot -> {
                     mProgressDialog.dismiss();
-                    Toast.makeText(GroupInfoEditActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
+                    Toast.makeText(GroupInfoEditActivity.this, "Upload successful",
+                        Toast.LENGTH_LONG).show();
                     imageRef.getDownloadUrl().addOnSuccessListener(uri -> {
                         url = uri.toString();
-                        Toast.makeText(GroupInfoEditActivity.this, url, Toast.LENGTH_LONG).show();
+                        Toast.makeText(GroupInfoEditActivity.this, url,
+                            Toast.LENGTH_LONG).show();
                     });
                 }).addOnProgressListener(taskSnapshot -> {
                     mProgressDialog.setMessage("Uploading Image...");
@@ -263,7 +278,9 @@ public class GroupInfoEditActivity extends AppCompatActivity {
 
                 bmp = null;
             } else {
-                Toast.makeText(this, "No file selected or camera picture not configured yet", Toast.LENGTH_LONG).show();
+                Toast.makeText(this,
+                    "No file selected or camera picture not configured yet",
+                    Toast.LENGTH_LONG).show();
             }
 
         }
@@ -274,7 +291,8 @@ public class GroupInfoEditActivity extends AppCompatActivity {
     private void sendMessage() {
         // get user's UID
         String userUID;
-        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(GroupInfoEditActivity.this);
+        GoogleSignInAccount acct =
+            GoogleSignIn.getLastSignedInAccount(GroupInfoEditActivity.this);
         if (acct != null) {
             userUID = acct.getId();
         } else {
@@ -302,15 +320,18 @@ public class GroupInfoEditActivity extends AppCompatActivity {
                             }
 
 
-                            ChatItem chatItem  = new ChatItem(userUID + "\tINFO\t" + message, userUID, name, username, imageUrl,
-                                    groupUID, groupName, "" ,groupImageUrl);
+                            ChatItem chatItem  = new ChatItem(
+                                userUID + "\tINFO\t" + message,
+                                userUID, name, username, imageUrl,
+                                groupUID, groupName, "" ,groupImageUrl);
 
                             FirebaseFirestore db = FirebaseFirestore.getInstance();
                             db.collection("GroupMessages")
                                     .document(groupUID)
                                     .collection("ChatHistory")
                                     .add(chatItem);
-                            Toast.makeText(GroupInfoEditActivity.this, "Changes saved.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(GroupInfoEditActivity.this,
+                                "Changes saved.", Toast.LENGTH_SHORT).show();
                         }
                         finish();
                     }

@@ -14,7 +14,10 @@ import com.example.chatdraw.R;
 
 import java.util.LinkedList;
 
-public class CreditRecyclerViewAdapter extends RecyclerView.Adapter<CreditRecyclerViewAdapter.ExampleViewHolder> implements Filterable {
+public class CreditRecyclerViewAdapter
+    extends RecyclerView.Adapter<CreditRecyclerViewAdapter.ExampleViewHolder>
+    implements Filterable {
+
     private LinkedList<TransactionItem> exampleList;
     private LinkedList<TransactionItem> exampleListFull;
 
@@ -38,7 +41,8 @@ public class CreditRecyclerViewAdapter extends RecyclerView.Adapter<CreditRecycl
     // what we want to assign to the view of evry single information
     @Override
     public ExampleViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.transaction_item, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.transaction_item,
+            parent, false);
         return new ExampleViewHolder(v);
     }
 
