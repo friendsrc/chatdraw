@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -58,12 +57,9 @@ public class CreatePatternActivity extends AppCompatActivity {
                     Toast.makeText(CreatePatternActivity.this, "Password too short", Toast.LENGTH_SHORT).show();
                 } else {
                     btnSetup.setEnabled(true);
-                    btnSetup.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            Paper.book().write(save_pattern_key, final_pattern);
-                            Toast.makeText(CreatePatternActivity.this, "Pattern saved", Toast.LENGTH_SHORT).show();
-                        }
+                    btnSetup.setOnClickListener(view -> {
+                        Paper.book().write(save_pattern_key, final_pattern);
+                        Toast.makeText(CreatePatternActivity.this, "Pattern saved", Toast.LENGTH_SHORT).show();
                     });
                 }
             }

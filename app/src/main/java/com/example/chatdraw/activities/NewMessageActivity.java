@@ -135,7 +135,7 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
 
     FirebaseFirestore.getInstance().collection("Previews").document(userUid)
         .collection("ChatPreviews")
-        .document(friendListItem.getUID())
+        .document(friendListItem.getUid())
         .get()
         .addOnCompleteListener(task -> {
           if (task.isSuccessful()) {
@@ -145,7 +145,7 @@ public class NewMessageActivity extends AppCompatActivity implements RecyclerVie
                   "Chat already exists.", Toast.LENGTH_SHORT).show();
             } else {
               Intent intent = new Intent();
-              intent.putExtra("uID", friendListItem.getUID());
+              intent.putExtra("uID", friendListItem.getUid());
               setResult(Activity.RESULT_OK, intent);
               finish();
             }

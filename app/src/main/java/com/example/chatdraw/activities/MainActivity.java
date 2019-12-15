@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -34,8 +33,6 @@ import com.example.chatdraw.items.FriendListItem;
 import com.example.chatdraw.services.ChatService;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -46,11 +43,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.sinch.android.rtc.SinchError;
 import com.squareup.picasso.Picasso;
 
@@ -158,21 +152,15 @@ public class MainActivity extends BaseActivity
     // set the 'add-message' ImageView
     // if clicked -> go to NewMessageActivity
     ImageView newChatImageView = findViewById(R.id.main_chat_add_message_imageview);
-    newChatImageView.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        Intent intent = new Intent(MainActivity.this, NewMessageActivity.class);
-        startActivityForResult(intent, NEW_MESSAGE_REQUEST_CODE);
-      }
+    newChatImageView.setOnClickListener(v -> {
+      Intent intent = new Intent(MainActivity.this, NewMessageActivity.class);
+      startActivityForResult(intent, NEW_MESSAGE_REQUEST_CODE);
     });
 
     ImageButton imgbutt = hView.findViewById(R.id.profile_edit_button);
-    imgbutt.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View view) {
-        Intent intent = new Intent(MainActivity.this, ProfileEditActivity.class);
-        startActivity(intent);
-      }
+    imgbutt.setOnClickListener(view -> {
+      Intent intent = new Intent(MainActivity.this, ProfileEditActivity.class);
+      startActivity(intent);
     });
 
     // remove service
@@ -225,32 +213,26 @@ public class MainActivity extends BaseActivity
     FirebaseFirestore.getInstance().collection("Users")
         .document(userUid)
         .get()
-        .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-          @Override
-          public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-            ArrayList<String> groups = (ArrayList<String>) task.getResult().get("groups");
-            // add change listener for groups
-            if (groups != null && !groups.isEmpty()) {
-              for (String s : groups) {
-                addListener(s);
-              }
+        .addOnCompleteListener(task -> {
+          ArrayList<String> groups = (ArrayList<String>) task.getResult().get("groups");
+          // add change listener for groups
+          if (groups != null && !groups.isEmpty()) {
+            for (String s : groups) {
+              addListener(s);
             }
-            // add the message previews to RecyclerView
-            getMessageList(friendListAdapter);
           }
+          // add the message previews to RecyclerView
+          getMessageList(friendListAdapter);
         });
 
     // set on click listener to the ListView
     ListView listView = findViewById(R.id.main_chat_listview);
-    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-      @Override
-      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Intent intent = new Intent(MainActivity.this, ChatActivity.class);
-        FriendListItem friendListItem = (FriendListItem) friendListAdapter.getItem(position);
-        intent.putExtra("name", friendListItem.getName());
-        intent.putExtra("uID", friendListItem.getUID());
-        startActivity(intent);
-      }
+    listView.setOnItemClickListener((parent, view, position, id) -> {
+      Intent intent = new Intent(MainActivity.this, ChatActivity.class);
+      FriendListItem friendListItem = (FriendListItem) friendListAdapter.getItem(position);
+      intent.putExtra("name", friendListItem.getName());
+      intent.putExtra("uID", friendListItem.getUid());
+      startActivity(intent);
     });
   }
 
@@ -333,38 +315,34 @@ public class MainActivity extends BaseActivity
         .document(userUid)
         .collection("ChatPreviews")
         .orderBy("timestamp", Query.Direction.DESCENDING)
-        .addSnapshotListener(new EventListener<QuerySnapshot>() {
-          @Override
-          public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots,
-                              @javax.annotation.Nullable FirebaseFirestoreException e) {
-            MainActivity.this.friendListAdapter.clearData();
-            for (DocumentSnapshot q: queryDocumentSnapshots) {
-              // turn DocumentSnapshot into ChatItem
-              ChatItem chatItem = q.toObject(ChatItem.class);
+        .addSnapshotListener((queryDocumentSnapshots, e) -> {
+          MainActivity.this.friendListAdapter.clearData();
+          for (DocumentSnapshot q: queryDocumentSnapshots) {
+            // turn DocumentSnapshot into ChatItem
+            ChatItem chatItem = q.toObject(ChatItem.class);
 
-              // get the properties needed to make a new FriendListItem
-              String uid = chatItem.getSenderID();
-              String lastMessage = chatItem.getMessageBody();
-              String name;
-              String imageUrl;
+            // get the properties needed to make a new FriendListItem
+            String uid = chatItem.getSenderID();
+            String lastMessage = chatItem.getMessageBody();
+            String name;
+            String imageUrl;
 
-              // if the sender of this ChatItem is the current user, get the profile
-              // of the receiver instead
-              if (uid.equals(userUid) || chatItem.getReceiverID().startsWith("GROUP_")) {
-                uid = chatItem.getReceiverID();
-                name = chatItem.getReceiverName();
-                imageUrl = chatItem.getReceiverImageUrl();
-                // if the sender is not the user, use the sender's profile
-              } else {
-                name = chatItem.getSenderName();
-                imageUrl = chatItem.getSenderImageUrl();
-              }
-
-              // create a new FriendListItem and add to ListView
-              FriendListItem friendListItem = new FriendListItem(name, lastMessage, uid, imageUrl);
-              friendListAdapter.addAdapterItem(friendListItem);
-              friendListAdapter.notifyDataSetChanged();
+            // if the sender of this ChatItem is the current user, get the profile
+            // of the receiver instead
+            if (uid.equals(userUid) || chatItem.getReceiverID().startsWith("GROUP_")) {
+              uid = chatItem.getReceiverID();
+              name = chatItem.getReceiverName();
+              imageUrl = chatItem.getReceiverImageUrl();
+              // if the sender is not the user, use the sender's profile
+            } else {
+              name = chatItem.getSenderName();
+              imageUrl = chatItem.getSenderImageUrl();
             }
+
+            // create a new FriendListItem and add to ListView
+            FriendListItem friendListItem = new FriendListItem(name, lastMessage, uid, imageUrl);
+            friendListAdapter.addAdapterItem(friendListItem);
+            friendListAdapter.notifyDataSetChanged();
           }
         });
   }

@@ -4,35 +4,34 @@ import java.io.Serializable;
 
 public class FriendListItem implements Serializable {
 
-    private String uID;
-    private String name;
-    private String imageURL;
-    private String chatPreview;
+  private String uid;
+  private String name;
+  private String imageUrl;
+  private String chatPreview;
 
-    public FriendListItem(String name, String chatPreview, String imageURL) {
-        this.name = name;
-        this.chatPreview = chatPreview;
-        this.imageURL = imageURL;
-    }
+  /**
+   * Constructor for FriendListItem.
+   */
+  public FriendListItem(String name, String chatPreview, String uid, String imageUrl) {
+    this.name = name;
+    this.chatPreview = chatPreview;
+    this.uid = uid;
+    this.imageUrl = imageUrl;
+  }
 
-    public FriendListItem(String name, String chatPreview, String uID, String imageURL) {
-        this.name = name;
-        this.chatPreview = chatPreview;
-        this.uID = uID;
-        this.imageURL = imageURL;
-    }
+  public String getUid() {
+    return this.uid;
+  }
 
-    public String getUID() {
-        return this.uID;
-    }
+  public String getName() {
+    return this.name;
+  }
 
-    public String getName() {
-        return this.name;
-    }
+  public String getChatPreview() {
+    return this.chatPreview;
+  }
 
-    public String getChatPreview() {
-        return this.chatPreview;
-    }
-
-    public String getImageURL() { return this.imageURL; }
+  public String getImageUrl() {
+    return this.imageUrl;
+  }
 }

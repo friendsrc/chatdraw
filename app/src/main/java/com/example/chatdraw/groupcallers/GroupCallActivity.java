@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -102,12 +101,7 @@ public class GroupCallActivity extends BaseActivity {
 
         btnCancel = findViewById(R.id.btnCancel);
         btnCancel.setEnabled(false);
-        btnCancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                endCall();
-            }
-        });
+        btnCancel.setOnClickListener(view -> endCall());
 
         btnSpeaker = findViewById(R.id.btnSpeaker);
         btnSpeaker.setOnClickListener(view -> {
@@ -150,7 +144,7 @@ public class GroupCallActivity extends BaseActivity {
             Intent drawIntent = new Intent(GroupCallActivity.this, DrawActivity.class);
             drawIntent.putExtra("userUid", userID);
             Log.d("TESTT", groupID);
-            drawIntent.putExtra("friendsUID", groupID);
+            drawIntent.putExtra("friendUid", groupID);
             startActivity(drawIntent);
         });
     }
@@ -476,12 +470,7 @@ public class GroupCallActivity extends BaseActivity {
             audioController.disableSpeaker();
             setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
 
-            final Runnable runnable = new Runnable() {
-                @Override
-                public void run() {
-                    btnCancel.setEnabled(true);
-                }
-            };
+            final Runnable runnable = () -> btnCancel.setEnabled(true);
 
             ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
             executorService.schedule(runnable, 3, SECONDS);

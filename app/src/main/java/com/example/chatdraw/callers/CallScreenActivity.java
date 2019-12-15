@@ -96,7 +96,7 @@ public class CallScreenActivity extends BaseActivity {
             // Go to draw activity
             Intent drawIntent = new Intent(CallScreenActivity.this, DrawActivity.class);
             drawIntent.putExtra("userUid", mUserID + mCallId);
-            drawIntent.putExtra("friendsUID", mFriendCallID + mCallId);
+            drawIntent.putExtra("friendUid", mFriendCallID + mCallId);
             startActivity(drawIntent);
         });
     }
@@ -233,7 +233,7 @@ public class CallScreenActivity extends BaseActivity {
                 // Go to draw activity
                 Intent intent = new Intent(CallScreenActivity.this, DrawActivity.class);
                 intent.putExtra("userUid", mUserID);
-                intent.putExtra("friendsUID", mFriendCallID);
+                intent.putExtra("friendUid", mFriendCallID);
                 startActivity(intent);
             }
         }

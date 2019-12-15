@@ -93,7 +93,7 @@ public class NewGroupActivity extends AppCompatActivity implements RecyclerViewC
         String[] memberList = new String[chosenContacts.size()];
         int i = 0;
         for (FriendListItem f: chosenContacts.values()) {
-          memberList[i] = f.getUID();
+          memberList[i] = f.getUid();
           i++;
         }
         intent.putExtra("memberList", memberList);

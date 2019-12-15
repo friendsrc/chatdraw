@@ -59,7 +59,6 @@ public class TransactionActivity extends AppCompatActivity {
         if (acct != null) {
             userID = acct.getId();
         } else {
-            //get the signed in user
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
             if (user != null) {
                 userID = user.getUid();
@@ -76,8 +75,6 @@ public class TransactionActivity extends AppCompatActivity {
                 .orderBy("timestamp", Query.Direction.ASCENDING)
                 .limit(25)
                 .addSnapshotListener((queryDocumentSnapshots, e) -> {
-                    // remove previous data
-                    adapter.clearData();
                     for (DocumentSnapshot q: queryDocumentSnapshots) {
                         TransactionItem transactionItem = q.toObject(TransactionItem.class);
                         Log.v("HEREEE", "" + transactionItem);
@@ -112,7 +109,6 @@ public class TransactionActivity extends AppCompatActivity {
 
     @Override
     public boolean onSupportNavigateUp() {
-        // if the back button is pressed, go back to previous activity
         finish();
         return true;
     }

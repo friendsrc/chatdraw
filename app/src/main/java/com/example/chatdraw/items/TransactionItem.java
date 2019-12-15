@@ -4,40 +4,45 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class TransactionItem {
-    private String mText1;
-    private String mText2;
-    private Date timestamp;
+  private String text1;
+  private String text2;
+  private Date timestamp;
 
-    public TransactionItem() {
+  public TransactionItem() {
 
-    }
+  }
 
-    public TransactionItem(String text1, String text2) {
-        this.mText1 = text1;
-        this.mText2 = text2;
-        this.timestamp= Calendar.getInstance().getTime();
-    }
+  /**
+   * Constructor for TransactionItem.
+   */
+  public TransactionItem(String text1, String text2) {
+    this.text1 = text1;
+    this.text2 = text2;
+    this.timestamp = Calendar.getInstance().getTime();
+  }
 
 
-    public String getText1() {
-        return mText1;
-    }
+  public String getText1() {
+    return text1;
+  }
 
-    public String getText2() {
-        return mText2;
-    }
+  public String getText2() {
+    return text2;
+  }
 
-    public Date getTimestamp() { return timestamp; }
+  public Date getTimestamp() {
+    return timestamp;
+  }
 
-    public void setText1(String text1) {
-        this.mText1 = text1;
-    }
+  public void setText1(String text1) {
+    this.text1 = text1;
+  }
 
-    public void setText2(String text2) {
-        this.mText2 = text2;
-    }
+  public void setText2(String text2) {
+    this.text2 = text2;
+  }
 
-    public void setTimestamp (Date timestamp) {
-        this.timestamp = timestamp;
-    }
+  public void setTimestamp(Date timestamp) {
+    this.timestamp = timestamp;
+  }
 }
