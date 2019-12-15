@@ -2,6 +2,7 @@ package com.example.chatdraw.AccountActivity;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -12,6 +13,8 @@ import android.widget.Toast;
 import com.andrognito.patternlockview.PatternLockView;
 import com.andrognito.patternlockview.listener.PatternLockViewListener;
 import com.andrognito.patternlockview.utils.PatternLockUtils;
+import com.example.chatdraw.Activities.MainActivity;
+import com.example.chatdraw.Activities.VerifyPatternActivity;
 import com.example.chatdraw.R;
 
 import java.util.List;
@@ -51,7 +54,6 @@ public class CreatePatternActivity extends AppCompatActivity {
             @Override
             public void onComplete(List<PatternLockView.Dot> pattern) {
                 final_pattern = PatternLockUtils.patternToString(mPatternLockView, pattern);
-                Log.v("MYPATTERN", "" + final_pattern);
 
                 if (final_pattern.length() < 4) {
                     mPatternLockView.setViewMode(PatternLockView.PatternViewMode.WRONG);
@@ -63,6 +65,10 @@ public class CreatePatternActivity extends AppCompatActivity {
                         public void onClick(View view) {
                             Paper.book().write(save_pattern_key, final_pattern);
                             Toast.makeText(CreatePatternActivity.this, "Pattern saved", Toast.LENGTH_SHORT).show();
+
+                            finish();
+                            Intent intention = new Intent(CreatePatternActivity.this, ProfileEditActivity.class);
+                            startActivity(intention);
                         }
                     });
                 }

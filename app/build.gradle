@@ -65,6 +65,9 @@ dependencies {
     // for pattern lock features
     implementation 'io.paperdb:paperdb:2.6'
     implementation 'com.andrognito.patternlockview:patternlockview:1.0.0'
+
+    // for fingerprint logging
+    implementation 'androidx.biometric:biometric:1.0.0'
 }
 
 apply plugin: 'com.google.gms.google-services'
