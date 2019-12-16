@@ -148,6 +148,12 @@ public class CanvasView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (currentVisibleId != EVERYONE_ID) {
+            Toast.makeText(context, "You need to choose 'Show drawings by: Everyone' before"
+                + " you can continue drawing", Toast.LENGTH_LONG).show();
+            return true;
+        }
+
         int[] viewLocation = new int[2];
         getLocationOnScreen(viewLocation);
 
@@ -331,6 +337,11 @@ public class CanvasView extends View {
                 currPoint[0] =  dataSnapshot.getValue(Point.class);
                 if (currPoint[0] == null) return;
 
+                if (!currentVisibleId.equals(EVERYONE_ID)
+                    && !currentVisibleId.equals(currPoint[0].getSenderID())) {
+                    return;
+                }
+
                 float x = currPoint[0].getX();
                 float y  = currPoint[0].getY();
 
@@ -434,6 +445,25 @@ public class CanvasView extends View {
     }
 
     public void filterById(String id) {
+        if (id.equals(currentVisibleId)) {
+            return;
+        }
+
         currentVisibleId = id;
+        // remove collection values
+        mapIDtoPath.clear();
+        mapIDtoRemovedPath.clear();
+        lineIDs.clear();
+        removedLineIDs.clear();
+        paints.clear();
+        mapPathToPaint.clear();
+
+        // reset path
+        mPath.reset();
+
+        // set the canvas to be blank
+        invalidate();
+        getFromFirebase();
+        invalidate();
     }
 }
