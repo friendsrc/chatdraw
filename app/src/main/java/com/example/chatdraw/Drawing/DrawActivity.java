@@ -31,13 +31,11 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.example.chatdraw.R;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.jaredrummler.android.colorpicker.ColorPickerDialog;
 import com.jaredrummler.android.colorpicker.ColorPickerDialogListener;
@@ -45,7 +43,6 @@ import com.otaliastudios.zoom.ZoomLayout;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class DrawActivity extends AppCompatActivity implements ColorPickerDialogListener {
 
@@ -118,7 +115,6 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
 
         if (friendsUID.startsWith("GROUP_")) {
             isGroup = true;
-            Log.d("TESTT", "Draw starts with " + friendsUID);
             mRef = FirebaseDatabase.getInstance().getReference()
                     .child("Drawing")
                     .child(friendsUID);
@@ -137,7 +133,7 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
         ArrayList<String> memberUids = new ArrayList<>();
         HashMap<String, String> uidsToNames = new HashMap<>();
         ArrayList<String> names = new ArrayList<>();
-        names.add("Show all");
+        names.add("Everyone");
 
         if (isGroup) {
             FirebaseFirestore.getInstance()
@@ -193,8 +189,6 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
             }
         }
 
-
-
         ArrayAdapter adapter = new ArrayAdapter<>(this,
             android.R.layout.simple_spinner_dropdown_item, names);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -203,8 +197,9 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                String id = (String) spinner.getItemAtPosition(i);
-                Log.d("TESTT", id);
+                String id = i == 0 ? CanvasView.EVERYONE_ID : memberUids.get(i - 1);
+                Log.d("TESTT", id + " is chosen at spinner");
+                mCanvasView.filterById(id);
             }
 
             @Override

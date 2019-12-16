@@ -39,6 +39,7 @@ import java.util.UUID;
 public class CanvasView extends View {
 
     public static final String TAG = "CanvasView";
+    public static final String EVERYONE_ID = "EVERYONE_otIJwDR3tASX7SV2WMzbe56xVBlD4gAj3eEpRlI";
 
     // User data
     public String userUID;
@@ -79,6 +80,7 @@ public class CanvasView extends View {
     public int width;
     public int height;
     private Canvas mCanvas;
+    private String currentVisibleId = EVERYONE_ID;
 
     // Generated bitmap
     private Bitmap mBitmap;
@@ -431,5 +433,7 @@ public class CanvasView extends View {
         ref.addChildEventListener(mChildEventListener);
     }
 
-
+    public void filterById(String id) {
+        currentVisibleId = id;
+    }
 }
