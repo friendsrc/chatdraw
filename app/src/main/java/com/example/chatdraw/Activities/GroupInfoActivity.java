@@ -1,16 +1,29 @@
 package com.example.chatdraw.Activities;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.chatdraw.AccountActivity.User;
+import com.example.chatdraw.Adapters.GroupMemberListAdapter;
+import com.example.chatdraw.Config.GlobalStorage;
+import com.example.chatdraw.Items.GroupMemberListItem;
 import com.example.chatdraw.R;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -22,6 +35,9 @@ public class GroupInfoActivity extends AppCompatActivity {
     private String groupImageUrl;
     private ArrayList<String> groupMembers;
 
+    private ListView listView;
+    private ArrayAdapter<String> arrayAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,6 +45,12 @@ public class GroupInfoActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         groupUID = intent.getStringExtra("id");
+        listView = (ListView) findViewById(R.id.memberListView);
+
+        // create Adapter and set to ListView
+        GroupMemberListAdapter groupMemberListAdapter = new GroupMemberListAdapter(this);
+        ListView listView = findViewById(R.id.memberListView);
+        listView.setAdapter(groupMemberListAdapter);
 
         FirebaseFirestore.getInstance()
                 .collection("Groups")
@@ -42,6 +64,30 @@ public class GroupInfoActivity extends AppCompatActivity {
                     }
                     groupMembers = (ArrayList<String>) documentSnapshot.get("members");
 
+                    DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
+                    mDatabaseRef.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            for (String memberUid: groupMembers) {
+                                String name = dataSnapshot.child(memberUid).getValue(User.class).getName();
+                                String description = dataSnapshot.child(memberUid).getValue(User.class).getDescription();
+                                String imageUrl = dataSnapshot.child(memberUid).getValue(User.class).getImageUrl();
+
+                                Log.v("GROUPDETAILS", name + "@@@" + description + "@@@" + imageUrl);
+
+                                // create a new GroupMemberListItem and add to ListView
+                                GroupMemberListItem groupMemberListItem = new GroupMemberListItem(name, description, memberUid, imageUrl);
+                                groupMemberListAdapter.addAdapterItem(groupMemberListItem);
+                                groupMemberListAdapter.notifyDataSetChanged();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+
                     // set the toolbar
                     Toolbar myToolbar = findViewById(R.id.my_toolbar);
                     setSupportActionBar(myToolbar);
@@ -52,8 +98,6 @@ public class GroupInfoActivity extends AppCompatActivity {
                         actionBar.setTitle("Group Info");
                     }
                 });
-
-
     }
 
     @Override
@@ -86,3 +130,15 @@ public class GroupInfoActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 }
+    // set on click listener to the ListView
+//    ListView listView = findViewById(R.id.main_chat_listview);
+//        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//@Override
+//public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//        Intent intent = new Intent(MainActivity.this, ChatActivity.class);
+//        FriendListItem friendListItem = (FriendListItem) mFriendListAdapter.getItem(position);
+//        intent.putExtra("name", friendListItem.getName());
+//        intent.putExtra("uID", friendListItem.getUID());
+//        startActivity(intent);
+//        }
+//        });

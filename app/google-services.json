@@ -5,11 +5,6 @@
     "project_id": "chatdraw-ff7eb",
     "storage_bucket": "chatdraw-ff7eb.appspot.com"
   },
-  
-  "web": {
-    "client_id":"437200162274-0el2qrfag7lllvi3tghp63egc3qkkbc1.apps.googleusercontent.com","project_id":"chatdraw-ff7eb","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"OuhtgTTQNiOwG-2tPm1hfrF9"
-  },
-  
   "client": [
     {
       "client_info": {
@@ -19,6 +14,14 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "437200162274-2nb9sserkfk766euhg5oj1jvvcud68e2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.chatdraw",
+            "certificate_hash": "3ef9b302b9d21b65afa46becaa1a4d4b4827ca0a"
+          }
+        },
         {
           "client_id": "437200162274-2vp89n59123vgqauq9midf1h9k468o8s.apps.googleusercontent.com",
           "client_type": 1,
@@ -41,12 +44,13 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "437200162274-mt3gknavmdav895tok67o9benmn5jku7.apps.googleusercontent.com",
+              "client_id": "437200162274-0el2qrfag7lllvi3tghp63egc3qkkbc1.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
         }
-      }
+      },
+      "admob_app_id": "ca-app-pub-6617407029399736~9775527525"
     }
   ],
   "configuration_version": "1"

@@ -226,13 +226,13 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        // solve confict here
+        // solve conflict here
         View v = findViewById(R.id.my_toolbar);
         v.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (isGroup) {
-                    Intent  intent = new Intent(ChatActivity.this, GroupInfoActivity.class);
+                    Intent intent = new Intent(ChatActivity.this, GroupInfoActivity.class);
                     intent.putExtra("id", groupID);
                     startActivityForResult(intent, REQUEST_INFOEDIT);
                 } else {

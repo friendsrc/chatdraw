@@ -35,7 +35,7 @@ public class CreditRecyclerViewAdapter extends RecyclerView.Adapter<CreditRecycl
         exampleListFull = new LinkedList<>(exampleList);
     }
 
-    // what we want to assign to the view of evry single information
+    // what we want to assign to the view of every single information
     @Override
     public ExampleViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.transaction_item, parent, false);

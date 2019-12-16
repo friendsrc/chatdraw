@@ -1,5 +1,6 @@
 package com.example.chatdraw.AccountActivity;
 
+import com.example.chatdraw.Config.GlobalStorage;
 import com.example.chatdraw.R;
 import android.content.Intent;
 
@@ -99,7 +100,7 @@ public class SignupActivity extends AppCompatActivity {
                         } else {
                             String name = null;
                             String username = null;
-                            User user = new User(email, name, username, 80);
+                            User user = new User(email, name, username, 80, GlobalStorage.welcomeDescription);
 
                             FirebaseDatabase.getInstance().getReference("Users")
                                     .child(FirebaseAuth.getInstance().getCurrentUser().getUid())

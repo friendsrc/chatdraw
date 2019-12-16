@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.example.chatdraw.Activities.MainActivity;
 import com.example.chatdraw.Activities.VerifyPatternActivity;
+import com.example.chatdraw.Config.GlobalStorage;
 import com.example.chatdraw.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -215,9 +216,9 @@ public class LoginActivity extends AppCompatActivity
                             User user;
 
                             if (img_url != null) {
-                                user = new User(email, name, username, img_url.toString());
+                                user = new User(email, name, username, img_url.toString(), GlobalStorage.welcomeDescription);
                             } else {
-                                user = new User(email, name, username);
+                                user = new User(email, name, username, GlobalStorage.welcomeDescription);
                             }
 
                             // edit: add to firestore

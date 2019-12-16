@@ -75,7 +75,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // create Adapter and set to ListView
+        // create Adapter and set to ListView // TODO REFACTOR
         final FriendListAdapter friendListAdapter = new FriendListAdapter(this);
         mFriendListAdapter = friendListAdapter;
         ListView listView = findViewById(R.id.main_chat_listview);
