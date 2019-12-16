@@ -337,10 +337,14 @@ public class CanvasView extends View {
                 currPoint[0] =  dataSnapshot.getValue(Point.class);
                 if (currPoint[0] == null) return;
 
-                if (!currentVisibleId.equals(EVERYONE_ID)
-                    && !currentVisibleId.equals(currPoint[0].getSenderID())) {
-                    return;
-                }
+//                if (!currentVisibleId.equals(EVERYONE_ID)
+//                    && !currentVisibleId.equals(currPoint[0].getSenderID())) {
+//                    return;
+//                }
+                boolean isSenderVisible = currentVisibleId.equals(EVERYONE_ID)
+                    || currentVisibleId.equals(currPoint[0].getSenderID());
+
+
 
                 float x = currPoint[0].getX();
                 float y  = currPoint[0].getY();
@@ -362,7 +366,7 @@ public class CanvasView extends View {
                     lineIDs.add(currPoint[0].getLineID());
 
                     mPath.moveTo(x, y);
-                    if (currPoint[0].isVisible()) {
+                    if (currPoint[0].isVisible() && isSenderVisible) {
                         mapIDtoPath.put(currPoint[0].getLineID(), mPath);
                     } else {
                         mapIDtoRemovedPath.put(currPoint[0].getLineID(), mPath);
@@ -373,7 +377,7 @@ public class CanvasView extends View {
                     String lineID = currPoint[0].getLineID();
                     paints.remove(lineID);
                     Path path;
-                    if (mapIDtoPath.containsKey(lineID)) {
+                    if (mapIDtoPath.containsKey(lineID) && isSenderVisible) {
                         path = mapIDtoPath.get(lineID);
                     } else {
                         path = mapIDtoRemovedPath.get(lineID);
@@ -386,7 +390,7 @@ public class CanvasView extends View {
                     float dy = Math.abs(y - mY);
                     if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
                         String key = currPoint[0].getLineID();
-                        if (mapIDtoPath.containsKey(key)) {
+                        if (mapIDtoPath.containsKey(key) && isSenderVisible) {
                             mapIDtoPath.get(currPoint[0].getLineID())
                                     .quadTo(mX, mY, (x + mX)/2, (y + mY)/2);
                         } else {
@@ -465,5 +469,9 @@ public class CanvasView extends View {
         invalidate();
         getFromFirebase();
         invalidate();
+    }
+
+    public boolean isEveryoneVisible() {
+        return currentVisibleId.equals(EVERYONE_ID);
     }
 }

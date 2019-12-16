@@ -276,24 +276,48 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.draw_undo:
-                mCanvasView.undo();
+                if (mCanvasView.isEveryoneVisible()) {
+                    mCanvasView.undo();
+                } else {
+                    Toast.makeText(DrawActivity.this,
+                        "You need to choose 'Show drawings by: Everyone' before"
+                        + " you can undo drawing", Toast.LENGTH_LONG).show();
+                }
                 break;
             case R.id.draw_redo:
-                mCanvasView.redo();
+                if (mCanvasView.isEveryoneVisible()) {
+                    mCanvasView.redo();
+                } else {
+                    Toast.makeText(DrawActivity.this,
+                        "You need to choose 'Show drawings by: Everyone' before"
+                            + " you can redo", Toast.LENGTH_LONG).show();
+                }
                 break;
             case R.id.draw_clear:
-                mCanvasView.clearCanvas();
+                if (mCanvasView.isEveryoneVisible()) {
+                    mCanvasView.clearCanvas();
+                } else {
+                    Toast.makeText(DrawActivity.this,
+                        "You need to choose 'Show drawings by: Everyone' before"
+                            + " you can clear the canvas.", Toast.LENGTH_LONG).show();
+                }
                 break;
             case R.id.draw_export:
-                if (ContextCompat
-                    .checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR)
+                if (mCanvasView.isEveryoneVisible()) {
+                    if (ContextCompat
+                        .checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR)
                         != PackageManager.PERMISSION_GRANTED) {
-                    // Permission is not granted
-                    ActivityCompat.requestPermissions(this,
+                        // Permission is not granted
+                        ActivityCompat.requestPermissions(this,
                             new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                             909);
+                    } else {
+                        mCanvasView.exportDrawing();
+                    }
                 } else {
-                    mCanvasView.exportDrawing();
+                    Toast.makeText(DrawActivity.this,
+                        "You need to choose 'Show drawings by: Everyone' before"
+                            + " you can export drawing", Toast.LENGTH_LONG).show();
                 }
                 break;
             case R.id.draw_pinch_toggle:
