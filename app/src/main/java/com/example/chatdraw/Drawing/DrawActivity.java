@@ -57,6 +57,7 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
     private ImageView mColorButton;
     private ColorPickerDialog.Builder mColorPickerDialog;
     private Spinner spinner;
+    private ImageView switchCanvasImageView;
 
     private Dialog mCloseDialog;
 
@@ -244,6 +245,12 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
             public void onStopTrackingTouch(SeekBar seekBar) {
 
             }
+        });
+
+        switchCanvasImageView = findViewById(R.id.switch_canvas_imageview);
+        switchCanvasImageView.setOnClickListener(view -> {
+            // TODO
+            Log.d("TESTT", "Switch button clicked");
         });
     }
 

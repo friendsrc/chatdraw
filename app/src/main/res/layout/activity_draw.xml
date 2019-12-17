@@ -17,6 +17,12 @@
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Shared Canvas"/>
+
     <com.otaliastudios.zoom.ZoomLayout
         android:id="@+id/zoom_layout"
         android:background="#19344955"
@@ -67,6 +73,7 @@
         android:paddingBottom="16dp"
         android:orientation="vertical">
 
+
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
@@ -89,6 +96,12 @@
                 android:src="@color/white"
                 app:civ_border_width="0dp"
                 app:civ_border_color="@color/colorPrimaryDark"/>
+
+            <ImageView
+                android:id="@+id/switch_canvas_imageview"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/person_white"/>
 
         </LinearLayout>
 
