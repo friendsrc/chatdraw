@@ -14,12 +14,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.chatdraw.AccountActivity.User;
 import com.example.chatdraw.Adapters.GroupMemberListAdapter;
 import com.example.chatdraw.Adapters.GroupSimpleMenuAdapter;
+import com.example.chatdraw.Config.GroupReportWebService;
 import com.example.chatdraw.Items.GroupMemberListItem;
 import com.example.chatdraw.Items.SimpleMenuItem;
 import com.example.chatdraw.R;
@@ -39,6 +41,11 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 public class GroupInfoActivity extends AppCompatActivity {
 
@@ -142,8 +149,48 @@ public class GroupInfoActivity extends AppCompatActivity {
                                 }
                             })
                             .setNegativeButton(android.R.string.no, null).show();
-                } else {
-                    Toast.makeText(GroupInfoActivity.this, "Report group not configured yet", Toast.LENGTH_SHORT).show();
+                } else { // report group
+                    Retrofit retrofit = new Retrofit.Builder()
+                            .baseUrl("https://docs.google.com/forms/d/e/")
+                            .build();
+                    final GroupReportWebService spreadsheetWebService = retrofit.create(GroupReportWebService.class);
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(GroupInfoActivity.this);
+                    builder.setTitle("Enter report description");
+
+                    // Set up the input
+                    final EditText input = new EditText(GroupInfoActivity.this);
+                    input.setHint("Enter your description here");
+                    input.setHintTextColor(getResources().getColor(R.color.gray_very_light));
+                    builder.setView(input);
+
+                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            String descriptionReport = input.getText().toString();
+
+                            Call<Void> completeQuestionnaireCall = spreadsheetWebService.completeQuestionnaire(groupUID, userUID, descriptionReport);
+                            completeQuestionnaireCall.enqueue(new Callback<Void>() {
+                                @Override
+                                public void onResponse(Call<Void> call, Response<Void> response) {
+                                    Toast.makeText(GroupInfoActivity.this, "Response submitted", Toast.LENGTH_SHORT).show();
+                                }
+
+                                @Override
+                                public void onFailure(Call<Void> call, Throwable t) {
+                                    Toast.makeText(GroupInfoActivity.this, "Failed to report the group", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                    });
+                    builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                        }
+                    });
+
+                    builder.show();
                 }
             }
         });

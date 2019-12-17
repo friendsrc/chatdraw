@@ -170,7 +170,7 @@ public class SettingsActivity extends AppCompatActivity {
                 new AlertDialog.Builder(SettingsActivity.this)
                         .setTitle("Confirm")
                         .setMessage("Do you really want to delete your account?")
-                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setIcon(R.drawable.ic_report_problem_red)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 if (user != null) {
