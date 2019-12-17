@@ -1,64 +1,110 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
+    android:fillViewport="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Activities.GroupInfoActivity">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/my_toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/colorPrimary"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
-
-    <ListView
-        android:id="@+id/inviteFriends"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <include layout="@layout/preference_divider" />
-
     <LinearLayout
-        android:orientation="horizontal"
-        android:paddingLeft="10sp"
-        android:paddingRight="10sp"
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent" >
 
-        <TextView
-            android:text="Group members: "
-            android:layout_marginLeft="5sp"
-            android:layout_marginRight="5sp"
-            android:paddingTop="6sp"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_width="wrap_content"
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/my_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/colorPrimary"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="120sp"
+            android:background="@color/colorPrimary"
+            android:gravity="start|bottom"
+            android:padding="22sp"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/group_picture_image_view"
+                android:layout_width="75dp"
+                android:layout_height="75dp"
+                android:src="@drawable/people"
+                app:civ_border_color="@color/bg_register"
+                app:civ_border_width="0dp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="15dp">
+
+                <TextView
+                    android:id="@+id/group_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="4sp"
+                    android:text="Example Name"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/group_details"
+                    android:textSize="14sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <com.example.chatdraw.Config.NonScrollListView
+            android:id="@+id/inviteFriends"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <SearchView
-            android:id="@+id/member_search_view"
-            app:showAsAction="always|collapseActionView"
-            app:actionViewClass="android.support.v7.widget.SearchView"
-            android:layout_width="wrap_content"
+        <include layout="@layout/preference_divider" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:paddingLeft="10sp"
+            android:paddingRight="10sp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-        </SearchView>
+            <TextView
+                android:text="Group members: "
+                android:layout_marginLeft="5sp"
+                android:layout_marginRight="5sp"
+                android:paddingTop="6sp"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <SearchView
+                android:id="@+id/member_search_view"
+                app:showAsAction="always|collapseActionView"
+                app:actionViewClass="android.support.v7.widget.SearchView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+            </SearchView>
+        </LinearLayout>
+
+        <com.example.chatdraw.Config.NonScrollListView
+            android:id="@+id/memberListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <include layout="@layout/preference_divider" />
+
+        <com.example.chatdraw.Config.NonScrollListView
+            android:id="@+id/exitReportListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
     </LinearLayout>
-
-    <ListView
-        android:id="@+id/memberListView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <include layout="@layout/preference_divider" />
-
-    <ListView
-        android:id="@+id/exitReportListView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-</LinearLayout>
+</ScrollView>

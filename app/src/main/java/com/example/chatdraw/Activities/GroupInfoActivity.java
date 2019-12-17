@@ -12,16 +12,18 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
-import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.chatdraw.AccountActivity.User;
 import com.example.chatdraw.Adapters.GroupMemberListAdapter;
 import com.example.chatdraw.Adapters.GroupSimpleMenuAdapter;
 import com.example.chatdraw.Config.GroupReportWebService;
+import com.example.chatdraw.Config.NonScrollListView;
 import com.example.chatdraw.Items.GroupMemberListItem;
 import com.example.chatdraw.Items.SimpleMenuItem;
 import com.example.chatdraw.R;
@@ -64,9 +66,12 @@ public class GroupInfoActivity extends AppCompatActivity {
         groupUID = intent.getStringExtra("groupUid");
         userUID = intent.getStringExtra("userUid");
 
+        TextView tvName = (TextView) findViewById(R.id.group_name);
+        TextView tvDetails = (TextView) findViewById(R.id.group_details);
+
         // create a list view to add user to the group
         GroupSimpleMenuAdapter groupInviteFriendAdapter = new GroupSimpleMenuAdapter(this);
-        ListView invitationListView = (ListView) findViewById(R.id.inviteFriends);
+        NonScrollListView invitationListView = (NonScrollListView) findViewById(R.id.inviteFriends);
         invitationListView.setAdapter(groupInviteFriendAdapter);
 
         SimpleMenuItem simpleMenuInviteItem = new SimpleMenuItem("Add member", R.drawable.add_person);
@@ -90,7 +95,7 @@ public class GroupInfoActivity extends AppCompatActivity {
         });
 
         GroupSimpleMenuAdapter groupExitGroupAdapter = new GroupSimpleMenuAdapter(this);
-        ListView exitReportListView = (ListView) findViewById(R.id.exitReportListView);
+        NonScrollListView exitReportListView = (NonScrollListView) findViewById(R.id.exitReportListView);
         exitReportListView.setAdapter(groupExitGroupAdapter);
 
         SimpleMenuItem menuExitGroupItem = new SimpleMenuItem("Leave group", R.drawable.ic_exit_to_app_red_24dp);
@@ -195,9 +200,9 @@ public class GroupInfoActivity extends AppCompatActivity {
             }
         });
 
-        // create Adapter and set to ListView
+        // create Adapter and set to NonScrollListView
         GroupMemberListAdapter groupMemberListAdapter = new GroupMemberListAdapter(this);
-        ListView listView = findViewById(R.id.memberListView);
+        NonScrollListView listView = findViewById(R.id.memberListView);
         listView.setAdapter(groupMemberListAdapter);
 
 
@@ -213,6 +218,9 @@ public class GroupInfoActivity extends AppCompatActivity {
                     }
                     groupMembers = (ArrayList<String>) documentSnapshot.get("members");
 
+                    tvName.setText(groupName);
+                    tvDetails.setText("Created at: ....");
+
                     DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference("Users");
                     mDatabaseRef.addValueEventListener(new ValueEventListener() {
                         @Override
@@ -222,7 +230,7 @@ public class GroupInfoActivity extends AppCompatActivity {
                                 String description = dataSnapshot.child(memberUid).getValue(User.class).getDescription();
                                 String imageUrl = dataSnapshot.child(memberUid).getValue(User.class).getImageUrl();
 
-                                // create a new GroupMemberListItem and add to ListView
+                                // create a new GroupMemberListItem and add to NonScrollListView
                                 GroupMemberListItem groupMemberListItem = new GroupMemberListItem(name, description, memberUid, imageUrl);
                                 groupMemberListAdapter.addAdapterItem(groupMemberListItem);
                                 groupMemberListAdapter.notifyDataSetChanged();
