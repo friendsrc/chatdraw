@@ -7,17 +7,19 @@ import androidx.appcompat.widget.Toolbar;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.chatdraw.AccountActivity.User;
 import com.example.chatdraw.Adapters.GroupMemberListAdapter;
-import com.example.chatdraw.Config.GlobalStorage;
+import com.example.chatdraw.Adapters.GroupSimpleMenuAdapter;
 import com.example.chatdraw.Items.GroupMemberListItem;
+import com.example.chatdraw.Items.SimpleMenuItem;
 import com.example.chatdraw.R;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -35,9 +37,6 @@ public class GroupInfoActivity extends AppCompatActivity {
     private String groupImageUrl;
     private ArrayList<String> groupMembers;
 
-    private ListView listView;
-    private ArrayAdapter<String> arrayAdapter;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,12 +44,47 @@ public class GroupInfoActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         groupUID = intent.getStringExtra("id");
-        listView = (ListView) findViewById(R.id.memberListView);
+
+        // create a list view to add user to the group
+        GroupSimpleMenuAdapter groupInviteFriendAdapter = new GroupSimpleMenuAdapter(this);
+        ListView invitationListView = (ListView) findViewById(R.id.inviteFriends);
+        invitationListView.setAdapter(groupInviteFriendAdapter);
+
+        SimpleMenuItem simpleMenuInviteItem = new SimpleMenuItem("Add member", R.drawable.add_person);
+        SimpleMenuItem simpleMenuLinkItem = new SimpleMenuItem("Invite via a link", R.drawable.ic_link_blue_24dp);
+        groupInviteFriendAdapter.addAdapterItem(simpleMenuInviteItem);
+        groupInviteFriendAdapter.addAdapterItem(simpleMenuLinkItem);
+        groupInviteFriendAdapter.notifyDataSetChanged();
+
+        invitationListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Toast.makeText(GroupInfoActivity.this, "It is not configured yet", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        GroupSimpleMenuAdapter groupExitGroupAdapter = new GroupSimpleMenuAdapter(this);
+        ListView exitReportListView = (ListView) findViewById(R.id.exitReportListView);
+        exitReportListView.setAdapter(groupExitGroupAdapter);
+
+        SimpleMenuItem menuExitGroupItem = new SimpleMenuItem("Leave group", R.drawable.ic_exit_to_app_red_24dp);
+        SimpleMenuItem menuReportGroupItem = new SimpleMenuItem("Report group", R.drawable.ic_report_red_24dp);
+        groupExitGroupAdapter.addAdapterItem(menuExitGroupItem);
+        groupExitGroupAdapter.addAdapterItem(menuReportGroupItem);
+        groupExitGroupAdapter.notifyDataSetChanged();
+
+        exitReportListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Toast.makeText(GroupInfoActivity.this, "Not yet configured yet", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         // create Adapter and set to ListView
         GroupMemberListAdapter groupMemberListAdapter = new GroupMemberListAdapter(this);
         ListView listView = findViewById(R.id.memberListView);
         listView.setAdapter(groupMemberListAdapter);
+
 
         FirebaseFirestore.getInstance()
                 .collection("Groups")
@@ -72,8 +106,6 @@ public class GroupInfoActivity extends AppCompatActivity {
                                 String name = dataSnapshot.child(memberUid).getValue(User.class).getName();
                                 String description = dataSnapshot.child(memberUid).getValue(User.class).getDescription();
                                 String imageUrl = dataSnapshot.child(memberUid).getValue(User.class).getImageUrl();
-
-                                Log.v("GROUPDETAILS", name + "@@@" + description + "@@@" + imageUrl);
 
                                 // create a new GroupMemberListItem and add to ListView
                                 GroupMemberListItem groupMemberListItem = new GroupMemberListItem(name, description, memberUid, imageUrl);

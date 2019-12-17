@@ -244,7 +244,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                     }
                 });
 
-        // set on click listener to the ListView
+        // set on click listener to the ListView //todo (it seems this is a duplicated invocation)
         ListView listView = findViewById(R.id.main_chat_listview);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
