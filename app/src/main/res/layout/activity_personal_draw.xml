@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:layout_width="match_parent"
+    android:background="@color/white"
+    android:layout_height="match_parent"
+    tools:context=".Drawing.PersonalDrawActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/my_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="5dp"
+        android:background="#19344955"
+        android:text="Personal Canvas"/>
+
+    <com.otaliastudios.zoom.ZoomLayout
+        android:id="@+id/zoom_layout"
+        android:background="#19344955"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="vertical|horizontal"
+        app:transformation="centerInside"
+        app:transformationGravity="auto"
+        app:alignment="center"
+        app:overScrollHorizontal="true"
+        app:overScrollVertical="true"
+        app:overPinchable="true"
+        app:horizontalPanEnabled="true"
+        app:verticalPanEnabled="true"
+        app:zoomEnabled="true"
+        app:flingEnabled="false"
+        app:scrollEnabled="true"
+        app:oneFingerScrollEnabled="false"
+        app:twoFingersScrollEnabled="true"
+        app:threeFingersScrollEnabled="true"
+        app:minZoom="0.9"
+        app:minZoomType="zoom"
+        app:maxZoom="4"
+        app:maxZoomType="zoom"
+        app:animationDuration="280"
+        app:hasClickableChildren="false">
+
+        <!-- Content here. -->
+        <com.example.chatdraw.Drawing.CanvasView
+            android:id="@+id/canvas"
+            android:background="@color/white"
+            android:layout_width="2048px"
+            android:layout_height="2048px" />
+
+    </com.otaliastudios.zoom.ZoomLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:gravity="center"
+        android:background="#19344955"
+        android:paddingTop="16dp"
+        android:paddingRight="16dp"
+        android:paddingLeft="16dp"
+        android:paddingBottom="16dp"
+        android:orientation="vertical">
+
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <SeekBar
+                android:id="@+id/brush_size_seekbar"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:progress="200"
+                android:max="1500"/>
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/color_picker_imageview"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="16dp"
+                android:src="@color/white"
+                app:civ_border_width="0dp"
+                app:civ_border_color="@color/colorPrimaryDark"/>
+
+            <ImageView
+                android:id="@+id/switch_canvas_imageview"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/collaboration"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

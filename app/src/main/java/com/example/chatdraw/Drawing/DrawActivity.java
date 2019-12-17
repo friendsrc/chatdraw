@@ -30,6 +30,8 @@ import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.example.chatdraw.Activities.ChatActivity;
+import com.example.chatdraw.Activities.GroupInfoActivity;
 import com.example.chatdraw.R;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -249,8 +251,11 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
 
         switchCanvasImageView = findViewById(R.id.switch_canvas_imageview);
         switchCanvasImageView.setOnClickListener(view -> {
-            // TODO
-            Log.d("TESTT", "Switch button clicked");
+            Intent intent1 =
+                new Intent(DrawActivity.this, PersonalDrawActivity.class);
+            intent1.putExtra("userUID", userUID);
+            intent1.putExtra("friendsUID", friendsUID + userUID);
+            startActivity(intent1);
         });
     }
 
