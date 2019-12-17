@@ -28,6 +28,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.chatdraw.Activities.ChatActivity;
@@ -60,10 +61,12 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
     private ColorPickerDialog.Builder mColorPickerDialog;
     private Spinner spinner;
     private ImageView switchCanvasImageView;
+    private TextView canvasType;
 
     private Dialog mCloseDialog;
 
     private boolean isGroup = false;
+    private boolean isPersonalCanvas = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +91,8 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
 
         mZoomLayout = findViewById(R.id.zoom_layout);
         canvasView.actionBar = myToolbar;
+
+        canvasType = findViewById(R.id.canvas_type_textview);
 
         WindowManager windowManager =
                 (WindowManager) getApplication().getSystemService(Context.WINDOW_SERVICE);
@@ -251,11 +256,22 @@ public class DrawActivity extends AppCompatActivity implements ColorPickerDialog
 
         switchCanvasImageView = findViewById(R.id.switch_canvas_imageview);
         switchCanvasImageView.setOnClickListener(view -> {
-            Intent intent1 =
-                new Intent(DrawActivity.this, PersonalDrawActivity.class);
-            intent1.putExtra("userUID", userUID);
-            intent1.putExtra("friendsUID", friendsUID + userUID);
-            startActivity(intent1);
+            if (isPersonalCanvas) {
+                mCanvasView.clearLocalCanvas();
+                spinner.setSelection(0);
+                mCanvasView.filterById(CanvasView.EVERYONE_ID);
+                canvasView.setIDs(userUID, friendsUID, findViewById(R.id.canvas), mZoomLayout);
+                mCanvasView.getFromFirebase();
+                canvasType.setText("Shared Canvas");
+                spinner.setEnabled(true);
+            } else {
+                mCanvasView.clearLocalCanvas();
+                canvasView.setIDs(userUID, friendsUID + userUID, findViewById(R.id.canvas), mZoomLayout);
+                mCanvasView.getFromFirebase();
+                canvasType.setText("Personal Canvas");
+                spinner.setEnabled(false);
+            }
+            isPersonalCanvas = !isPersonalCanvas;
         });
     }
 

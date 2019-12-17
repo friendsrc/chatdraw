@@ -31,7 +31,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Drawing.PersonalDrawActivity"></activity>
         <activity android:name=".AccountActivity.CreatePatternActivity" />
         <activity android:name=".Activities.VerifyPatternActivity" />
         <activity

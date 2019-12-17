@@ -474,4 +474,20 @@ public class CanvasView extends View {
     public boolean isEveryoneVisible() {
         return currentVisibleId.equals(EVERYONE_ID);
     }
+
+    public void clearLocalCanvas() {
+        // remove collection values
+        mapIDtoPath.clear();
+        mapIDtoRemovedPath.clear();
+        lineIDs.clear();
+        removedLineIDs.clear();
+        paints.clear();
+        mapPathToPaint.clear();
+
+        // reset path
+        mPath.reset();
+
+        // set the canvas to be blank
+        invalidate();
+    }
 }

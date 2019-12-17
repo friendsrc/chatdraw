@@ -18,6 +18,7 @@
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
 
     <TextView
+        android:id="@+id/canvas_type_textview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
@@ -77,6 +78,7 @@
 
 
         <LinearLayout
+            android:gravity="center_vertical"
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -101,9 +103,10 @@
 
             <ImageView
                 android:id="@+id/switch_canvas_imageview"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@drawable/person_arrow"/>
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:rotation="90"
+                android:src="@drawable/switch_arrows"/>
 
         </LinearLayout>
 
