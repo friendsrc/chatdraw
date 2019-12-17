@@ -233,7 +233,8 @@ public class ChatActivity extends BaseActivity implements RecyclerViewClickListe
             public void onClick(View v) {
                 if (isGroup) {
                     Intent intent = new Intent(ChatActivity.this, GroupInfoActivity.class);
-                    intent.putExtra("id", groupID);
+                    intent.putExtra("groupUid", groupID);
+                    intent.putExtra("userUid", userUID);
                     startActivityForResult(intent, REQUEST_INFOEDIT);
                 } else {
                     // TODO

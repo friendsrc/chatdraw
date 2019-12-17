@@ -5,13 +5,15 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -21,17 +23,26 @@ import com.example.chatdraw.Adapters.GroupSimpleMenuAdapter;
 import com.example.chatdraw.Items.GroupMemberListItem;
 import com.example.chatdraw.Items.SimpleMenuItem;
 import com.example.chatdraw.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GroupInfoActivity extends AppCompatActivity {
 
+    private String userUID;
     private String groupUID;
     private String groupName;
     private String groupImageUrl;
@@ -43,7 +54,8 @@ public class GroupInfoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_group_info);
 
         Intent intent = getIntent();
-        groupUID = intent.getStringExtra("id");
+        groupUID = intent.getStringExtra("groupUid");
+        userUID = intent.getStringExtra("userUid");
 
         // create a list view to add user to the group
         GroupSimpleMenuAdapter groupInviteFriendAdapter = new GroupSimpleMenuAdapter(this);
@@ -58,8 +70,15 @@ public class GroupInfoActivity extends AppCompatActivity {
 
         invitationListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Toast.makeText(GroupInfoActivity.this, "It is not configured yet", Toast.LENGTH_SHORT).show();
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                if (position == 0) {
+                    Toast.makeText(GroupInfoActivity.this, "Add member not configured yet " + position, Toast.LENGTH_SHORT).show();
+                } else if (position == 1) {
+                    // Use dynamic link
+                    // https://firebase.google.com/docs/dynamic-links/android/receive
+                    // https://firebase.google.com/docs/dynamic-links/use-cases/user-to-user
+                    Toast.makeText(GroupInfoActivity.this, "Invite via link not configured yet " + position, Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -75,8 +94,57 @@ public class GroupInfoActivity extends AppCompatActivity {
 
         exitReportListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Toast.makeText(GroupInfoActivity.this, "Not yet configured yet", Toast.LENGTH_SHORT).show();
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                if (position == 0) {
+                    new AlertDialog.Builder(GroupInfoActivity.this)
+                            .setTitle("Confirm")
+                            .setMessage("Do you really want to leave the group?")
+                            .setIcon(R.drawable.ic_report_problem_red)
+                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    DocumentReference docRef = FirebaseFirestore.getInstance()
+                                            .collection("Groups")
+                                            .document(groupUID);
+
+                                    DocumentReference previewRef = FirebaseFirestore.getInstance()
+                                            .collection("Previews")
+                                            .document(userUID)
+                                            .collection("ChatPreviews")
+                                            .document(groupUID);
+
+                                    Map<String, Object> deleteMember = new HashMap<>();
+                                    deleteMember.put("members", FieldValue.arrayRemove(userUID));
+
+                                    docRef.update(deleteMember)
+                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    previewRef.delete()
+                                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                @Override
+                                                                public void onSuccess(Void aVoid) {
+                                                                    Intent intent = new Intent(GroupInfoActivity.this, MainActivity.class);
+                                                                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                                                                            Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                                                                            Intent.FLAG_ACTIVITY_NEW_TASK);
+                                                                    startActivity(intent);
+                                                                }
+                                                            })
+                                                            .addOnFailureListener(new OnFailureListener() {
+                                                                @Override
+                                                                public void onFailure(@NonNull Exception e) {
+                                                                    Toast.makeText(GroupInfoActivity.this, "Unable to delete chat preview", Toast.LENGTH_SHORT).show();
+                                                                }
+                                                            });
+                                                }
+                                            });
+                                }
+                            })
+                            .setNegativeButton(android.R.string.no, null).show();
+                } else {
+                    Toast.makeText(GroupInfoActivity.this, "Report group not configured yet", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
